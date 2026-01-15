@@ -1,0 +1,293 @@
+<div>
+    <!-- Include Trix CSS -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css">
+    <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script>
+    
+    <style>
+        trix-toolbar .trix-button-group button {
+            background: white;
+        }
+        trix-editor {
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+    </style>
+
+    <form wire:submit.prevent="update">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Title & Slug Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Article Details</h3>
+
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Title <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" wire:model.live.debounce.300ms="title"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
+                            placeholder="Enter article title">
+                        @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Slug -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Slug (URL)
+                        </label>
+                        <input type="text" wire:model="slug"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
+                            placeholder="auto-generated-from-title">
+                        @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Excerpt -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Excerpt <span class="text-red-500">*</span>
+                        </label>
+                        <textarea wire:model="excerpt" rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
+                            placeholder="Brief summary of the article (max 500 characters)"></textarea>
+                        @error('excerpt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <p class="mt-1 text-xs text-gray-500">{{ strlen($excerpt) }}/500 characters</p>
+                    </div>
+                </div>
+
+                <!-- Content Card with Trix Editor -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Article Content</h3>
+                    
+                    <div wire:ignore>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Content <span class="text-red-500">*</span>
+                        </label>
+                        <input id="content" type="hidden" value="{{ $content }}">
+                        <trix-editor input="content" class="trix-content border border-gray-300 rounded-lg"></trix-editor>
+                    </div>
+                    @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- SEO Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">SEO Settings</h3>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Meta Description
+                        </label>
+                        <textarea wire:model="meta_description" rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
+                            placeholder="SEO meta description (max 200 characters)"></textarea>
+                        @error('meta_description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <p class="mt-1 text-xs text-gray-500">{{ strlen($meta_description) }}/500 characters</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Meta Keywords
+                        </label>
+                        <input type="text" wire:model="meta_keywords"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
+                            placeholder="keyword1, keyword2, keyword3">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Tags
+                        </label>
+                        <input type="text" wire:model="tags"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
+                            placeholder="tag1, tag2, tag3">
+                        <p class="mt-1 text-xs text-gray-500">Separate tags with commas</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+
+                <!-- Actions Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Update</h3>
+
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="font-semibold {{ $is_published ? 'text-green-600' : 'text-amber-600' }}">
+                                {{ $is_published ? 'Published' : 'Draft' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Publishing -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar-alt mr-1 text-emerald-600"></i>
+                            {{ $is_published ? 'Published' : 'Schedule' }} Date
+                        </label>
+                        <input type="datetime-local" wire:model="published_at"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors">
+                        @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <p class="mt-1 text-xs text-gray-500">
+                            @if($is_published)
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Article is currently published
+                            @else
+                                <i class="fas fa-clock mr-1"></i>
+                                Set future date to schedule
+                            @endif
+                        </p>
+                    </div>
+
+                    <!-- Publish Toggle -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-4">
+                        <div>
+                            <p class="font-medium text-gray-900">Published</p>
+                            <p class="text-sm text-gray-600">Make article public</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" wire:model="is_published" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="space-y-3">
+                        <button type="submit"
+                            class="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors">
+                            <i class="fas fa-save mr-2"></i>
+                            Update Article
+                        </button>
+                        <a href="{{ route('admin.news.index') }}"
+                            class="block w-full px-4 py-3 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-semibold rounded-lg transition-colors text-center">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancel
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Category Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Category</h3>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Select Category <span class="text-red-500">*</span>
+                        </label>
+                        <select wire:model="category_id"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors">
+                            <option value="">Choose a category</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('category_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <!-- Featured Image Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Featured Image</h3>
+
+                    <!-- Current Image -->
+                    @if($existing_image && !$featured_image && !$featured_image_url)
+                        <div class="mb-4">
+                            <p class="text-sm font-medium text-gray-700 mb-2">Current Image</p>
+                            <img src="{{ $existing_image }}" class="w-full h-48 object-cover rounded-lg">
+                        </div>
+                    @endif
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Upload New Image
+                        </label>
+                        <input type="file" wire:model="featured_image" accept="image/*"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors">
+                        @error('featured_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                        @if ($featured_image)
+                            <div class="mt-3">
+                                <img src="{{ $featured_image->temporaryUrl() }}"
+                                    class="w-full h-48 object-cover rounded-lg">
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="text-center text-sm text-gray-500 mb-4">OR</div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Image URL
+                        </label>
+                        <input type="url" wire:model="featured_image_url"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
+                            placeholder="https://example.com/image.jpg">
+
+                        @if ($featured_image_url && !$featured_image)
+                            <div class="mt-3">
+                                <img src="{{ $featured_image_url }}" class="w-full h-48 object-cover rounded-lg"
+                                    onerror="this.src='https://via.placeholder.com/400x300?text=Invalid+Image+URL'">
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Settings Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Settings</h3>
+
+                    <!-- Featured Toggle -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-3">
+                        <div>
+                            <p class="font-medium text-gray-900">Featured Article</p>
+                            <p class="text-sm text-gray-600">Show on homepage</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" wire:model="is_featured" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- Breaking News -->
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Breaking News Priority
+                        </label>
+                        <select wire:model="breaking" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors">
+                            <option value="no">Normal</option>
+                            <option value="breaking">Breaking</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+
+                    <!-- Breaking Until -->
+                    @if($breaking !== 'no')
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Breaking Until (Optional)
+                        </label>
+                        <input type="datetime-local" 
+                               wire:model="breaking_until"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors">
+                        <p class="mt-1 text-xs text-gray-500">Leave empty for indefinite</p>
+                    </div>
+                    @endif
+                </div>
+
+            </div>
+        </div>
+    </form>
+
+    <script>
+        document.addEventListener('trix-change', function(event) {
+            @this.set('content', event.target.value);
+        });
+    </script>
+</div>

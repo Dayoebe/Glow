@@ -1,0 +1,141 @@
+<?php
+
+namespace App\Livewire\Podcast;
+
+use App\Models\Podcast\Episode;
+use App\Models\Podcast\Comment;
+use App\Models\Podcast\ListeningHistory;
+use Livewire\Component;
+
+class EpisodePlayer extends Component
+{
+    public Episode $episode;
+    public $comment = '';
+    public $commentTimestamp = null;
+    public $replyTo = null;
+    
+    // Player state
+    public $currentPosition = 0;
+    public $isPlaying = false;
+
+    // FIX: Changed from $slug to $showSlug and $episodeSlug
+    public function mount($showSlug, $episodeSlug)
+    {
+        $this->episode = Episode::with(['show', 'comments.user', 'comments.replies.user'])
+            ->published()
+            ->where('slug', $episodeSlug)
+            ->whereHas('show', function($query) use ($showSlug) {
+                $query->where('slug', $showSlug);
+            })
+            ->firstOrFail();
+
+        // Load last position if user is logged in
+        if (auth()->check()) {
+            $history = ListeningHistory::where('user_id', auth()->id())
+                ->where('episode_id', $this->episode->id)
+                ->first();
+
+            if ($history) {
+                $this->currentPosition = $history->position;
+            }
+        }
+    }
+
+    public function updateProgress($position, $duration)
+    {
+        $this->currentPosition = $position;
+
+        // Track play and update history
+        if (auth()->check()) {
+            ListeningHistory::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'episode_id' => $this->episode->id,
+                ],
+                [
+                    'position' => $position,
+                    'completed' => $position >= ($duration * 0.9),
+                    'last_listened_at' => now(),
+                ]
+            );
+        }
+
+        // Track analytics every 30 seconds
+        if ($position % 30 === 0) {
+            $this->episode->trackPlay(auth()->id(), $position, $position);
+        }
+    }
+
+    public function trackDownload()
+    {
+        $this->episode->trackDownload();
+        session()->flash('success', 'Download started!');
+    }
+
+    public function submitComment()
+    {
+        if (!auth()->check()) {
+            session()->flash('error', 'Please login to comment');
+            return redirect()->route('login');
+        }
+
+        $this->validate(['comment' => 'required|min:3|max:500']);
+
+        Comment::create([
+            'episode_id' => $this->episode->id,
+            'user_id' => auth()->id(),
+            'parent_id' => $this->replyTo,
+            'comment' => $this->comment,
+            'timestamp' => $this->commentTimestamp,
+        ]);
+
+        $this->reset(['comment', 'commentTimestamp', 'replyTo']);
+        $this->episode->refresh();
+        
+        session()->flash('success', 'Comment posted!');
+    }
+
+    public function setCommentTime($time)
+    {
+        $this->commentTimestamp = $time;
+    }
+
+    public function setReplyTo($commentId)
+    {
+        $this->replyTo = $commentId;
+    }
+
+    public function shareEpisode($platform)
+    {
+        $this->episode->increment('shares');
+        
+        $url = url()->current();
+        $title = $this->episode->title;
+        
+        $shareUrls = [
+            'twitter' => "https://twitter.com/intent/tweet?url={$url}&text={$title}",
+            'facebook' => "https://www.facebook.com/sharer/sharer.php?u={$url}",
+            'linkedin' => "https://www.linkedin.com/sharing/share-offsite/?url={$url}",
+            'whatsapp' => "https://wa.me/?text={$title} {$url}",
+        ];
+
+        return redirect()->away($shareUrls[$platform] ?? $url);
+    }
+
+    public function getRelatedEpisodesProperty()
+    {
+        return Episode::published()
+            ->where('show_id', $this->episode->show_id)
+            ->where('id', '!=', $this->episode->id)
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+    }
+
+    public function render()
+    {
+        return view('livewire.podcast.episode-player', [
+            'relatedEpisodes' => $this->relatedEpisodes,
+        ])->layout('layouts.app', ['title' => $this->episode->title . ' - ' . $this->episode->show->title]);
+    }
+}
