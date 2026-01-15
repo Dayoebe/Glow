@@ -182,6 +182,7 @@ class Post extends Model
 
         $this->interactions()->create([
             'user_id' => $userId,
+            'ip_address' => request()->ip(),
             'type' => 'reaction',
             'value' => $type,
         ]);
@@ -205,6 +206,7 @@ class Post extends Model
 
         $this->interactions()->create([
             'user_id' => $userId,
+            'ip_address' => request()->ip(),
             'type' => 'bookmark',
             'collection' => $collection,
             'notes' => $notes,

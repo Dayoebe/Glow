@@ -117,6 +117,16 @@ class BlogDetail extends Component
 
         $this->validate();
 
+        if ($this->replyTo) {
+            $validParent = $this->post->comments()
+                ->where('id', $this->replyTo)
+                ->where('is_approved', true)
+                ->exists();
+            if (!$validParent) {
+                $this->replyTo = null;
+            }
+        }
+
         $this->post->comments()->create([
             'user_id' => auth()->id(),
             'parent_id' => $this->replyTo,
