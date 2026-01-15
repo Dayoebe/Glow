@@ -21,7 +21,7 @@ class BlogDetail extends Component
     public function mount($slug)
     {
         // Find post by slug with relationships
-        $this->post = Post::with([
+        $query = Post::with([
             'category', 
             'author', 
             'comments' => function($query) {
@@ -33,10 +33,13 @@ class BlogDetail extends Component
             'comments.replies' => function($query) {
                 $query->where('is_approved', true);
             }
-        ])
-        ->published()
-        ->where('slug', $slug)
-        ->firstOrFail();
+        ]);
+
+        if (!request()->routeIs('admin.blog.preview')) {
+            $query->published();
+        }
+
+        $this->post = $query->where('slug', $slug)->firstOrFail();
 
         // Track view
         $this->post->incrementViews(request()->ip(), auth()->id());
