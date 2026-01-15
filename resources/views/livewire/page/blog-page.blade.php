@@ -54,7 +54,8 @@
                             <p class="text-gray-300 text-lg mb-6 leading-relaxed">{{ $featuredPost['excerpt'] }}</p>
 
                             <div class="flex items-center space-x-4 mb-6">
-                                <img src="{{ $featuredPost['author']['avatar'] }}"
+                                <img src="{{ $featuredPost['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($featuredPost['author']['name']) . '&length=2' }}"
+                                    onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($featuredPost['author']['name']) }}&length=2';"
                                     alt="{{ $featuredPost['author']['name'] }}"
                                     class="w-12 h-12 rounded-full border-2 border-purple-500">
                                 <div>
@@ -266,7 +267,8 @@
                                         <!-- Author & Actions -->
                                         <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                                             <div class="flex items-center space-x-3">
-                                                <img src="{{ $post['author']['avatar'] }}"
+                                                <img src="{{ $post['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($post['author']['name']) . '&length=2' }}"
+                                                    onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($post['author']['name']) }}&length=2';"
                                                     alt="{{ $post['author']['name'] }}" class="w-10 h-10 rounded-full">
                                                 <div>
                                                     <p class="text-sm font-semibold text-gray-900">
