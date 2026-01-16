@@ -47,11 +47,11 @@
                     class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             </div>
-            <button wire:click="openCreateModal"
-                class="inline-flex items-center justify-center px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-colors duration-150">
+            <a href="{{ route('admin.events.categories.create') }}"
+               class="inline-flex items-center justify-center px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-colors duration-150">
                 <i class="fas fa-plus mr-2"></i>
                 Add Category
-            </button>
+            </a>
         </div>
     </div>
 
@@ -101,10 +101,10 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button wire:click="openEditModal({{ $category->id }})"
+                                    <a href="{{ route('admin.events.categories.edit', $category->id) }}"
                                         class="text-amber-600 hover:text-amber-900" title="Edit">
                                         <i class="fas fa-edit"></i>
-                                    </button>
+                                    </a>
                                     <button wire:click="confirmDelete({{ $category->id }})"
                                         class="text-red-600 hover:text-red-900" title="Delete">
                                         <i class="fas fa-trash"></i>
@@ -129,87 +129,27 @@
         </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    @if($showFormModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeModal"></div>
-                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-6 py-5">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">
-                            {{ $isEditing ? 'Edit Category' : 'Create Category' }}
-                        </h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                                <input type="text" wire:model="name"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Slug</label>
-                                <input type="text" wire:model="slug"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                <textarea wire:model="description" rows="2"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
-                                @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Icon</label>
-                                    <select wire:model="icon"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                        @foreach($availableIcons as $icon)
-                                            <option value="{{ $icon }}">{{ $icon }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('icon') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                                    <select wire:model="color"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                        @foreach($availableColors as $key => $label)
-                                            <option value="{{ $key }}">{{ $label }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" wire:model="is_active" class="rounded border-gray-300">
-                                <span class="text-sm text-gray-700">Active</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
-                        <button wire:click="closeModal"
-                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
-                            Cancel
-                        </button>
-                        <button wire:click="save"
-                            class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
-                            {{ $isEditing ? 'Update' : 'Create' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
     <!-- Delete Modal -->
     @if($showDeleteModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showDeleteModal', false)"></div>
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                     wire:click="$set('showDeleteModal', false)"
+                     aria-hidden="true"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Category</h3>
-                        <p class="text-sm text-gray-500 mt-2">Are you sure you want to delete this category?</p>
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="fas fa-exclamation-triangle text-red-600"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Category</h3>
+                                <p class="text-sm text-gray-500 mt-2">Are you sure you want to delete this category? This action cannot be undone.</p>
+                            </div>
+                        </div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button wire:click="deleteCategory" type="button"
@@ -223,6 +163,18 @@
                     </div>
                 </div>
             </div>
+        </div>
+    @endif
+
+    @if (session()->has('success'))
+        <div class="fixed bottom-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="fixed bottom-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg">
+            {{ session('error') }}
         </div>
     @endif
 </div>
