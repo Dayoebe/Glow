@@ -31,26 +31,27 @@
                 <div class="text-center lg:text-left">
                     <div class="inline-flex items-center space-x-2 glass-panel px-4 py-2 rounded-full mb-6">
                         <span class="w-3 h-3 bg-lime-500 rounded-full glass-glow"></span>
-                        <span class="text-sm font-semibold">NOW LIVE ON AIR</span>
+                        <span class="text-sm font-semibold">{{ $homeContent['hero_badge'] }}</span>
                     </div>
                     
                     <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                        Your Voice,<br>
-                        <span class="text-emerald-200">Your Music</span>
+                        {{ $homeContent['hero_title'] }}<br>
+                        <span class="text-emerald-200">{{ $homeContent['hero_highlight'] }}</span>
                     </h1>
                     
                     <p class="text-xl md:text-2xl text-emerald-100 mb-8 leading-relaxed">
-                        Broadcasting the heartbeat of the city of Akure, 24/7 on 99.1 FM
+                        {{ $homeContent['hero_subtitle'] }}
                     </p>
 
                     <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
-                        <a href="#" class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-white text-emerald-700 font-bold rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
+                        <a href="{{ $homeContent['primary_cta_url'] }}" @click.prevent="startLive"
+                            class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-white text-emerald-700 font-bold rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
                             <i class="fas fa-play-circle text-2xl"></i>
-                            <span>Listen Live Now</span>
+                            <span>{{ $homeContent['primary_cta_text'] }}</span>
                         </a>
-                        <a href="/shows" class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-amber-700 backdrop-blur-sm text-white font-semibold rounded-full border-2 border-white/30 hover:bg-white/10 transition-all duration-300">
+                        <a href="{{ $homeContent['secondary_cta_url'] }}" class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-amber-700 backdrop-blur-sm text-white font-semibold rounded-full border-2 border-white/30 hover:bg-white/10 transition-all duration-300">
                             <i class="fas fa-calendar-alt"></i>
-                            <span>View Schedule</span>
+                            <span>{{ $homeContent['secondary_cta_text'] }}</span>
                         </a>
                     </div>
 
@@ -63,9 +64,9 @@
                                 </div>
                             </div>
                             <div class="flex-1 text-left">
-                                <p class="text-sm text-emerald-200 mb-1">Currently Playing</p>
-                                <h3 class="text-lg font-bold">Morning Vibes with MC Olumiko</h3>
-                                <p class="text-sm text-emerald-100">6:00 AM - 10:00 AM</p>
+                                <p class="text-sm text-emerald-200 mb-1">{{ $homeContent['now_playing_label'] }}</p>
+                                <h3 class="text-lg font-bold">{{ $homeContent['now_playing_title'] }}</h3>
+                                <p class="text-sm text-emerald-100">{{ $homeContent['now_playing_time'] }}</p>
                             </div>
                         </div>
                     </div>

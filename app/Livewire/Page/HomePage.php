@@ -9,6 +9,7 @@ use App\Models\Blog\Post;
 use App\Models\Blog\Category; 
 use App\Models\Podcast\Episode;
 use App\Models\Event\Event;
+use App\Models\Setting;
 use Livewire\Component;
 
 class HomePage extends Component
@@ -23,6 +24,7 @@ class HomePage extends Component
     public $testimonials = [];
     public $breakingNews = null;
     public $trendingNews = [];
+    public $homeContent = [];
 
     public function mount()
     {
@@ -32,6 +34,7 @@ class HomePage extends Component
          $this->loadRealBlogPosts();
         $this->loadStats();
         $this->loadTestimonials();
+        $this->loadHomeContent();
     }
 
     private function loadRealNews()
@@ -283,6 +286,26 @@ class HomePage extends Component
     private function loadTestimonials()
     {
         $this->testimonials = [];
+    }
+
+    private function loadHomeContent()
+    {
+        $defaults = [
+            'hero_badge' => 'NOW LIVE ON AIR',
+            'hero_title' => 'Your Voice,',
+            'hero_highlight' => 'Your Music',
+            'hero_subtitle' => 'Broadcasting the heartbeat of the city of Akure, 24/7 on 99.1 FM',
+            'primary_cta_text' => 'Listen Live Now',
+            'primary_cta_url' => Setting::get('station.stream_url', 'https://stream-176.zeno.fm/mwam2yirv1pvv'),
+            'secondary_cta_text' => 'View Schedule',
+            'secondary_cta_url' => '/shows',
+            'now_playing_label' => 'Currently Playing',
+            'now_playing_title' => 'Morning Vibes with MC Olumiko',
+            'now_playing_time' => '6:00 AM - 10:00 AM',
+        ];
+
+        $settings = Setting::get('website.home', []);
+        $this->homeContent = array_replace_recursive($defaults, $settings);
     }
 
     public function render()
