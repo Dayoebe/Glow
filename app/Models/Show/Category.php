@@ -3,6 +3,8 @@
 namespace App\Models\Show;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 // ===== Show Category Model =====
 class Category extends Model

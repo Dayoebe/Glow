@@ -3,6 +3,7 @@
 namespace App\Models\Show;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 // ===== Review Model =====
 class Review extends Model

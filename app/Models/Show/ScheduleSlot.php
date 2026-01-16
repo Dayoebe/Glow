@@ -96,4 +96,3 @@ class ScheduleSlot extends Model
 }
 
 
-
