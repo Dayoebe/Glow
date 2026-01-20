@@ -44,17 +44,24 @@
                 </div>
 
                 <!-- Password -->
-                <div>
+                <div x-data="{ showPassword: false }">
                     <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
                         Password
                     </label>
-                    <input 
+                    <div class="relative">
+                        <input 
                         wire:model="password" 
-                        type="password" 
+                        :type="showPassword ? 'text' : 'password'"
                         id="password"
-                        class="w-full px-4 py-3 bg-slate-800 border @error('password') border-red-500 @else border-slate-700 @enderror rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                        class="w-full pr-12 px-4 py-3 bg-slate-800 border @error('password') border-red-500 @else border-slate-700 @enderror rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
                         placeholder="••••••••"
                         autocomplete="current-password">
+                        <button type="button" @click="showPassword = !showPassword"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-400 transition-colors"
+                            aria-label="Toggle password visibility">
+                            <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                        </button>
+                    </div>
                     @error('password')
                         <p class="mt-2 text-sm text-red-400 flex items-center">
                             <i class="fas fa-exclamation-circle mr-1"></i>

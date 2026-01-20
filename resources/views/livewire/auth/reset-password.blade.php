@@ -45,17 +45,24 @@
                     @enderror
                 </div>
 
-                <div>
+                <div x-data="{ showPassword: false }">
                     <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
                         New Password
                     </label>
-                    <input
+                    <div class="relative">
+                        <input
                         wire:model="password"
-                        type="password"
+                        :type="showPassword ? 'text' : 'password'"
                         id="password"
-                        class="w-full px-4 py-3 bg-slate-800 border @error('password') border-red-500 @else border-slate-700 @enderror rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                        class="w-full pr-12 px-4 py-3 bg-slate-800 border @error('password') border-red-500 @else border-slate-700 @enderror rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
                         placeholder="••••••••"
                         autocomplete="new-password">
+                        <button type="button" @click="showPassword = !showPassword"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-400 transition-colors"
+                            aria-label="Toggle password visibility">
+                            <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                        </button>
+                    </div>
                     @error('password')
                         <p class="mt-2 text-sm text-red-400 flex items-center">
                             <i class="fas fa-exclamation-circle mr-1"></i>
@@ -64,17 +71,24 @@
                     @enderror
                 </div>
 
-                <div>
+                <div x-data="{ showConfirm: false }">
                     <label for="password_confirmation" class="block text-sm font-medium text-gray-300 mb-2">
                         Confirm Password
                     </label>
-                    <input
+                    <div class="relative">
+                        <input
                         wire:model="password_confirmation"
-                        type="password"
+                        :type="showConfirm ? 'text' : 'password'"
                         id="password_confirmation"
-                        class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                        class="w-full pr-12 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
                         placeholder="••••••••"
                         autocomplete="new-password">
+                        <button type="button" @click="showConfirm = !showConfirm"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-400 transition-colors"
+                            aria-label="Toggle password confirmation visibility">
+                            <i class="fas" :class="showConfirm ? 'fa-eye-slash' : 'fa-eye'"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <button
