@@ -72,7 +72,7 @@
                             class="w-4 h-4 bg-slate-800 border-slate-700 rounded text-orange-500 focus:ring-orange-500 focus:ring-offset-0">
                         <span class="ml-2 text-sm text-gray-300">Remember me</span>
                     </label>
-                    <a href="#" class="text-sm text-orange-500 hover:text-orange-400 transition">
+                    <a href="{{ route('password.request') }}" wire:navigate class="text-sm text-orange-500 hover:text-orange-400 transition">
                         Forgot password?
                     </a>
                 </div>

@@ -7,6 +7,8 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use App\Livewire\Page\HomePage;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
+use App\Livewire\Auth\ForgotPassword;
+use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Dashboard;
 use App\Livewire\Page\AboutPage;
 use App\Livewire\Page\ContactPage;
@@ -97,6 +99,8 @@ Route::get('/events/{slug}', EventDetail::class)->name('events.show');
 Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
     Route::get('/register', Register::class)->name('register');
+    Route::get('/forgot-password', ForgotPassword::class)->name('password.request');
+    Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
 });
 
 
