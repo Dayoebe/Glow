@@ -63,10 +63,14 @@
                 <!-- Meta Info -->
                 <div class="flex flex-wrap items-center gap-6 mb-8">
                     <div class="flex items-center space-x-3">
-                        <img src="{{ $post->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->author->name) }}" 
-                             class="w-12 h-12 rounded-full border-2 border-purple-300">
+                        <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $post->author->id]) }}">
+                            <img src="{{ $post->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->author->name) }}" 
+                                 class="w-12 h-12 rounded-full border-2 border-purple-300">
+                        </a>
                         <div>
-                            <p class="font-semibold">{{ $post->author->name }}</p>
+                            <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $post->author->id]) }}" class="font-semibold hover:text-purple-200 transition-colors">
+                                {{ $post->author->name }}
+                            </a>
                             <p class="text-sm text-purple-200">{{ ucfirst($post->author->role) }}</p>
                         </div>
                     </div>

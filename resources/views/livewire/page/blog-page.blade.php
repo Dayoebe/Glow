@@ -27,8 +27,10 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
                         <!-- Image -->
                         <div class="relative h-96 lg:h-auto">
-                            <img src="{{ $featuredPost['featured_image'] }}" alt="{{ $featuredPost['title'] }}"
-                                class="w-full h-full object-cover">
+                            <a href="{{ route('blog.show', $featuredPost['slug']) }}">
+                                <img src="{{ $featuredPost['featured_image'] }}" alt="{{ $featuredPost['title'] }}"
+                                    class="w-full h-full object-cover">
+                            </a>
                             <div class="absolute top-6 left-6">
                                 <span class="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-full shadow-lg">
                                     <i class="fas fa-star mr-1"></i> FEATURED
@@ -50,17 +52,25 @@
                                 </span>
                             </div>
 
-                            <h2 class="text-3xl lg:text-4xl font-bold mb-4 leading-tight">{{ $featuredPost['title'] }}</h2>
+                            <h2 class="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
+                                <a href="{{ route('blog.show', $featuredPost['slug']) }}" class="hover:text-purple-200 transition-colors">
+                                    {{ $featuredPost['title'] }}
+                                </a>
+                            </h2>
 
                             <p class="text-gray-300 text-lg mb-6 leading-relaxed">{{ $featuredPost['excerpt'] }}</p>
 
                             <div class="flex items-center space-x-4 mb-6">
-                                <img src="{{ $featuredPost['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($featuredPost['author']['name']) . '&length=2' }}"
-                                    onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($featuredPost['author']['name']) }}&length=2';"
-                                    alt="{{ $featuredPost['author']['name'] }}"
-                                    class="w-12 h-12 rounded-full border-2 border-purple-500">
+                                <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $featuredPost['author']['id']]) }}" class="flex items-center space-x-4">
+                                    <img src="{{ $featuredPost['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($featuredPost['author']['name']) . '&length=2' }}"
+                                        onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($featuredPost['author']['name']) }}&length=2';"
+                                        alt="{{ $featuredPost['author']['name'] }}"
+                                        class="w-12 h-12 rounded-full border-2 border-purple-500">
+                                </a>
                                 <div>
-                                    <p class="font-semibold">{{ $featuredPost['author']['name'] }}</p>
+                                    <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $featuredPost['author']['id']]) }}" class="font-semibold hover:text-purple-200 transition-colors">
+                                        {{ $featuredPost['author']['name'] }}
+                                    </a>
                                     <p class="text-sm text-gray-400">
                                         {{ \Carbon\Carbon::parse($featuredPost['published_at'])->format('M d, Y') }}</p>
                                 </div>
@@ -219,8 +229,10 @@
                                     class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
                                     <!-- Image -->
                                     <div class="relative h-56 overflow-hidden">
-                                        <img src="{{ $post['featured_image'] }}" alt="{{ $post['title'] }}"
-                                            class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                        <a href="{{ route('blog.show', $post['slug']) }}">
+                                            <img src="{{ $post['featured_image'] }}" alt="{{ $post['title'] }}"
+                                                class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                        </a>
                                         <div class="absolute top-4 left-4">
                                             <span
                                                 class="px-3 py-1 bg-{{ $post['category']['slug'] === 'music-insights' ? 'blue' : ($post['category']['slug'] === 'dj-tips' ? 'purple' : ($post['category']['slug'] === 'industry-news' ? 'amber' : 'pink')) }}-600 text-white text-xs font-semibold rounded-full">
@@ -259,7 +271,7 @@
                                         <!-- Title -->
                                         <h3
                                             class="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-purple-600 transition-colors">
-                                            <a href="/blog/{{ $post['slug'] }}">{{ $post['title'] }}</a>
+                                            <a href="{{ route('blog.show', $post['slug']) }}">{{ $post['title'] }}</a>
                                         </h3>
 
                                         <!-- Excerpt -->
@@ -268,12 +280,14 @@
                                         <!-- Author & Actions -->
                                         <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                                             <div class="flex items-center space-x-3">
-                                                <img src="{{ $post['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($post['author']['name']) . '&length=2' }}"
-                                                    onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($post['author']['name']) }}&length=2';"
-                                                    alt="{{ $post['author']['name'] }}" class="w-10 h-10 rounded-full">
+                                                <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $post['author']['id']]) }}">
+                                                    <img src="{{ $post['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($post['author']['name']) . '&length=2' }}"
+                                                        onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($post['author']['name']) }}&length=2';"
+                                                        alt="{{ $post['author']['name'] }}" class="w-10 h-10 rounded-full">
+                                                </a>
                                                 <div>
-                                                    <p class="text-sm font-semibold text-gray-900">
-                                                        {{ $post['author']['name'] }}</p>
+                                                    <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $post['author']['id']]) }}" class="text-sm font-semibold text-gray-900 hover:text-purple-600 transition-colors">
+                                                        {{ $post['author']['name'] }}</a>
                                                     <p class="text-xs text-gray-500">{{ $post['author']['role'] }}</p>
                                                 </div>
                                             </div>

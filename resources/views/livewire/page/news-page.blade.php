@@ -26,8 +26,10 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
                         <!-- Image -->
                         <div class="relative h-96 lg:h-auto">
-                            <img src="{{ $featuredNews['featured_image'] }}" alt="{{ $featuredNews['title'] }}"
-                                class="w-full h-full object-cover">
+                            <a href="{{ route('news.show', $featuredNews['slug']) }}">
+                                <img src="{{ $featuredNews['featured_image'] }}" alt="{{ $featuredNews['title'] }}"
+                                    class="w-full h-full object-cover">
+                            </a>
                             <div class="absolute top-6 left-6">
                                 <span class="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-full shadow-lg">
                                     <i class="fas fa-star mr-1"></i> FEATURED
@@ -49,17 +51,25 @@
                                 </span>
                             </div>
 
-                            <h2 class="text-3xl lg:text-4xl font-bold mb-4 leading-tight">{{ $featuredNews['title'] }}</h2>
+                            <h2 class="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
+                                <a href="{{ route('news.show', $featuredNews['slug']) }}" class="hover:text-emerald-200 transition-colors">
+                                    {{ $featuredNews['title'] }}
+                                </a>
+                            </h2>
 
                             <p class="text-gray-300 text-lg mb-6 leading-relaxed">{{ $featuredNews['excerpt'] }}</p>
 
                             <div class="flex items-center space-x-4 mb-6">
-                                <img src="{{ $featuredNews['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($featuredNews['author']['name']) . '&length=2' }}"
-                                    onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($featuredNews['author']['name']) }}&length=2';"
-                                    alt="{{ $featuredNews['author']['name'] }}"
-                                    class="w-12 h-12 rounded-full border-2 border-emerald-500">
+                                <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $featuredNews['author']['id']]) }}" class="flex items-center space-x-4">
+                                    <img src="{{ $featuredNews['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($featuredNews['author']['name']) . '&length=2' }}"
+                                        onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($featuredNews['author']['name']) }}&length=2';"
+                                        alt="{{ $featuredNews['author']['name'] }}"
+                                        class="w-12 h-12 rounded-full border-2 border-emerald-500">
+                                </a>
                                 <div>
-                                    <p class="font-semibold">{{ $featuredNews['author']['name'] }}</p>
+                                    <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $featuredNews['author']['id']]) }}" class="font-semibold hover:text-emerald-200 transition-colors">
+                                        {{ $featuredNews['author']['name'] }}
+                                    </a>
                                     <p class="text-sm text-gray-400">
                                         {{ \Carbon\Carbon::parse($featuredNews['published_at'])->format('M d, Y') }}</p>
                                 </div>
@@ -219,8 +229,10 @@
                                     class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
                                     <!-- Image -->
                                     <div class="relative h-56 overflow-hidden">
-                                        <img src="{{ $article['featured_image'] }}" alt="{{ $article['title'] }}"
-                                            class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                        <a href="{{ route('news.show', $article['slug']) }}">
+                                            <img src="{{ $article['featured_image'] }}" alt="{{ $article['title'] }}"
+                                                class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                        </a>
                                         <div class="absolute top-4 left-4">
                                             <span
                                                 class="px-3 py-1 bg-{{ $article['category']['slug'] === 'station-news' ? 'blue' : ($article['category']['slug'] === 'music' ? 'purple' : ($article['category']['slug'] === 'interviews' ? 'amber' : 'pink')) }}-600 text-white text-xs font-semibold rounded-full">
@@ -251,7 +263,7 @@
                                         <!-- Title -->
                                         <h3
                                             class="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors">
-                                            <a href="/news/{{ $article['slug'] }}">{{ $article['title'] }}</a>
+                                            <a href="{{ route('news.show', $article['slug']) }}">{{ $article['title'] }}</a>
                                         </h3>
 
                                         <!-- Excerpt -->
@@ -260,12 +272,14 @@
                                         <!-- Author & Actions -->
                                         <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                                             <div class="flex items-center space-x-3">
-                                                <img src="{{ $article['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($article['author']['name']) . '&length=2' }}"
-                                                    onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($article['author']['name']) }}&length=2';"
-                                                    alt="{{ $article['author']['name'] }}" class="w-10 h-10 rounded-full">
+                                                <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $article['author']['id']]) }}">
+                                                    <img src="{{ $article['author']['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($article['author']['name']) . '&length=2' }}"
+                                                        onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($article['author']['name']) }}&length=2';"
+                                                        alt="{{ $article['author']['name'] }}" class="w-10 h-10 rounded-full">
+                                                </a>
                                                 <div>
-                                                    <p class="text-sm font-semibold text-gray-900">
-                                                        {{ $article['author']['name'] }}</p>
+                                                    <a href="{{ route('staff.profile', ['type' => 'user', 'identifier' => $article['author']['id']]) }}" class="text-sm font-semibold text-gray-900 hover:text-emerald-600 transition-colors">
+                                                        {{ $article['author']['name'] }}</a>
                                                     <p class="text-xs text-gray-500">{{ $article['author']['role'] }}</p>
                                                 </div>
                                             </div>

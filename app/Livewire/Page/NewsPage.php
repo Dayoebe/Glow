@@ -156,6 +156,7 @@ class NewsPage extends Component
                 'slug' => $news->category->slug,
             ],
             'author' => [
+                'id' => $news->author->id,
                 'name' => $news->author->name,
                 'avatar' => $news->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($news->author->name),
                 'role' => ucfirst($news->author->role ?? 'Author'),

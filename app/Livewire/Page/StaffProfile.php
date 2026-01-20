@@ -51,7 +51,6 @@ class StaffProfile extends Component
         } elseif ($type === 'user') {
             $user = User::with(['department', 'teamRole'])
                 ->where('is_active', true)
-                ->where('role', '!=', 'user')
                 ->findOrFail($identifier);
 
             $this->profile = [
