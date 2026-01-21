@@ -26,16 +26,49 @@
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
                 @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
-            <div>
+            <div
+                x-data="{
+                    selected: @js($category_choice ?: $category_id ?: ''),
+                    showNew: @js($creating_category),
+                    sync(value) {
+                        this.selected = value;
+                        this.showNew = value === '__new__';
+                        if (this.showNew) {
+                            $wire.set('category_choice', value);
+                            $wire.set('category_id', '');
+                            $wire.set('creating_category', true);
+                            return;
+                        }
+                        $wire.set('category_choice', value);
+                        $wire.set('category_id', value);
+                        $wire.set('creating_category', false);
+                    }
+                }"
+                x-init="sync(selected)"
+            >
                 <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select wire:model="category_id"
+                <select x-model="selected" @change="sync($event.target.value)"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     <option value="">Select category</option>
                     @foreach($allCategories as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
+                    <option value="__new__">+ Add new category</option>
                 </select>
                 @error('category_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <div class="mt-3 space-y-2" x-cloak x-show="showNew">
+                        <label class="block text-xs font-medium text-gray-600">New category details</label>
+                        <input type="text" wire:model="new_category_name" placeholder="Category name"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        @error('new_category_name') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                        <input type="text" wire:model="new_category_description" placeholder="Short description (optional)"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        @error('new_category_description') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                        <button type="button" wire:click="createCategory"
+                            class="inline-flex items-center px-3 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">
+                            <i class="fas fa-plus mr-2"></i>Create Category
+                        </button>
+                </div>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Primary Host</label>
