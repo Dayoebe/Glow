@@ -27,6 +27,8 @@
     scrolled: false,
     playerOpen: true,
     audioPlaying: false,
+    consentBannerOpen: true,
+    consentChoice: null,
     toggleLive() {
         const audio = this.$refs.liveAudio;
         if (!audio || !audio.src) return;
@@ -44,8 +46,26 @@
         audio.play();
         this.audioPlaying = true;
         this.playerOpen = true;
+    },
+    setConsent(choice) {
+        this.consentChoice = choice;
+        this.consentBannerOpen = false;
+        try {
+            localStorage.setItem('cmp_consent', JSON.stringify({
+                choice,
+                ts: Date.now(),
+            }));
+        } catch (e) {}
     }
 }" x-init="
+    try {
+        const storedConsent = localStorage.getItem('cmp_consent');
+        if (storedConsent) {
+            const parsedConsent = JSON.parse(storedConsent);
+            consentChoice = parsedConsent.choice || null;
+            consentBannerOpen = false;
+        }
+    } catch (e) {}
     window.addEventListener('scroll', () => {
         scrolled = window.pageYOffset > 20
     })
@@ -711,6 +731,36 @@
             {{ session('error') }}
         </div>
     @endif
+
+    <div x-show="consentBannerOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-6" x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-6"
+        class="fixed bottom-4 right-4 left-4 md:left-auto z-50 max-w-2xl bg-white border border-gray-200 shadow-2xl rounded-2xl p-5">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+                <p class="text-sm font-semibold text-gray-900">Consent needed for ads in the EEA, UK, and Switzerland</p>
+                <p class="text-sm text-gray-600 mt-1">
+                    We use a Google-certified consent management platform (CMP) to request your permission for ads and
+                    measurement. Please choose an option to continue.
+                </p>
+                <a href="#" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium mt-2 inline-flex items-center">
+                    Learn more about your choices
+                    <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                </a>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" @click="setConsent('reject')"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-full hover:bg-gray-50 transition-colors">
+                    Reject non-essential
+                </button>
+                <button type="button" @click="setConsent('accept')"
+                    class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors">
+                    Accept all
+                </button>
+            </div>
+        </div>
+    </div>
 
     @livewireScripts
 </body>
