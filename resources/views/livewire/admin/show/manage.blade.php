@@ -31,6 +31,41 @@
                     class="w-full sm:w-64 pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
             </div>
+            @if($view === 'shows')
+                <div class="flex items-center gap-2">
+                    <select wire:model.live="showSort"
+                        class="w-full sm:w-44 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="latest">Newest</option>
+                        <option value="title">Title</option>
+                        <option value="host">Host</option>
+                        <option value="category">Category</option>
+                        <option value="day">Day</option>
+                        <option value="duration">Duration</option>
+                        <option value="featured">Featured</option>
+                    </select>
+                    <select wire:model.live="showSortDirection"
+                        class="w-full sm:w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="asc">Asc</option>
+                        <option value="desc">Desc</option>
+                    </select>
+                </div>
+            @elseif($view === 'schedule')
+                <div class="flex items-center gap-2">
+                    <select wire:model.live="scheduleSort"
+                        class="w-full sm:w-44 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="day">Day</option>
+                        <option value="show">Show</option>
+                        <option value="host">Host</option>
+                        <option value="time">Start Time</option>
+                        <option value="status">Status</option>
+                    </select>
+                    <select wire:model.live="scheduleSortDirection"
+                        class="w-full sm:w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="asc">Asc</option>
+                        <option value="desc">Desc</option>
+                    </select>
+                </div>
+            @endif
             @php
                 $addRoute = route('admin.shows.create');
                 $addLabel = 'Show';

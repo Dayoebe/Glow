@@ -19,6 +19,11 @@ class Manage extends Component
 
     public $view = 'shows'; // shows, oaps, schedule, categories
     public $search = '';
+
+    public $showSort = 'latest';
+    public $showSortDirection = 'desc';
+    public $scheduleSort = 'day';
+    public $scheduleSortDirection = 'asc';
     
     // Modal state
     public $showModal = false;
@@ -74,11 +79,38 @@ class Manage extends Component
     public $segment_duration = 5;
     public $segment_type = 'other';
 
-    protected $queryString = ['view', 'search'];
+    protected $queryString = [
+        'view',
+        'search',
+        'showSort',
+        'showSortDirection',
+        'scheduleSort',
+        'scheduleSortDirection',
+    ];
 
     public function mount($view = 'shows')
     {
         $this->view = $view;
+    }
+
+    public function updatedShowSort()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedShowSortDirection()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedScheduleSort()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedScheduleSortDirection()
+    {
+        $this->resetPage();
     }
 
     public function openModal($type, $id = null)
@@ -436,12 +468,58 @@ class Manage extends Component
 
     public function getShowsProperty()
     {
-        return Show::with(['category', 'primaryHost'])
+        $query = Show::with(['category', 'primaryHost'])
             ->when($this->search, function($q) {
                 $q->where('title', 'like', "%{$this->search}%");
-            })
-            ->latest()
-            ->paginate(12);
+            });
+
+        $direction = $this->showSortDirection === 'asc' ? 'asc' : 'desc';
+        $dayOrderSql = "CASE day_of_week
+            WHEN 'monday' THEN 1
+            WHEN 'tuesday' THEN 2
+            WHEN 'wednesday' THEN 3
+            WHEN 'thursday' THEN 4
+            WHEN 'friday' THEN 5
+            WHEN 'saturday' THEN 6
+            WHEN 'sunday' THEN 7
+            ELSE 8
+        END";
+
+        switch ($this->showSort) {
+            case 'title':
+                $query->orderBy('title', $direction);
+                break;
+            case 'host':
+                $query->leftJoin('oaps', 'oaps.id', '=', 'shows.primary_host_id')
+                    ->select('shows.*')
+                    ->orderBy('oaps.name', $direction);
+                break;
+            case 'category':
+                $query->leftJoin('show_categories', 'show_categories.id', '=', 'shows.category_id')
+                    ->select('shows.*')
+                    ->orderBy('show_categories.name', $direction);
+                break;
+            case 'featured':
+                $query->orderBy('is_featured', $direction)
+                    ->orderBy('title');
+                break;
+            case 'duration':
+                $query->orderBy('typical_duration', $direction)
+                    ->orderBy('title');
+                break;
+            case 'day':
+                $query->addSelect([
+                    'next_day_order' => ScheduleSlot::selectRaw("MIN({$dayOrderSql})")
+                        ->whereColumn('schedule_slots.show_id', 'shows.id'),
+                ])->orderBy('next_day_order', $direction)
+                    ->orderBy('title');
+                break;
+            default:
+                $query->latest();
+                break;
+        }
+
+        return $query->paginate(12);
     }
 
     public function getOapsProperty()
@@ -480,15 +558,50 @@ class Manage extends Component
 
     public function getScheduleSlotsProperty()
     {
-        return ScheduleSlot::with(['show', 'oap'])
+        $query = ScheduleSlot::with(['show', 'oap'])
             ->when($this->search, function ($q) {
                 $q->whereHas('show', function ($show) {
                     $show->where('title', 'like', "%{$this->search}%");
                 });
-            })
-            ->orderBy('day_of_week')
-            ->orderBy('start_time')
-            ->paginate(12);
+            });
+
+        $direction = $this->scheduleSortDirection === 'desc' ? 'desc' : 'asc';
+        $dayOrderSql = "CASE day_of_week
+            WHEN 'monday' THEN 1
+            WHEN 'tuesday' THEN 2
+            WHEN 'wednesday' THEN 3
+            WHEN 'thursday' THEN 4
+            WHEN 'friday' THEN 5
+            WHEN 'saturday' THEN 6
+            WHEN 'sunday' THEN 7
+            ELSE 8
+        END";
+
+        switch ($this->scheduleSort) {
+            case 'show':
+                $query->leftJoin('shows', 'shows.id', '=', 'schedule_slots.show_id')
+                    ->select('schedule_slots.*')
+                    ->orderBy('shows.title', $direction);
+                break;
+            case 'host':
+                $query->leftJoin('oaps', 'oaps.id', '=', 'schedule_slots.oap_id')
+                    ->select('schedule_slots.*')
+                    ->orderBy('oaps.name', $direction);
+                break;
+            case 'time':
+                $query->orderBy('start_time', $direction);
+                break;
+            case 'status':
+                $query->orderBy('status', $direction);
+                break;
+            case 'day':
+            default:
+                $query->orderByRaw("{$dayOrderSql} {$direction}")
+                    ->orderBy('start_time');
+                break;
+        }
+
+        return $query->paginate(12);
     }
 
     public function getSegmentsProperty()
