@@ -82,6 +82,13 @@ class ShowForm extends Component
         }
     }
 
+    public function updatedCoverImage()
+    {
+        $this->resetErrorBag('cover_image');
+        $this->cover_url = '';
+        $this->validateOnly('cover_image');
+    }
+
     public function save()
     {
         $this->validate();
