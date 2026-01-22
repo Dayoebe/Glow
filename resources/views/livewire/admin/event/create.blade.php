@@ -246,15 +246,37 @@
                 <!-- Featured Image -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Featured Image</h3>
-                    <div class="mb-4">
+                    <div class="mb-4"
+                        x-data="{
+                            isUploading: false,
+                            progress: 0,
+                            uploadError: false
+                        }"
+                        x-on:livewire-upload-start="isUploading = true; progress = 0; uploadError = false"
+                        x-on:livewire-upload-finish="isUploading = false; progress = 100"
+                        x-on:livewire-upload-error="isUploading = false; uploadError = true"
+                        x-on:livewire-upload-progress="progress = $event.detail.progress"
+                    >
                         <label class="block text-sm font-medium text-gray-700 mb-2">Upload Image</label>
                         <input type="file" wire:model="featured_image" accept="image/*"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-amber-500 transition-colors">
+                        <p class="mt-1 text-xs text-gray-500">Max size 2MB. JPG, PNG, GIF, WEBP, BMP, SVG.</p>
+                        <div class="mt-2" x-cloak x-show="isUploading">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-amber-600 h-2 rounded-full transition-all duration-200"
+                                    :style="`width: ${progress}%`"></div>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-600">Uploading... <span x-text="progress"></span>%</p>
+                        </div>
+                        <div class="mt-2" x-cloak x-show="uploadError">
+                            <p class="text-xs text-red-600">Upload failed. Try a smaller image or a different format.</p>
+                        </div>
                         @error('featured_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         @if ($featured_image)
                             <div class="mt-3">
                                 <img src="{{ $featured_image->temporaryUrl() }}" class="w-full h-48 object-cover rounded-lg">
                             </div>
+                            <p class="mt-1 text-xs text-amber-600">Upload ready.</p>
                         @endif
                     </div>
                     <div class="text-center text-sm text-gray-500 mb-4">OR</div>

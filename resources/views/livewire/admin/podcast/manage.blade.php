@@ -358,10 +358,31 @@
                                        placeholder="music, entertainment, talk">
                             </div>
 
-                            <div class="md:col-span-2">
+                            <div class="md:col-span-2"
+                                x-data="{
+                                    isUploading: false,
+                                    progress: 0,
+                                    uploadError: false
+                                }"
+                                x-on:livewire-upload-start="isUploading = true; progress = 0; uploadError = false"
+                                x-on:livewire-upload-finish="isUploading = false; progress = 100"
+                                x-on:livewire-upload-error="isUploading = false; uploadError = true"
+                                x-on:livewire-upload-progress="progress = $event.detail.progress"
+                            >
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Cover Image</label>
                                 <input type="file" wire:model="show_cover" accept="image/*"
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <p class="mt-1 text-xs text-gray-500">Max size 5MB. JPG, PNG, GIF, WEBP, BMP, SVG.</p>
+                                <div class="mt-2" x-cloak x-show="isUploading">
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-purple-600 h-2 rounded-full transition-all duration-200"
+                                            :style="`width: ${progress}%`"></div>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-600">Uploading... <span x-text="progress"></span>%</p>
+                                </div>
+                                <div class="mt-2" x-cloak x-show="uploadError">
+                                    <p class="text-xs text-red-600">Upload failed. Try a smaller image or a different format.</p>
+                                </div>
                                 @error('show_cover') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 
                                 @if($show_cover)
@@ -631,10 +652,32 @@
                placeholder="John Doe, Jane Smith">
     </div>
 
-    <div class="md:col-span-2">
+    <div class="md:col-span-2"
+        x-data="{
+            isUploading: false,
+            progress: 0,
+            uploadError: false
+        }"
+        x-on:livewire-upload-start="isUploading = true; progress = 0; uploadError = false"
+        x-on:livewire-upload-finish="isUploading = false; progress = 100"
+        x-on:livewire-upload-error="isUploading = false; uploadError = true"
+        x-on:livewire-upload-progress="progress = $event.detail.progress"
+    >
         <label class="block text-sm font-semibold text-gray-700 mb-2">Episode Cover (optional)</label>
         <input type="file" wire:model="episode_cover" accept="image/*"
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <p class="mt-1 text-xs text-gray-500">Max size 5MB. JPG, PNG, GIF, WEBP, BMP, SVG.</p>
+        <div class="mt-2" x-cloak x-show="isUploading">
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-purple-600 h-2 rounded-full transition-all duration-200"
+                    :style="`width: ${progress}%`"></div>
+            </div>
+            <p class="mt-1 text-xs text-gray-600">Uploading... <span x-text="progress"></span>%</p>
+        </div>
+        <div class="mt-2" x-cloak x-show="uploadError">
+            <p class="text-xs text-red-600">Upload failed. Try a smaller image or a different format.</p>
+        </div>
+        @error('episode_cover') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         
         @if($episode_cover)
         <div class="mt-3">

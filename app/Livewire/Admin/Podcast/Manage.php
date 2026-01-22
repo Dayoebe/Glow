@@ -193,6 +193,24 @@ class Manage extends Component
         return in_array($value, $this->podcastCategoryOptions, true);
     }
 
+    public function updatedShowCover()
+    {
+        $this->resetErrorBag('show_cover');
+        $this->show_cover_url = '';
+        $this->validateOnly('show_cover', [
+            'show_cover' => 'nullable|image|max:5120',
+        ]);
+    }
+
+    public function updatedEpisodeCover()
+    {
+        $this->resetErrorBag('episode_cover');
+        $this->episode_cover_url = '';
+        $this->validateOnly('episode_cover', [
+            'episode_cover' => 'nullable|image|max:5120',
+        ]);
+    }
+
     public function save()
     {
         if ($this->modalType === 'show') {

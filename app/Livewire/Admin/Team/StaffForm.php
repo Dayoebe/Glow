@@ -100,6 +100,13 @@ class StaffForm extends Component
             ->get();
     }
 
+    public function updatedPhotoUpload()
+    {
+        $this->resetErrorBag('photo_upload');
+        $this->photo_url = '';
+        $this->validateOnly('photo_upload');
+    }
+
     public function save()
     {
         $this->validate();

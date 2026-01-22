@@ -109,6 +109,13 @@ class OapForm extends Component
         }
     }
 
+    public function updatedProfilePhotoUpload()
+    {
+        $this->resetErrorBag('profile_photo_upload');
+        $this->profile_photo = '';
+        $this->validateOnly('profile_photo_upload');
+    }
+
     public function save()
     {
         $this->validate();

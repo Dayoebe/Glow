@@ -144,6 +144,13 @@ class EventForm extends Component
         $this->manualSlug = true;
     }
 
+    public function updatedFeaturedImage()
+    {
+        $this->resetErrorBag('featured_image');
+        $this->featured_image_url = '';
+        $this->validateOnly('featured_image');
+    }
+
     public function save($publishNow = false)
     {
         if ($publishNow) {
