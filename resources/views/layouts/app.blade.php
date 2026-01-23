@@ -10,23 +10,62 @@
     
     @php
         $stationSettings = \App\Models\Setting::get('station', []);
-        $defaultMetaImage = data_get($stationSettings, 'logo_url', '');
-        $metaImage = $meta_image ?? $defaultMetaImage;
+        $stationName = data_get($stationSettings, 'name', 'Glow FM');
+        $stationFrequency = data_get($stationSettings, 'frequency', '99.1 MHz');
+        $stationTagline = data_get($stationSettings, 'tagline', 'Your Voice, Your Music');
+        $stationLogoUrl = data_get($stationSettings, 'logo_url', '');
+        if (!empty($stationLogoUrl) && !\Illuminate\Support\Str::startsWith($stationLogoUrl, ['http://', 'https://'])) {
+            $stationLogoUrl = url($stationLogoUrl);
+        }
+        $metaTitle = $meta_title ?? ($title ?? trim($stationName . ' ' . $stationFrequency));
+        $metaDescription = $meta_description ?? ($stationTagline . ' - The heartbeat of the city. Listen to the best music, engaging shows, and stay connected with your community.');
+        $metaImage = $meta_image ?? $stationLogoUrl;
         if (!empty($metaImage) && !\Illuminate\Support\Str::startsWith($metaImage, ['http://', 'https://'])) {
             $metaImage = url($metaImage);
         }
+        $canonicalUrl = $canonical_url ?? request()->url();
+        $metaRobots = $meta_robots ?? 'index, follow';
+        $metaType = $meta_type ?? 'website';
+        $locale = str_replace('-', '_', app()->getLocale());
+        $twitterSite = $twitter_site ?? data_get($stationSettings, 'twitter_handle', '');
     @endphp
-    <meta name="description"
-        content="{{ $meta_description ?? 'Glow FM 99.1 - The heartbeat of the city. Listen to the best music, engaging shows, and stay connected with your community.' }}">
-    <meta property="og:title" content="{{ $meta_title ?? ($title ?? 'Glow FM 99.1') }}">
-    <meta property="og:description" content="{{ $meta_description ?? 'Glow FM 99.1 - The heartbeat of the city.' }}">
+    <meta name="description" content="{{ $metaDescription }}">
+    <meta name="robots" content="{{ $metaRobots }}">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+    <meta property="og:title" content="{{ $metaTitle }}">
+    <meta property="og:description" content="{{ $metaDescription }}">
     <meta property="og:image" content="{{ $metaImage }}">
-    <meta property="og:url" content="{{ request()->url() }}">
-    <meta property="og:type" content="{{ $meta_type ?? 'website' }}">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:type" content="{{ $metaType }}">
+    <meta property="og:site_name" content="{{ $stationName }}">
+    <meta property="og:locale" content="{{ $locale }}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $meta_title ?? ($title ?? 'Glow FM 99.1') }}">
-    <meta name="twitter:description" content="{{ $meta_description ?? 'Glow FM 99.1 - The heartbeat of the city.' }}">
+    <meta name="twitter:title" content="{{ $metaTitle }}">
+    <meta name="twitter:description" content="{{ $metaDescription }}">
     <meta name="twitter:image" content="{{ $metaImage }}">
+    @if (!empty($twitterSite))
+        <meta name="twitter:site" content="{{ $twitterSite }}">
+    @endif
+    @if (!empty($stationLogoUrl))
+        <link rel="icon" href="{{ $stationLogoUrl }}">
+    @endif
+    <script type="application/ld+json">
+        @json([
+            '@context' => 'https://schema.org',
+            '@type' => 'RadioStation',
+            'name' => $stationName,
+            'url' => $canonicalUrl,
+            'logo' => $stationLogoUrl,
+            'slogan' => $stationTagline,
+            'sameAs' => array_values(array_filter([
+                data_get($stationSettings, 'socials.facebook'),
+                data_get($stationSettings, 'socials.x'),
+                data_get($stationSettings, 'socials.twitter'),
+                data_get($stationSettings, 'socials.instagram'),
+                data_get($stationSettings, 'socials.youtube'),
+            ])),
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    </script>
 
     <style>[x-cloak]{display:none!important;}</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -87,10 +126,9 @@
     }
 }" x-init="init()">
     @php
-        $stationSettings = \App\Models\Setting::get('station', []);
-        $stationName = data_get($stationSettings, 'name', 'Glow FM');
-        $stationFrequency = data_get($stationSettings, 'frequency', '99.1 MHz');
-        $stationTagline = data_get($stationSettings, 'tagline', 'Your Voice, Your Music');
+        $stationName = $stationName ?? data_get($stationSettings, 'name', 'Glow FM');
+        $stationFrequency = $stationFrequency ?? data_get($stationSettings, 'frequency', '99.1 MHz');
+        $stationTagline = $stationTagline ?? data_get($stationSettings, 'tagline', 'Your Voice, Your Music');
         $stationPhone = data_get($stationSettings, 'phone', '+1 (234) 567-890');
         $stationEmail = data_get($stationSettings, 'email', 'info@glowfm.com');
         $stationAddress = data_get($stationSettings, 'address', '123 Radio Street, Broadcasting City, BC 12345');
@@ -165,10 +203,15 @@
                 <!-- Logo -->
                 <a href="/" class="flex items-center space-x-3 group">
                     <div class="relative">
-                        <div
-                            class="w-12 h-12 bg-emerald-600 rounded-xl shadow-lg flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
-                            <i class="fas fa-radio text-white text-2xl"></i>
-                        </div>
+                        @if (!empty($stationLogoUrl))
+                            <img src="{{ $stationLogoUrl }}" alt="{{ $stationName }} logo"
+                                class="w-12 h-12 rounded-xl object-contain bg-white shadow-lg p-1 transform group-hover:scale-105 transition-transform duration-300">
+                        @else
+                            <div
+                                class="w-12 h-12 bg-emerald-600 rounded-xl shadow-lg flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
+                                <i class="fas fa-radio text-white text-2xl"></i>
+                            </div>
+                        @endif
                         <div
                             class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse">
                         </div>
@@ -529,9 +572,14 @@
                 <!-- About Section -->
                 <div>
                     <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-12 h-12 bg-emerald-600 rounded-xl shadow-lg flex items-center justify-center">
-                            <i class="fas fa-radio text-white text-2xl"></i>
-                        </div>
+                        @if (!empty($stationLogoUrl))
+                            <img src="{{ $stationLogoUrl }}" alt="{{ $stationName }} logo"
+                                class="w-12 h-12 rounded-xl object-contain bg-white shadow-lg p-1">
+                        @else
+                            <div class="w-12 h-12 bg-emerald-600 rounded-xl shadow-lg flex items-center justify-center">
+                                <i class="fas fa-radio text-white text-2xl"></i>
+                            </div>
+                        @endif
                         <div>
                             <h3 class="text-xl font-bold">{{ $stationName }}</h3>
                             <p class="text-sm text-emerald-400">{{ $stationFrequency }}</p>
