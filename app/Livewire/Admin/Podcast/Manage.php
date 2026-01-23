@@ -509,8 +509,8 @@ class Manage extends Component
             return true;
         }
 
-        $approverId = Setting::get('system.content_approver_id');
-        return $approverId && $user->staffMember && $user->staffMember->id === (int) $approverId;
+        $approverIds = Setting::get('content_approvers.ids', []);
+        return $user->staffMember && in_array($user->staffMember->id, $approverIds, true);
     }
 
     public function closeModal()

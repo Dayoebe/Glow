@@ -355,6 +355,12 @@ return [
         'group' => 'Administrative Stuff',
         'items' => [
             [
+                'title' => 'Content Approvers',
+                'icon' => 'fas fa-user-check',
+                'route' => 'admin.approvals',
+                'active' => 'admin.approvals'
+            ],
+            [
                 'title' => 'Jingles & Ads',
                 'icon' => 'fas fa-bullhorn',
                 'route' => 'admin.ads.index',

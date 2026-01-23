@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Admin\Settings;
 
-use App\Models\Staff\StaffMember;
 use App\Models\Setting;
 use Livewire\Component;
 
@@ -13,8 +12,6 @@ class SystemSettings extends Component
     public $support_email = '';
     public $analytics_id = '';
     public $timezone = '';
-    public $content_approver_id = '';
-    public $staffMembers = [];
 
     public function mount()
     {
@@ -24,7 +21,6 @@ class SystemSettings extends Component
             'support_email' => 'support@glowfm.com',
             'analytics_id' => '',
             'timezone' => config('app.timezone', 'UTC'),
-            'content_approver_id' => null,
         ];
 
         $settings = Setting::get('system', []);
@@ -35,12 +31,6 @@ class SystemSettings extends Component
         $this->support_email = $data['support_email'];
         $this->analytics_id = $data['analytics_id'];
         $this->timezone = $data['timezone'];
-        $this->content_approver_id = $data['content_approver_id'];
-
-        $this->staffMembers = StaffMember::query()
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
     }
 
     public function save()
@@ -51,7 +41,6 @@ class SystemSettings extends Component
             'support_email' => $this->support_email,
             'analytics_id' => $this->analytics_id,
             'timezone' => $this->timezone,
-            'content_approver_id' => $this->content_approver_id ?: null,
         ], 'system');
 
         session()->flash('success', 'System settings updated successfully.');

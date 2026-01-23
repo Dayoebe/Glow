@@ -59,6 +59,7 @@ use App\Livewire\Admin\Users\Index as AdminUsersIndex;
 use App\Livewire\Admin\Users\Form as AdminUsersForm;
 use App\Livewire\Admin\Ads\Index as AdminAdsIndex;
 use App\Livewire\Admin\Ads\Form as AdminAdsForm;
+use App\Livewire\Admin\Approvals\ApproverSettings;
 
 use App\Livewire\Admin\Show\Manage as ShowManage;
 use App\Livewire\Admin\Show\ShowForm as AdminShowForm;
@@ -262,6 +263,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/website', AdminWebsiteSettings::class)->name('website');
         Route::get('/system', AdminSystemSettings::class)->name('system');
     });
+
+    Route::get('/admin/approvals', ApproverSettings::class)->name('admin.approvals');
 
     Route::prefix('admin/team')->name('admin.team.')->group(function () {
         Route::get('/oaps', AdminOaps::class)->name('oaps');
