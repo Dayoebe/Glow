@@ -67,6 +67,7 @@ use App\Livewire\Admin\Show\CategoryForm as AdminShowCategoryForm;
 use App\Livewire\Admin\Show\ScheduleForm as AdminShowScheduleForm;
 use App\Livewire\Admin\Show\SegmentForm as AdminShowSegmentForm;
 use App\Livewire\Admin\Show\OapForm as AdminShowOapForm;
+use App\Livewire\Admin\Show\Reviews as AdminShowReviews;
 
 // Public Routes
 Route::get('/', HomePage::class)->name('home');
@@ -244,6 +245,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', ShowManage::class)->name('index');
         Route::get('/create', AdminShowForm::class)->name('create');
         Route::get('/{showId}/edit', AdminShowForm::class)->name('edit');
+        Route::get('/reviews', AdminShowReviews::class)->name('reviews');
         Route::get('/oaps', ShowManage::class)->name('oaps')->defaults('view', 'oaps');
         Route::get('/oaps/create', AdminShowOapForm::class)->name('oaps.create');
         Route::get('/oaps/{oapId}/edit', AdminShowOapForm::class)->name('oaps.edit');

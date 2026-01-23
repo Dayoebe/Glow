@@ -195,6 +195,11 @@ return [
                         'active' => 'admin.shows.segments'
                     ],
                     [
+                        'title' => 'Reviews',
+                        'route' => 'admin.shows.reviews',
+                        'active' => 'admin.shows.reviews'
+                    ],
+                    [
                         'title' => 'Show Categories',
                         'route' => 'admin.shows.categories',
                         'active' => 'admin.shows.categories'

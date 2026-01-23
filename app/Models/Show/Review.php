@@ -12,7 +12,7 @@ class Review extends Model
 
     protected $table = 'show_reviews';
 
-    protected $fillable = ['show_id', 'user_id', 'rating', 'review', 'is_approved'];
+    protected $fillable = ['show_id', 'user_id', 'device_hash', 'rating', 'review', 'is_approved'];
 
     protected $casts = ['is_approved' => 'boolean'];
 

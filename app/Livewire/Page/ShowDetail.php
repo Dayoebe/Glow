@@ -5,6 +5,7 @@ namespace App\Livewire\Page;
 use App\Models\Show\Show;
 use App\Models\Show\Review;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cookie;
 use Livewire\Component;
 
 class ShowDetail extends Component
@@ -20,6 +21,7 @@ class ShowDetail extends Component
             ->where('slug', $slug)
             ->firstOrFail();
 
+        $this->ensureDeviceId();
         $this->loadUserReview();
     }
 
@@ -34,18 +36,42 @@ class ShowDetail extends Component
 
     private function loadUserReview(): void
     {
-        if (!auth()->check()) {
-            return;
+        $deviceHash = $this->getDeviceHash();
+        $existing = null;
+
+        if ($deviceHash) {
+            $existing = Review::where('show_id', $this->show->id)
+                ->where('device_hash', $deviceHash)
+                ->first();
         }
 
-        $existing = Review::where('show_id', $this->show->id)
-            ->where('user_id', auth()->id())
-            ->first();
+        if (!$existing && auth()->check()) {
+            $existing = Review::where('show_id', $this->show->id)
+                ->where('user_id', auth()->id())
+                ->first();
+        }
 
         if ($existing) {
             $this->rating = $existing->rating;
             $this->review = $existing->review ?? '';
         }
+    }
+
+    private function ensureDeviceId(): void
+    {
+        if (!request()->cookie('device_id')) {
+            Cookie::queue('device_id', (string) Str::uuid(), 60 * 24 * 365);
+        }
+    }
+
+    private function getDeviceHash(): ?string
+    {
+        $deviceId = request()->cookie('device_id');
+        if (!$deviceId) {
+            return null;
+        }
+
+        return hash('sha256', $deviceId);
     }
 
     public function submitReview()
@@ -55,29 +81,38 @@ class ShowDetail extends Component
             'review' => 'nullable|string|max:1000',
         ]);
 
-        if (auth()->check()) {
-            Review::updateOrCreate(
-                [
-                    'show_id' => $this->show->id,
-                    'user_id' => auth()->id(),
-                ],
-                [
-                    'rating' => $this->rating,
-                    'review' => $this->review ?: null,
-                    'is_approved' => true,
-                ]
-            );
-        } else {
-            Review::create([
-                'show_id' => $this->show->id,
-                'user_id' => null,
-                'rating' => $this->rating,
-                'review' => $this->review ?: null,
-                'is_approved' => true,
-            ]);
+        $deviceHash = $this->getDeviceHash();
+
+        $existingByDevice = $deviceHash
+            ? Review::where('show_id', $this->show->id)->where('device_hash', $deviceHash)->exists()
+            : false;
+
+        if ($existingByDevice) {
+            session()->flash('error', 'You have already rated this show on this device.');
+            return;
         }
 
-        $averageRating = $this->show->reviews()->avg('rating');
+        if (auth()->check()) {
+            $existingByUser = Review::where('show_id', $this->show->id)
+                ->where('user_id', auth()->id())
+                ->exists();
+
+            if ($existingByUser) {
+                session()->flash('error', 'You have already rated this show.');
+                return;
+            }
+        }
+
+        Review::create([
+            'show_id' => $this->show->id,
+            'user_id' => auth()->id(),
+            'device_hash' => $deviceHash,
+            'rating' => $this->rating,
+            'review' => $this->review ?: null,
+            'is_approved' => true,
+        ]);
+
+        $averageRating = $this->show->reviews()->approved()->avg('rating');
         $this->show->average_rating = $averageRating ?: 0;
         $this->show->save();
 
@@ -89,7 +124,7 @@ class ShowDetail extends Component
     {
         return view('livewire.page.show-detail', [
             'upcomingSlots' => $this->upcomingSlots,
-            'reviews' => $this->show->reviews()->latest()->with('user')->get(),
+            'reviews' => $this->show->reviews()->approved()->latest()->with('user')->get(),
         ])->layout('layouts.app', [
             'title' => $this->show->title . ' - Glow FM',
             'meta_title' => $this->show->title . ' - Glow FM',
