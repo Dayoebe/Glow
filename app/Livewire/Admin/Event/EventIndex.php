@@ -18,10 +18,9 @@ class EventIndex extends Component
     public $filterStatus = '';
     public $showDeleteModal = false;
     public $eventToDelete = null;
-    public $showApprovalModal = false;
-    public $approvalTargetId = null;
     public $approvalAction = '';
     public $approvalReason = '';
+    public $approvalFormId = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -91,44 +90,58 @@ class EventIndex extends Component
         }
     }
 
-    public function openApprovalModal($eventId, $action)
+    public function startApproval($eventId, $action)
     {
         if (!$this->canReview()) {
             session()->flash('error', 'You do not have permission to review content.');
             return;
         }
 
-        $this->approvalTargetId = $eventId;
+        if ($action === 'approved') {
+            $this->applyApproval($eventId, $action);
+            return;
+        }
+
+        $this->approvalFormId = $eventId;
         $this->approvalAction = $action;
         $this->approvalReason = '';
-        $this->showApprovalModal = true;
     }
 
-    public function submitApproval()
+    public function submitApprovalForm()
     {
-        if (!$this->canReview() || !$this->approvalTargetId) {
+        if (!$this->canReview() || !$this->approvalFormId) {
             session()->flash('error', 'Unable to update approval status.');
             return;
         }
 
-        $requiresReason = in_array($this->approvalAction, ['flagged', 'rejected'], true);
-
         $this->validate([
-            'approvalReason' => $requiresReason ? 'required|min:5|max:1000' : 'nullable|max:1000',
+            'approvalReason' => 'required|min:5|max:1000',
         ]);
 
-        $event = Event::find($this->approvalTargetId);
+        $this->applyApproval($this->approvalFormId, $this->approvalAction, $this->approvalReason);
+    }
+
+    public function cancelApprovalForm()
+    {
+        $this->approvalFormId = null;
+        $this->approvalAction = '';
+        $this->approvalReason = '';
+    }
+
+    private function applyApproval(int $eventId, string $action, ?string $reason = null): void
+    {
+        $event = Event::find($eventId);
         if (!$event) {
             session()->flash('error', 'Event not found.');
             return;
         }
 
-        $event->approval_status = $this->approvalAction;
-        $event->approval_reason = $this->approvalReason ?: null;
+        $event->approval_status = $action;
+        $event->approval_reason = $reason ?: null;
         $event->reviewed_by = auth()->id();
         $event->reviewed_at = now();
 
-        if (in_array($this->approvalAction, ['flagged', 'rejected'], true)) {
+        if (in_array($action, ['flagged', 'rejected'], true)) {
             $event->is_published = false;
             $event->published_at = null;
         } elseif ($event->is_published && !$event->published_at) {
@@ -141,13 +154,12 @@ class EventIndex extends Component
             $event->author->notify(new ContentApprovalUpdated(
                 'event',
                 $event->title,
-                $this->approvalAction,
-                $this->approvalReason ?: null
+                $action,
+                $reason ?: null
             ));
         }
 
-        $this->showApprovalModal = false;
-        $this->approvalTargetId = null;
+        $this->approvalFormId = null;
         $this->approvalReason = '';
         $this->approvalAction = '';
 

@@ -26,10 +26,9 @@ class Manage extends Component
     public $modalType = 'show';
     public $editMode = false;
     public $itemId = null;
-    public $showApprovalModal = false;
-    public $approvalTargetId = null;
     public $approvalAction = '';
     public $approvalReason = '';
+    public $approvalFormId = null;
 
     // Show form
     public $show_title = '';
@@ -422,44 +421,58 @@ class Manage extends Component
         }
     }
 
-    public function openApprovalModal($episodeId, $action)
+    public function startApproval($episodeId, $action)
     {
         if (!$this->canReview()) {
             session()->flash('error', 'You do not have permission to review content.');
             return;
         }
 
-        $this->approvalTargetId = $episodeId;
+        if ($action === 'approved') {
+            $this->applyApproval($episodeId, $action);
+            return;
+        }
+
+        $this->approvalFormId = $episodeId;
         $this->approvalAction = $action;
         $this->approvalReason = '';
-        $this->showApprovalModal = true;
     }
 
-    public function submitApproval()
+    public function submitApprovalForm()
     {
-        if (!$this->canReview() || !$this->approvalTargetId) {
+        if (!$this->canReview() || !$this->approvalFormId) {
             session()->flash('error', 'Unable to update approval status.');
             return;
         }
 
-        $requiresReason = in_array($this->approvalAction, ['flagged', 'rejected'], true);
-
         $this->validate([
-            'approvalReason' => $requiresReason ? 'required|min:5|max:1000' : 'nullable|max:1000',
+            'approvalReason' => 'required|min:5|max:1000',
         ]);
 
-        $episode = Episode::with('show.host')->find($this->approvalTargetId);
+        $this->applyApproval($this->approvalFormId, $this->approvalAction, $this->approvalReason);
+    }
+
+    public function cancelApprovalForm()
+    {
+        $this->approvalFormId = null;
+        $this->approvalAction = '';
+        $this->approvalReason = '';
+    }
+
+    private function applyApproval(int $episodeId, string $action, ?string $reason = null): void
+    {
+        $episode = Episode::with('show.host')->find($episodeId);
         if (!$episode) {
             session()->flash('error', 'Episode not found.');
             return;
         }
 
-        $episode->approval_status = $this->approvalAction;
-        $episode->approval_reason = $this->approvalReason ?: null;
+        $episode->approval_status = $action;
+        $episode->approval_reason = $reason ?: null;
         $episode->reviewed_by = auth()->id();
         $episode->reviewed_at = now();
 
-        if (in_array($this->approvalAction, ['flagged', 'rejected'], true)) {
+        if (in_array($action, ['flagged', 'rejected'], true)) {
             $episode->status = 'draft';
             $episode->published_at = null;
         } elseif ($episode->status === 'published' && !$episode->published_at) {
@@ -473,13 +486,12 @@ class Manage extends Component
             $host->notify(new ContentApprovalUpdated(
                 'podcast episode',
                 $episode->title,
-                $this->approvalAction,
-                $this->approvalReason ?: null
+                $action,
+                $reason ?: null
             ));
         }
 
-        $this->showApprovalModal = false;
-        $this->approvalTargetId = null;
+        $this->approvalFormId = null;
         $this->approvalReason = '';
         $this->approvalAction = '';
 

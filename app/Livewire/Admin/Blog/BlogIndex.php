@@ -18,10 +18,9 @@ class BlogIndex extends Component
     public $filterStatus = '';
     public $showDeleteModal = false;
     public $postToDelete = null;
-    public $showApprovalModal = false;
-    public $approvalTargetId = null;
     public $approvalAction = '';
     public $approvalReason = '';
+    public $approvalFormId = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -92,44 +91,58 @@ class BlogIndex extends Component
         }
     }
 
-    public function openApprovalModal($postId, $action)
+    public function startApproval($postId, $action)
     {
         if (!$this->canReview()) {
             session()->flash('error', 'You do not have permission to review content.');
             return;
         }
 
-        $this->approvalTargetId = $postId;
+        if ($action === 'approved') {
+            $this->applyApproval($postId, $action);
+            return;
+        }
+
+        $this->approvalFormId = $postId;
         $this->approvalAction = $action;
         $this->approvalReason = '';
-        $this->showApprovalModal = true;
     }
 
-    public function submitApproval()
+    public function submitApprovalForm()
     {
-        if (!$this->canReview() || !$this->approvalTargetId) {
+        if (!$this->canReview() || !$this->approvalFormId) {
             session()->flash('error', 'Unable to update approval status.');
             return;
         }
 
-        $requiresReason = in_array($this->approvalAction, ['flagged', 'rejected'], true);
-
         $this->validate([
-            'approvalReason' => $requiresReason ? 'required|min:5|max:1000' : 'nullable|max:1000',
+            'approvalReason' => 'required|min:5|max:1000',
         ]);
 
-        $post = Post::find($this->approvalTargetId);
+        $this->applyApproval($this->approvalFormId, $this->approvalAction, $this->approvalReason);
+    }
+
+    public function cancelApprovalForm()
+    {
+        $this->approvalFormId = null;
+        $this->approvalAction = '';
+        $this->approvalReason = '';
+    }
+
+    private function applyApproval(int $postId, string $action, ?string $reason = null): void
+    {
+        $post = Post::find($postId);
         if (!$post) {
             session()->flash('error', 'Post not found.');
             return;
         }
 
-        $post->approval_status = $this->approvalAction;
-        $post->approval_reason = $this->approvalReason ?: null;
+        $post->approval_status = $action;
+        $post->approval_reason = $reason ?: null;
         $post->reviewed_by = auth()->id();
         $post->reviewed_at = now();
 
-        if (in_array($this->approvalAction, ['flagged', 'rejected'], true)) {
+        if (in_array($action, ['flagged', 'rejected'], true)) {
             $post->is_published = false;
             $post->published_at = null;
         } elseif ($post->is_published && !$post->published_at) {
@@ -142,13 +155,12 @@ class BlogIndex extends Component
             $post->author->notify(new ContentApprovalUpdated(
                 'blog post',
                 $post->title,
-                $this->approvalAction,
-                $this->approvalReason ?: null
+                $action,
+                $reason ?: null
             ));
         }
 
-        $this->showApprovalModal = false;
-        $this->approvalTargetId = null;
+        $this->approvalFormId = null;
         $this->approvalReason = '';
         $this->approvalAction = '';
 

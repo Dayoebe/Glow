@@ -16,10 +16,9 @@ class NewsIndex extends Component
     public $search = '';
     public $filterCategory = '';
     public $filterStatus = '';
-    public $showApprovalModal = false;
-    public $approvalTargetId = null;
     public $approvalAction = '';
     public $approvalReason = '';
+    public $approvalFormId = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -79,44 +78,58 @@ class NewsIndex extends Component
         }
     }
 
-    public function openApprovalModal($newsId, $action)
+    public function startApproval($newsId, $action)
     {
         if (!$this->canReview()) {
             session()->flash('error', 'You do not have permission to review content.');
             return;
         }
 
-        $this->approvalTargetId = $newsId;
+        if ($action === 'approved') {
+            $this->applyApproval($newsId, $action);
+            return;
+        }
+
+        $this->approvalFormId = $newsId;
         $this->approvalAction = $action;
         $this->approvalReason = '';
-        $this->showApprovalModal = true;
     }
 
-    public function submitApproval()
+    public function submitApprovalForm()
     {
-        if (!$this->canReview() || !$this->approvalTargetId) {
+        if (!$this->canReview() || !$this->approvalFormId) {
             session()->flash('error', 'Unable to update approval status.');
             return;
         }
 
-        $requiresReason = in_array($this->approvalAction, ['flagged', 'rejected'], true);
-
         $this->validate([
-            'approvalReason' => $requiresReason ? 'required|min:5|max:1000' : 'nullable|max:1000',
+            'approvalReason' => 'required|min:5|max:1000',
         ]);
 
-        $news = News::find($this->approvalTargetId);
+        $this->applyApproval($this->approvalFormId, $this->approvalAction, $this->approvalReason);
+    }
+
+    public function cancelApprovalForm()
+    {
+        $this->approvalFormId = null;
+        $this->approvalAction = '';
+        $this->approvalReason = '';
+    }
+
+    private function applyApproval(int $newsId, string $action, ?string $reason = null): void
+    {
+        $news = News::find($newsId);
         if (!$news) {
             session()->flash('error', 'Article not found.');
             return;
         }
 
-        $news->approval_status = $this->approvalAction;
-        $news->approval_reason = $this->approvalReason ?: null;
+        $news->approval_status = $action;
+        $news->approval_reason = $reason ?: null;
         $news->reviewed_by = auth()->id();
         $news->reviewed_at = now();
 
-        if (in_array($this->approvalAction, ['flagged', 'rejected'], true)) {
+        if (in_array($action, ['flagged', 'rejected'], true)) {
             $news->is_published = false;
             $news->published_at = null;
         } elseif ($news->is_published && !$news->published_at) {
@@ -129,13 +142,12 @@ class NewsIndex extends Component
             $news->author->notify(new ContentApprovalUpdated(
                 'news article',
                 $news->title,
-                $this->approvalAction,
-                $this->approvalReason ?: null
+                $action,
+                $reason ?: null
             ));
         }
 
-        $this->showApprovalModal = false;
-        $this->approvalTargetId = null;
+        $this->approvalFormId = null;
         $this->approvalReason = '';
         $this->approvalAction = '';
 
