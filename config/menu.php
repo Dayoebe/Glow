@@ -53,7 +53,7 @@ return [
                         'active' => 'admin.news.create'
                     ],
                     [
-                        'title' => 'Categories',
+                        'title' => 'Add Categories',
                         'route' => 'admin.news.categories',
                         'active' => 'admin.news.categories'
                     ],
