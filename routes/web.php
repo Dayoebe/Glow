@@ -101,6 +101,39 @@ Route::get('/news/{slug}', NewsDetail::class)->name('news.show');
 Route::get('/events', EventPage::class)->name('events.index');
 Route::get('/events/{slug}', EventDetail::class)->name('events.show');
 
+Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::get('/download-database', function () {
+    $dbName = config('database.connections.mysql.database');
+    $dbUser = config('database.connections.mysql.username');
+    $dbPass = config('database.connections.mysql.password');
+    $dbHost = config('database.connections.mysql.host');
+
+    $fileName = $dbName . '_' . now()->format('Y_m_d_His') . '.sql';
+    $filePath = storage_path('app/' . $fileName);
+
+    $mysqldumpPath = env('MYSQLDUMP_PATH', 'mysqldump');
+
+    $command = [
+        $mysqldumpPath,
+        "-h{$dbHost}",
+        "-u{$dbUser}",
+        "--password={$dbPass}",
+        $dbName
+    ];
+
+    $process = new Process($command);
+    $process->run(function ($type, $buffer) use ($filePath) {
+        file_put_contents($filePath, $buffer, FILE_APPEND);
+    });
+
+    if (!$process->isSuccessful()) {
+        throw new ProcessFailedException($process);
+    }
+
+    return response()->download($filePath)->deleteFileAfterSend(true);
+});
+});
+
 
 // Guest Routes (only accessible when not logged in)
 Route::middleware('guest')->group(function () {
@@ -313,39 +346,6 @@ Route::middleware(['auth', 'role:admin|staff'])->group(function () {
 
 
 
-
-Route::get('/download-database', function () {
-
-    $dbName = config('database.connections.mysql.database');
-    $dbUser = config('database.connections.mysql.username');
-    $dbPass = config('database.connections.mysql.password');
-    $dbHost = config('database.connections.mysql.host');
-
-    $fileName = $dbName . '_' . now()->format('Y_m_d_His') . '.sql';
-    $filePath = storage_path('app/' . $fileName);
-
-    // XAMPP mysqldump path
-    $mysqldumpPath = '/opt/lampp/bin/mysqldump';
-
-    $command = [
-        $mysqldumpPath,
-        "-h{$dbHost}",
-        "-u{$dbUser}",
-        "--password={$dbPass}",
-        $dbName
-    ];
-
-    $process = new Process($command);
-    $process->run(function ($type, $buffer) use ($filePath) {
-        file_put_contents($filePath, $buffer, FILE_APPEND);
-    });
-
-    if (!$process->isSuccessful()) {
-        throw new ProcessFailedException($process);
-    }
-
-    return response()->download($filePath)->deleteFileAfterSend(true);
-});
 
     });
 });
