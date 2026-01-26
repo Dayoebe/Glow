@@ -48,11 +48,6 @@ return [
                         'active' => 'admin.news.index'
                     ],
                     [
-                        'title' => 'Analytics',
-                        'route' => 'admin.news.analytics',
-                        'active' => 'admin.news.analytics'
-                    ],
-                    [
                         'title' => 'Add News',
                         'route' => 'admin.news.create',
                         'active' => 'admin.news.create'
@@ -61,6 +56,11 @@ return [
                         'title' => 'Categories',
                         'route' => 'admin.news.categories',
                         'active' => 'admin.news.categories'
+                    ],
+                    [
+                        'title' => 'News Analytics',
+                        'route' => 'admin.news.analytics',
+                        'active' => 'admin.news.analytics'
                     ],
                 ]
             ],
@@ -92,7 +92,7 @@ return [
                     ],
                 ]
             ],
-           [
+            [
                 'title' => 'Podcasts',
                 'icon' => 'fas fa-podcast',
                 'route' => 'admin.podcasts.manage',
@@ -140,7 +140,7 @@ return [
             ],
         ]
     ],
-     [
+    [
         'group' => 'Community',
         'roles' => ['admin', 'staff'],
         'items' => [
@@ -300,7 +300,7 @@ return [
             ],
         ]
     ],
-   
+
     [
         'group' => 'Administrative Stuff',
         'roles' => ['admin'],
@@ -311,7 +311,7 @@ return [
                 'route' => 'admin.approvals',
                 'active' => 'admin.approvals'
             ],
-            
+
             [
                 'title' => 'Jingles & Ads',
                 'icon' => 'fas fa-bullhorn',
@@ -399,7 +399,7 @@ return [
                     ],
                 ]
             ],
-         
+
             [
                 'title' => 'Email Campaigns',
                 'icon' => 'fas fa-envelope',
@@ -411,7 +411,7 @@ return [
                         'route' => 'admin.newsletter.subscribers',
                         'active' => 'admin.newsletter.subscribers'
                     ],
-    
+
                 ]
             ],
             [
