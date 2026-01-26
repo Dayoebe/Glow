@@ -101,7 +101,7 @@ Route::get('/news/{slug}', NewsDetail::class)->name('news.show');
 Route::get('/events', EventPage::class)->name('events.index');
 Route::get('/events/{slug}', EventDetail::class)->name('events.show');
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
 Route::get('/download-database', function () {
     $dbName = config('database.connections.mysql.database');
     $dbUser = config('database.connections.mysql.username');
