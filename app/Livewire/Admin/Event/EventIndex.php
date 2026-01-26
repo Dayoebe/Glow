@@ -166,7 +166,7 @@ class EventIndex extends Component
         session()->flash('success', 'Approval status updated successfully.');
     }
 
-    private function canReview(): bool
+    public function canReview(): bool
     {
         $user = auth()->user();
         if (!$user) {

@@ -131,6 +131,9 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
+                    @php
+                        $canReview = $this->canReview();
+                    @endphp
                     @forelse($events as $event)
                         <tr class="hover:bg-gray-50 transition-colors duration-150">
                             <td class="px-6 py-4">
@@ -198,35 +201,47 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex items-center justify-end space-x-2">
-                                    <a href="{{ route('admin.events.preview', $event->slug) }}" target="_blank"
-                                        class="text-blue-600 hover:text-blue-900" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button wire:click="startApproval({{ $event->id }}, 'approved')"
-                                        class="text-emerald-600 hover:text-emerald-900" title="Approve">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button wire:click="startApproval({{ $event->id }}, 'flagged')"
-                                        class="text-amber-600 hover:text-amber-900" title="Flag">
-                                        <i class="fas fa-flag"></i>
-                                    </button>
-                                    <button wire:click="startApproval({{ $event->id }}, 'rejected')"
-                                        class="text-red-600 hover:text-red-900" title="Reject">
-                                        <i class="fas fa-times-circle"></i>
-                                    </button>
-                                    <a href="{{ route('admin.events.edit', $event->id) }}"
-                                        class="text-amber-600 hover:text-amber-900" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button wire:click="toggleFeatured({{ $event->id }})"
-                                        class="text-purple-600 hover:text-purple-900" title="Toggle Featured">
-                                        <i class="fas fa-star"></i>
-                                    </button>
-                                    <button wire:click="confirmDelete({{ $event->id }})"
-                                        class="text-red-600 hover:text-red-900" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                <div class="flex items-center justify-end">
+                                    <div class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50">
+                                        <div class="flex items-center gap-2 px-2 py-1">
+                                            <a href="{{ route('admin.events.preview', $event->slug) }}" target="_blank"
+                                                class="text-blue-600 hover:text-blue-900" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                        @if($canReview)
+                                            <span class="mx-1 h-4 w-px bg-gray-200"></span>
+                                            <div class="flex items-center gap-2 px-2 py-1">
+                                                <button wire:click="startApproval({{ $event->id }}, 'approved')"
+                                                    class="text-emerald-600 hover:text-emerald-900" title="Approve">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button wire:click="startApproval({{ $event->id }}, 'flagged')"
+                                                    class="text-amber-600 hover:text-amber-900" title="Flag">
+                                                    <i class="fas fa-flag"></i>
+                                                </button>
+                                                <button wire:click="startApproval({{ $event->id }}, 'rejected')"
+                                                    class="text-red-600 hover:text-red-900" title="Reject">
+                                                    <i class="fas fa-times-circle"></i>
+                                                </button>
+                                            </div>
+                                        @endif
+                                        <span class="mx-1 h-4 w-px bg-gray-200"></span>
+                                        <div class="flex items-center gap-2 px-2 py-1">
+                                            <a href="{{ route('admin.events.edit', $event->id) }}"
+                                                class="text-amber-600 hover:text-amber-900" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button wire:click="toggleFeatured({{ $event->id }})"
+                                                class="text-purple-600 hover:text-purple-900" title="Toggle Featured">
+                                                <i class="fas fa-star"></i>
+                                            </button>
+                                            <button wire:click="confirmDelete({{ $event->id }})"
+                                                class="text-red-600 hover:text-red-900" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
