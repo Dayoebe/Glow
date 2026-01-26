@@ -12,6 +12,7 @@ class NewsDetail extends Component
     public $comment = '';
     public $userReactions = [];
     public $isBookmarked = false;
+    public $shareUrl = '';
 
     public function mount($slug)
     {
@@ -21,6 +22,7 @@ class NewsDetail extends Component
             ->firstOrFail();
 
         $this->news->incrementViews(request()->ip(), auth()->id());
+        $this->shareUrl = route('news.show', $this->news->slug);
 
         if (auth()->check()) {
             $this->loadUserInteractions();
@@ -98,7 +100,7 @@ class NewsDetail extends Component
     {
         $this->news->trackShare($platform);
         
-        $rawUrl = url()->current();
+        $rawUrl = $this->shareUrl ?: url()->current();
         $url = urlencode($rawUrl);
         $title = $this->news->title;
         $excerpt = trim($this->news->excerpt ?? '');
@@ -150,6 +152,7 @@ class NewsDetail extends Component
             'meta_title' => $this->news->title . ' - Glow FM News',
             'meta_description' => $excerpt,
             'meta_image' => $this->news->featured_image,
+            'canonical_url' => $this->shareUrl ?: request()->url(),
         ]);
     }
 }
