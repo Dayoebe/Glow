@@ -24,21 +24,6 @@ return [
                 'active' => 'admin.comms.analytics',
                 'children' => [
                     [
-                        'title' => 'Listener Statistics',
-                        'route' => '#',
-                        'active' => 'analytics.listeners'
-                    ],
-                    [
-                        'title' => 'Show Performance',
-                        'route' => '#',
-                        'active' => 'analytics.shows'
-                    ],
-                    [
-                        'title' => 'Content Reports',
-                        'route' => '#',
-                        'active' => 'analytics.content'
-                    ],
-                    [
                         'title' => 'Comms Analytics',
                         'route' => 'admin.comms.analytics',
                         'active' => 'admin.comms.analytics'
@@ -61,6 +46,11 @@ return [
                         'title' => 'All News',
                         'route' => 'admin.news.index',
                         'active' => 'admin.news.index'
+                    ],
+                    [
+                        'title' => 'Analytics',
+                        'route' => 'admin.news.analytics',
+                        'active' => 'admin.news.analytics'
                     ],
                     [
                         'title' => 'Add News',
@@ -268,11 +258,6 @@ return [
                         'route' => 'admin.stream',
                         'active' => 'admin.stream'
                     ],
-                    [
-                        'title' => 'Backup Streams',
-                        'route' => '#',
-                        'active' => 'stream.backup'
-                    ],
                 ]
             ],
             [
@@ -310,57 +295,6 @@ return [
                         'title' => 'Show Categories',
                         'route' => 'admin.shows.categories',
                         'active' => 'admin.shows.categories'
-                    ],
-                ]
-            ],
-            [
-                'title' => 'Playlists',
-                'icon' => 'fas fa-list-music',
-                'route' => '#',
-                'active' => 'playlists*',
-                'children' => [
-                    [
-                        'title' => 'All Playlists',
-                        'route' => '#',
-                        'active' => 'playlists.index'
-                    ],
-                    [
-                        'title' => 'Create Playlist',
-                        'route' => '#',
-                        'active' => 'playlists.create'
-                    ],
-                    [
-                        'title' => 'Auto DJ Settings',
-                        'route' => '#',
-                        'active' => 'playlists.autodj'
-                    ],
-                ]
-            ],
-            [
-                'title' => 'Music Library',
-                'icon' => 'fas fa-compact-disc',
-                'route' => '#',
-                'active' => 'music*',
-                'children' => [
-                    [
-                        'title' => 'All Tracks',
-                        'route' => '#',
-                        'active' => 'music.index'
-                    ],
-                    [
-                        'title' => 'Upload Music',
-                        'route' => '#',
-                        'active' => 'music.upload'
-                    ],
-                    [
-                        'title' => 'Genres',
-                        'route' => '#',
-                        'active' => 'music.genres'
-                    ],
-                    [
-                        'title' => 'Artists',
-                        'route' => '#',
-                        'active' => 'music.artists'
                     ],
                 ]
             ],
@@ -473,20 +407,11 @@ return [
                 'active' => 'admin.newsletter.*',
                 'children' => [
                     [
-                        'title' => 'Campaigns',
-                        'route' => '#',
-                        'active' => 'email.campaigns'
-                    ],
-                    [
                         'title' => 'Subscribers',
                         'route' => 'admin.newsletter.subscribers',
                         'active' => 'admin.newsletter.subscribers'
                     ],
-                    [
-                        'title' => 'Templates',
-                        'route' => '#',
-                        'active' => 'email.templates'
-                    ],
+    
                 ]
             ],
             [
