@@ -136,6 +136,8 @@
         $stationStreamUrl = data_get($stationSettings, 'stream_url', 'https://stream-176.zeno.fm/mwam2yirv1pvv');
         $stationSocials = data_get($stationSettings, 'socials', []);
         $streamSettings = \App\Models\Setting::get('stream', []);
+        $systemSettings = \App\Models\Setting::get('system', []);
+        $stationTimezone = 'Africa/Lagos'; // Enforce WAT
         $streamIsLive = data_get($streamSettings, 'is_live', true);
         $streamStatusMessage = data_get($streamSettings, 'status_message', 'Broadcasting live now');
         $streamTitle = data_get($streamSettings, 'now_playing_title', 'Blinding Lights');
@@ -143,7 +145,7 @@
         $streamShowName = data_get($streamSettings, 'show_name');
         $streamShowHost = data_get($streamSettings, 'show_host');
         $streamShowTime = data_get($streamSettings, 'show_time');
-        $now = now();
+        $now = now($stationTimezone);
         $day = strtolower($now->format('l'));
         $time = $now->format('H:i:s');
         $currentSlot = \App\Models\Show\ScheduleSlot::query()
@@ -200,18 +202,26 @@
                             <span class="font-medium">{{ $currentProgramTitle }}</span>
                             <span class="text-emerald-200">•</span>
                             <span class="font-medium tabular-nums"
+                                  data-station-timezone="{{ $stationTimezone }}"
                                   x-data="{
                                     now: '',
+                                    tz: null,
                                     init() {
+                                        this.tz = this.$el.dataset.stationTimezone || 'UTC';
+                                        const formatter = new Intl.DateTimeFormat([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            timeZone: this.tz,
+                                        });
                                         const format = () => {
-                                            const d = new Date();
-                                            this.now = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                            this.now = formatter.format(new Date());
                                         };
                                         format();
                                         setInterval(format, 1000);
                                     }
                                   }"
                                   x-text="now"></span>
+                            <span class="text-emerald-200 text-[11px] font-semibold">WAT</span>
                         </span>
                         <div class="flex items-center space-x-3">
                             <a href="{{ data_get($stationSocials, 'facebook', '#') }}" class="hover:text-emerald-100 transition-colors" aria-label="Facebook">
@@ -823,6 +833,7 @@
                         <div class="flex items-center space-x-2 mt-1">
                             <i class="fas fa-clock text-emerald-400 text-[10px]"></i>
                             <span class="text-[11px] text-gray-400">{{ $currentProgramTime }}</span>
+                            <span class="text-[10px] text-emerald-300 font-semibold">WAT</span>
                         </div>
                     </div>
                     <div class="flex items-end space-x-1" x-show="audioPlaying">

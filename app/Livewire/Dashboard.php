@@ -125,7 +125,9 @@ class Dashboard extends Component
 
     private function loadShows(): void
     {
-        $now = now();
+        $systemSettings = Setting::get('system', []);
+        $timezone = data_get($systemSettings, 'timezone', config('app.timezone', 'UTC'));
+        $now = now($timezone);
         $day = strtolower($now->format('l'));
         $time = $now->format('H:i:s');
 
@@ -150,8 +152,8 @@ class Dashboard extends Component
                 'status' => 'On Air',
             ];
 
-            $start = Carbon::createFromFormat('H:i:s', $currentSlot->start_time);
-            $end = Carbon::createFromFormat('H:i:s', $currentSlot->end_time);
+            $start = Carbon::createFromFormat('H:i:s', $currentSlot->start_time, $timezone);
+            $end = Carbon::createFromFormat('H:i:s', $currentSlot->end_time, $timezone);
             $total = $start->diffInSeconds($end);
             $elapsed = $start->diffInSeconds($now);
             $this->nowPlayingProgress = $total > 0 ? min(100, max(0, ($elapsed / $total) * 100)) : 0;

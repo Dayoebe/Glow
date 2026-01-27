@@ -169,7 +169,9 @@ class HomePage extends Component
 
     private function loadCurrentShow()
     {
-        $now = Carbon::now(config('app.timezone', 'UTC'));
+        $systemSettings = \App\Models\Setting::get('system', []);
+        $timezone = data_get($systemSettings, 'timezone', config('app.timezone', 'UTC'));
+        $now = Carbon::now($timezone);
         $day = strtolower($now->format('l'));
         $time = $now->format('H:i:s');
 

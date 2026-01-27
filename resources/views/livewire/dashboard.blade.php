@@ -90,6 +90,7 @@
                 <span class="inline-flex items-center px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
                     <i class="fas fa-clock mr-1"></i>
                     {{ $currentShow['time'] ?? 'Unknown' }}
+                    <span class="ml-2 text-[10px] font-semibold">WAT</span>
                 </span>
             </div>
 
