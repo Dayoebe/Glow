@@ -85,6 +85,7 @@
                                         @endif
                                         @if(!empty($currentShow['time']))
                                             <span class="mx-2">•</span>{{ $currentShow['time'] }}
+                                            <span class="ml-2 text-[10px] text-emerald-200 font-semibold">WAT</span>
                                         @endif
                                     </p>
                                 @else
