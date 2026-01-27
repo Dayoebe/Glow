@@ -216,6 +216,74 @@ class Manage extends Component
         ]);
     }
 
+    public function clearShowCoverUpload(): void
+    {
+        $this->show_cover = null;
+        $this->resetErrorBag('show_cover');
+    }
+
+    public function clearShowCoverUrl(): void
+    {
+        $this->show_cover_url = '';
+        $this->resetErrorBag('show_cover_url');
+    }
+
+    public function removeExistingShowCover(): void
+    {
+        $this->existing_show_cover = null;
+    }
+
+    public function clearEpisodeCoverUpload(): void
+    {
+        $this->episode_cover = null;
+        $this->resetErrorBag('episode_cover');
+    }
+
+    public function clearEpisodeCoverUrl(): void
+    {
+        $this->episode_cover_url = '';
+        $this->resetErrorBag('episode_cover_url');
+    }
+
+    public function removeExistingEpisodeCover(): void
+    {
+        $this->existing_episode_cover = null;
+    }
+
+    public function clearEpisodeAudioUpload(): void
+    {
+        $this->episode_audio = null;
+        $this->resetErrorBag('episode_audio');
+    }
+
+    public function clearEpisodeAudioUrl(): void
+    {
+        $this->episode_audio_url = '';
+        $this->resetErrorBag('episode_audio_url');
+    }
+
+    public function removeExistingEpisodeAudio(): void
+    {
+        $this->existing_episode_audio = null;
+    }
+
+    public function clearEpisodeVideoUpload(): void
+    {
+        $this->episode_video = null;
+        $this->resetErrorBag('episode_video');
+    }
+
+    public function clearEpisodeVideoUrl(): void
+    {
+        $this->episode_video_url = '';
+        $this->resetErrorBag('episode_video_url');
+    }
+
+    public function removeExistingEpisodeVideo(): void
+    {
+        $this->existing_episode_video = null;
+    }
+
     public function save()
     {
         if ($this->modalType === 'show') {

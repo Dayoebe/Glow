@@ -231,6 +231,10 @@
                         <div class="mb-4">
                             <p class="text-sm font-medium text-gray-700 mb-2">Current Image</p>
                             <img src="{{ $existing_image }}" class="w-full h-48 object-cover rounded-lg">
+                            <button type="button" wire:click="removeExistingImage"
+                                class="mt-2 inline-flex items-center text-xs font-semibold text-red-600 hover:text-red-700">
+                                <i class="fas fa-times mr-1"></i>Remove current image
+                            </button>
                         </div>
                     @endif
 
@@ -279,6 +283,12 @@
                         @elseif ($featured_image)
                             <p class="mt-3 text-xs text-gray-500">Preview not available for this file type.</p>
                         @endif
+                        @if ($featured_image)
+                            <button type="button" wire:click="clearFeaturedImageUpload"
+                                class="mt-2 inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                                <i class="fas fa-times mr-1"></i>Remove selected image
+                            </button>
+                        @endif
                     </div>
 
                     <div class="text-center text-sm text-gray-500 mb-4">OR</div>
@@ -296,6 +306,10 @@
                                 <img src="{{ $featured_image_url }}" class="w-full h-48 object-cover rounded-lg"
                                     onerror="this.src='https://via.placeholder.com/400x300?text=Invalid+Image+URL'">
                             </div>
+                            <button type="button" wire:click="clearFeaturedImageUrl"
+                                class="mt-2 inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                                <i class="fas fa-times mr-1"></i>Clear image URL
+                            </button>
                         @endif
                     </div>
                 </div>

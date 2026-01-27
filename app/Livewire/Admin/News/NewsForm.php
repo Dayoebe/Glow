@@ -121,6 +121,23 @@ class NewsForm extends Component
         $this->validateOnly('featured_image');
     }
 
+    public function clearFeaturedImageUpload(): void
+    {
+        $this->featured_image = null;
+        $this->resetErrorBag('featured_image');
+    }
+
+    public function clearFeaturedImageUrl(): void
+    {
+        $this->featured_image_url = '';
+        $this->resetErrorBag('featured_image_url');
+    }
+
+    public function removeExistingImage(): void
+    {
+        $this->existing_image = null;
+    }
+
     public function save($publishNow = false)
     {
         if ($publishNow) {

@@ -278,6 +278,12 @@
                         @elseif ($featured_image)
                             <p class="mt-3 text-xs text-gray-500">Preview not available for this file type.</p>
                         @endif
+                        @if ($featured_image)
+                            <button type="button" wire:click="clearFeaturedImageUpload"
+                                class="mt-2 inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                                <i class="fas fa-times mr-1"></i>Remove selected image
+                            </button>
+                        @endif
                     </div>
 
                     <div class="text-center text-sm text-gray-500 mb-4">OR</div>
@@ -299,6 +305,10 @@
                                      class="w-full h-48 object-cover rounded-lg"
                                      onerror="this.src='https://via.placeholder.com/400x300?text=Invalid+Image+URL'">
                             </div>
+                            <button type="button" wire:click="clearFeaturedImageUrl"
+                                class="mt-2 inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                                <i class="fas fa-times mr-1"></i>Clear image URL
+                            </button>
                         @endif
                     </div>
                 </div>

@@ -472,7 +472,31 @@
                                 <div class="mt-3">
                                     <img src="{{ $show_cover_url }}" class="w-48 h-48 object-cover rounded-lg">
                                 </div>
+                                @elseif($existing_show_cover)
+                                <div class="mt-3">
+                                    <img src="{{ $existing_show_cover }}" class="w-48 h-48 object-cover rounded-lg">
+                                </div>
                                 @endif
+                                <div class="mt-2 flex flex-wrap gap-2">
+                                    @if($show_cover)
+                                        <button type="button" wire:click="clearShowCoverUpload"
+                                            class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                                            <i class="fas fa-times mr-1"></i>Remove selected image
+                                        </button>
+                                    @endif
+                                    @if($show_cover_url)
+                                        <button type="button" wire:click="clearShowCoverUrl"
+                                            class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                                            <i class="fas fa-times mr-1"></i>Clear image URL
+                                        </button>
+                                    @endif
+                                    @if($existing_show_cover && !$show_cover && !$show_cover_url)
+                                        <button type="button" wire:click="removeExistingShowCover"
+                                            class="inline-flex items-center text-xs font-semibold text-red-600 hover:text-red-700">
+                                            <i class="fas fa-times mr-1"></i>Remove current image
+                                        </button>
+                                    @endif
+                                </div>
                             </div>
 
                             <div class="md:col-span-2">
@@ -543,6 +567,20 @@
             <i class="fas fa-check-circle mr-1"></i>Current file: {{ basename($existing_episode_audio) }}
         </p>
         @endif
+        <div class="mt-2 flex flex-wrap gap-2">
+            @if($episode_audio)
+                <button type="button" wire:click="clearEpisodeAudioUpload"
+                    class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                    <i class="fas fa-times mr-1"></i>Remove selected audio
+                </button>
+            @endif
+            @if($existing_episode_audio && !$episode_audio && empty($episode_audio_url))
+                <button type="button" wire:click="removeExistingEpisodeAudio"
+                    class="inline-flex items-center text-xs font-semibold text-red-600 hover:text-red-700">
+                    <i class="fas fa-times mr-1"></i>Remove current audio
+                </button>
+            @endif
+        </div>
     </div>
 
     <div class="md:col-span-2">
@@ -551,6 +589,12 @@
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
         @error('episode_audio_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         <p class="mt-1 text-xs text-gray-500">Provide a direct link to hosted audio file</p>
+        @if($episode_audio_url)
+            <button type="button" wire:click="clearEpisodeAudioUrl"
+                class="mt-2 inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                <i class="fas fa-times mr-1"></i>Clear audio URL
+            </button>
+        @endif
     </div>
 
     <!-- Video Section -->
@@ -576,6 +620,25 @@
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
         @error('episode_video') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         <p class="mt-1 text-xs text-gray-500">Accepted formats: MP4, MOV, AVI, WMV (Max: 1GB)</p>
+        @if($existing_episode_video && !$episode_video && empty($episode_video_url))
+            <p class="mt-2 text-sm text-green-600">
+                <i class="fas fa-check-circle mr-1"></i>Current video: {{ basename($existing_episode_video) }}
+            </p>
+        @endif
+        <div class="mt-2 flex flex-wrap gap-2">
+            @if($episode_video)
+                <button type="button" wire:click="clearEpisodeVideoUpload"
+                    class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                    <i class="fas fa-times mr-1"></i>Remove selected video
+                </button>
+            @endif
+            @if($existing_episode_video && !$episode_video && empty($episode_video_url))
+                <button type="button" wire:click="removeExistingEpisodeVideo"
+                    class="inline-flex items-center text-xs font-semibold text-red-600 hover:text-red-700">
+                    <i class="fas fa-times mr-1"></i>Remove current video
+                </button>
+            @endif
+        </div>
     </div>
     @else
     <div class="md:col-span-2">
@@ -585,6 +648,25 @@
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
         @error('episode_video_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         <p class="mt-1 text-xs text-gray-500">Paste the full video URL</p>
+        @if($existing_episode_video && !$episode_video_url && !$episode_video)
+            <p class="mt-2 text-sm text-green-600">
+                <i class="fas fa-check-circle mr-1"></i>Current video: {{ $existing_episode_video }}
+            </p>
+        @endif
+        <div class="mt-2 flex flex-wrap gap-2">
+            @if($episode_video_url)
+                <button type="button" wire:click="clearEpisodeVideoUrl"
+                    class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                    <i class="fas fa-times mr-1"></i>Clear video URL
+                </button>
+            @endif
+            @if($existing_episode_video && !$episode_video_url && !$episode_video)
+                <button type="button" wire:click="removeExistingEpisodeVideo"
+                    class="inline-flex items-center text-xs font-semibold text-red-600 hover:text-red-700">
+                    <i class="fas fa-times mr-1"></i>Remove current video
+                </button>
+            @endif
+        </div>
     </div>
     @endif
 
@@ -776,6 +858,26 @@
             <img src="{{ $existing_episode_cover }}" class="w-48 h-48 object-cover rounded-lg">
         </div>
         @endif
+        <div class="mt-2 flex flex-wrap gap-2">
+            @if($episode_cover)
+                <button type="button" wire:click="clearEpisodeCoverUpload"
+                    class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                    <i class="fas fa-times mr-1"></i>Remove selected image
+                </button>
+            @endif
+            @if($episode_cover_url)
+                <button type="button" wire:click="clearEpisodeCoverUrl"
+                    class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-700">
+                    <i class="fas fa-times mr-1"></i>Clear image URL
+                </button>
+            @endif
+            @if($existing_episode_cover && !$episode_cover && !$episode_cover_url)
+                <button type="button" wire:click="removeExistingEpisodeCover"
+                    class="inline-flex items-center text-xs font-semibold text-red-600 hover:text-red-700">
+                    <i class="fas fa-times mr-1"></i>Remove current image
+                </button>
+            @endif
+        </div>
     </div>
 
     <div class="md:col-span-2">
