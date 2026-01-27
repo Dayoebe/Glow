@@ -7,6 +7,8 @@ use App\Models\Team\Department;
 use App\Models\Team\Role as TeamRole;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
+use Spatie\Permission\PermissionRegistrar;
+use Spatie\Permission\Models\Role;
 
 class Form extends Component
 {
@@ -120,6 +122,11 @@ class Form extends Component
         }
 
         if (in_array($this->role, ['admin', 'staff'], true)) {
+            $guardName = method_exists($user, 'getDefaultGuardName')
+                ? $user->getDefaultGuardName()
+                : config('auth.defaults.guard', 'web');
+            Role::findOrCreate($this->role, $guardName);
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
             $user->syncRoles([$this->role]);
         } else {
             $user->syncRoles([]);
