@@ -81,4 +81,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(\App\Models\Staff\StaffMember::class, 'user_id');
     }
+
+    public function getDefaultGuardName(): string
+    {
+        return config('auth.defaults.guard', 'web');
+    }
 }

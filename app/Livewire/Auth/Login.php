@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Auth;
 #[Title('Login - Glow FM Radio')]
 class Login extends Component
 {
-    public string $email = '';
-    public string $password = '';
-    public bool $remember = false;
+    public $email = '';
+    public $password = '';
+    public $remember = false;
 
     protected $rules = [
         'email' => 'required|email',
@@ -29,6 +29,7 @@ class Login extends Component
 
     public function login()
     {
+        $this->normalizeInputs();
         // Validate input
         $this->validate();
 
@@ -50,6 +51,37 @@ class Login extends Component
 
         // Authentication failed - add error
         $this->addError('email', 'These credentials do not match our records or your account is inactive.');
+    }
+
+    public function updatedEmail($value): void
+    {
+        $this->email = $this->normalizeScalar($value);
+    }
+
+    public function updatedPassword($value): void
+    {
+        $this->password = $this->normalizeScalar($value);
+    }
+
+    public function updatedRemember($value): void
+    {
+        $this->remember = is_array($value) ? (bool) ($value[0] ?? false) : (bool) $value;
+    }
+
+    private function normalizeInputs(): void
+    {
+        $this->email = $this->normalizeScalar($this->email);
+        $this->password = $this->normalizeScalar($this->password);
+        $this->remember = is_array($this->remember) ? (bool) ($this->remember[0] ?? false) : (bool) $this->remember;
+    }
+
+    private function normalizeScalar($value): string
+    {
+        if (is_array($value)) {
+            return (string) ($value[0] ?? '');
+        }
+
+        return (string) $value;
     }
 
     public function render()

@@ -369,9 +369,15 @@ class HomePage extends Component
         ];
 
         $settings = Setting::get('website.home', []);
+        if (!is_array($settings)) {
+            $settings = [];
+        }
         $this->homeContent = array_replace_recursive($defaults, $settings);
 
         $stream = Setting::get('stream', []);
+        if (!is_array($stream)) {
+            $stream = [];
+        }
         if (!empty($stream)) {
             $this->homeContent['now_playing_title'] = $stream['show_name'] ?? $this->homeContent['now_playing_title'];
             $this->homeContent['now_playing_time'] = $stream['show_time'] ?? $this->homeContent['now_playing_time'];
