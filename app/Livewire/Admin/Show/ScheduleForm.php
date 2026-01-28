@@ -24,6 +24,7 @@ class ScheduleForm extends Component
     public $schedule_is_recurring = true;
     public $schedule_status = 'active';
     public $schedule_notes = '';
+    public $conflictWarnings = [];
 
     public $allShows = [];
     public $allOaps = [];
@@ -83,6 +84,8 @@ class ScheduleForm extends Component
             $this->schedule_status = $slot->status;
             $this->schedule_notes = $slot->notes;
         }
+
+        $this->updateConflictWarnings();
     }
 
     public function updatedScheduleRecurrenceType($value)
@@ -93,6 +96,86 @@ class ScheduleForm extends Component
             $this->schedule_days = [];
         } elseif ($value === 'weekly') {
             $this->schedule_days = [];
+        }
+
+        $this->updateConflictWarnings();
+    }
+
+    public function updated($name, $value)
+    {
+        if (str_starts_with($name, 'schedule_')) {
+            $this->updateConflictWarnings();
+        }
+    }
+
+    private function previewDays(): array
+    {
+        if ($this->schedule_recurrence_type === 'daily') {
+            return $this->daysOfWeek;
+        }
+
+        if ($this->schedule_recurrence_type === 'selected') {
+            return array_values(array_unique($this->schedule_days));
+        }
+
+        return [$this->schedule_day_of_week];
+    }
+
+    private function updateConflictWarnings(): void
+    {
+        $this->conflictWarnings = [];
+
+        if (empty($this->schedule_start_time) || empty($this->schedule_end_time)) {
+            return;
+        }
+
+        $days = $this->previewDays();
+        if (empty($days)) {
+            return;
+        }
+
+        foreach ($days as $day) {
+            $conflictQuery = ScheduleSlot::with('show')
+                ->where('day_of_week', $day);
+
+            if ($this->isEditing) {
+                $conflictQuery->where('id', '!=', $this->slotId);
+            }
+
+            $timeConflict = $conflictQuery->get()->first(function ($slot) use ($day) {
+                return $slot->hasConflictWith(
+                    $this->schedule_start_time,
+                    $this->schedule_end_time,
+                    $day
+                );
+            });
+
+            if ($timeConflict) {
+                $showTitle = $timeConflict->show?->title ?? 'another show';
+                $this->conflictWarnings[] = "Time conflict on " . ucfirst($day) . " with {$showTitle}.";
+            }
+
+            if ($this->schedule_oap_id) {
+                $oapConflict = ScheduleSlot::with('show')
+                    ->where('oap_id', $this->schedule_oap_id)
+                    ->where('day_of_week', $day)
+                    ->when($this->isEditing, function ($query) {
+                        $query->where('id', '!=', $this->slotId);
+                    })
+                    ->get()
+                    ->first(function ($slot) use ($day) {
+                        return $slot->hasConflictWith(
+                            $this->schedule_start_time,
+                            $this->schedule_end_time,
+                            $day
+                        );
+                    });
+
+                if ($oapConflict) {
+                    $showTitle = $oapConflict->show?->title ?? 'another show';
+                    $this->conflictWarnings[] = "OAP conflict on " . ucfirst($day) . " with {$showTitle}.";
+                }
+            }
         }
     }
 
