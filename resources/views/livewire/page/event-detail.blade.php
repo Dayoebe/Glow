@@ -2,9 +2,13 @@
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-br from-amber-900 via-amber-800 to-orange-900 text-white py-16">
         <div class="absolute inset-0 opacity-20">
-            @if($event->featured_image)
-                <img src="{{ $event->featured_image }}" class="w-full h-full object-cover">
-            @endif
+            <x-initials-image
+                :src="$event->featured_image"
+                :title="$event->title"
+                imgClass="w-full h-full object-cover"
+                fallbackClass="bg-amber-800/60"
+                textClass="text-6xl font-bold text-white/80"
+            />
         </div>
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
@@ -136,11 +140,15 @@
             <!-- Event Content -->
             <main class="lg:col-span-8">
                 <article class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    @if($event->featured_image)
-                        <div class="relative h-96">
-                            <img src="{{ $event->featured_image }}" class="w-full h-full object-cover">
-                        </div>
-                    @endif
+                    <div class="relative h-96">
+                        <x-initials-image
+                            :src="$event->featured_image"
+                            :title="$event->title"
+                            imgClass="w-full h-full object-cover"
+                            fallbackClass="bg-amber-700/90"
+                            textClass="text-5xl font-bold text-white"
+                        />
+                    </div>
 
                     <div class="p-8 md:p-12">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -269,8 +277,15 @@
                             @foreach($relatedEvents as $related)
                                 <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
                                     <div class="h-48 overflow-hidden">
-                                        <img src="{{ $related->featured_image }}"
-                                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300">
+                                        <div class="relative h-full">
+                                            <x-initials-image
+                                                :src="$related->featured_image"
+                                                :title="$related->title"
+                                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
+                                                fallbackClass="bg-amber-700/90"
+                                                textClass="text-3xl font-bold text-white"
+                                            />
+                                        </div>
                                     </div>
                                     <div class="p-6">
                                         <h4 class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors">

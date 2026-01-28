@@ -193,25 +193,13 @@
                 @foreach($featuredShows as $show)
                     <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2">
                         <a href="{{ route('shows.show', $show['slug']) }}" class="relative h-64 overflow-hidden block">
-                            @php
-                                $showInitials = collect(preg_split('/\s+/', trim($show['title'] ?? '')))
-                                    ->filter()
-                                    ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
-                                    ->take(2)
-                                    ->implode('');
-                            @endphp
-                            @if(!empty($show['image']))
-                                <img src="{{ $show['image'] }}" alt="{{ $show['title'] }}"
-                                     class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                     onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-                                <div class="hidden absolute inset-0 bg-emerald-700/90 flex items-center justify-center">
-                                    <span class="text-4xl font-bold text-white">{{ $showInitials }}</span>
-                                </div>
-                            @else
-                                <div class="absolute inset-0 bg-emerald-700/90 flex items-center justify-center">
-                                    <span class="text-4xl font-bold text-white">{{ $showInitials }}</span>
-                                </div>
-                            @endif
+                            <x-initials-image
+                                :src="$show['image'] ?? null"
+                                :title="$show['title'] ?? ''"
+                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                fallbackClass="bg-emerald-700/90"
+                                textClass="text-4xl font-bold text-white"
+                            />
                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                             <div class="absolute top-4 right-4">
                                 <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
@@ -285,7 +273,13 @@
                     @foreach($latestNews as $news)
                         <article class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group">
                             <div class="relative h-56 overflow-hidden">
-                                <img src="{{ $news['image'] }}" alt="{{ $news['title'] }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                <x-initials-image
+                                    :src="$news['image'] ?? null"
+                                    :title="$news['title'] ?? ''"
+                                    imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                    fallbackClass="bg-emerald-700/90"
+                                    textClass="text-3xl font-bold text-white"
+                                />
                                 <div class="absolute top-4 left-4">
                                     <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
                                         {{ $news['category'] }}
@@ -366,8 +360,13 @@
                 @foreach($latestBlogPosts as $post)
                     <article class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 group">
                         <div class="relative h-56 overflow-hidden">
-                            <img src="{{ $post['image'] }}" alt="{{ $post['title'] }}" 
-                                 class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                            <x-initials-image
+                                :src="$post['image'] ?? null"
+                                :title="$post['title'] ?? ''"
+                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                fallbackClass="bg-purple-700/90"
+                                textClass="text-3xl font-bold text-white"
+                            />
                             <div class="absolute top-4 left-4">
                                 <span class="px-3 py-1 bg-{{ $post['category_color'] }}-600 text-white text-xs font-semibold rounded-full">
                                     {{ $post['category'] }}
@@ -470,7 +469,13 @@
                 @foreach($upcomingEvents as $event)
                     <div class="bg-white/10 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/20 hover:bg-white/20 transition-all duration-300 group">
                         <div class="relative h-48 overflow-hidden">
-                            <img src="{{ $event['image'] }}" alt="{{ $event['title'] }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                            <x-initials-image
+                                :src="$event['image'] ?? null"
+                                :title="$event['title'] ?? ''"
+                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                fallbackClass="bg-emerald-700/90"
+                                textClass="text-3xl font-bold text-white"
+                            />
                             <div class="absolute top-4 right-4 bg-white text-emerald-600 px-3 py-1 rounded-full text-sm font-semibold">
                                 <i class="fas fa-users mr-1"></i> {{ $event['attendees'] }}
                             </div>
@@ -525,8 +530,13 @@
                 @foreach($latestPodcastEpisodes as $episode)
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
                         <div class="relative h-48 overflow-hidden">
-                            <img src="{{ $episode['image'] }}" alt="{{ $episode['title'] }}" 
-                                 class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                            <x-initials-image
+                                :src="$episode['image'] ?? null"
+                                :title="$episode['title'] ?? ''"
+                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                fallbackClass="bg-purple-700/90"
+                                textClass="text-3xl font-bold text-white"
+                            />
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <a href="{{ route('podcasts.episode', [$episode['show_slug'], $episode['slug']]) }}" 
                                    class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl transform scale-75 group-hover:scale-100 transition-transform">

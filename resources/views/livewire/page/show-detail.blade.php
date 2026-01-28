@@ -1,24 +1,13 @@
 <div class="min-h-screen bg-gray-50">
     <section class="relative bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white py-16">
         <div class="absolute inset-0 opacity-20">
-            @php
-                $showInitials = collect(preg_split('/\s+/', trim($show->title ?? '')))
-                    ->filter()
-                    ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
-                    ->take(2)
-                    ->implode('');
-            @endphp
-            @if($show->cover_image)
-                <img src="{{ $show->cover_image }}" class="w-full h-full object-cover"
-                     onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-                <div class="hidden absolute inset-0 bg-emerald-800/60 flex items-center justify-center">
-                    <span class="text-6xl font-bold text-white/80">{{ $showInitials }}</span>
-                </div>
-            @else
-                <div class="absolute inset-0 bg-emerald-800/60 flex items-center justify-center">
-                    <span class="text-6xl font-bold text-white/80">{{ $showInitials }}</span>
-                </div>
-            @endif
+            <x-initials-image
+                :src="$show->cover_image"
+                :title="$show->title"
+                imgClass="w-full h-full object-cover"
+                fallbackClass="bg-emerald-800/60"
+                textClass="text-6xl font-bold text-white/80"
+            />
         </div>
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 

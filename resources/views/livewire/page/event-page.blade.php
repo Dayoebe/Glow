@@ -23,8 +23,13 @@
                 <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl overflow-hidden shadow-2xl">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
                         <div class="relative h-96 lg:h-auto">
-                            <img src="{{ $featuredEvent['featured_image'] }}" alt="{{ $featuredEvent['title'] }}"
-                                class="w-full h-full object-cover">
+                            <x-initials-image
+                                :src="$featuredEvent['featured_image'] ?? null"
+                                :title="$featuredEvent['title'] ?? ''"
+                                imgClass="w-full h-full object-cover"
+                                fallbackClass="bg-emerald-700/90"
+                                textClass="text-4xl font-bold text-white"
+                            />
                             <div class="absolute top-6 left-6">
                                 <span class="px-4 py-2 bg-amber-600 text-white text-sm font-bold rounded-full shadow-lg">
                                     <i class="fas fa-star mr-1"></i> FEATURED
@@ -175,8 +180,13 @@
                             @foreach($events as $event)
                                 <article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
                                     <div class="relative h-56 overflow-hidden">
-                                        <img src="{{ $event->featured_image }}" alt="{{ $event->title }}"
-                                            class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                        <x-initials-image
+                                            :src="$event->featured_image"
+                                            :title="$event->title"
+                                            imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                            fallbackClass="bg-emerald-700/90"
+                                            textClass="text-3xl font-bold text-white"
+                                        />
                                         <div class="absolute top-4 left-4">
                                             <span class="px-3 py-1 bg-{{ $event->category->color }}-600 text-white text-xs font-semibold rounded-full">
                                                 {{ $event->category->name }}

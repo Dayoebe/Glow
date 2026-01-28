@@ -28,8 +28,13 @@
                         <!-- Image -->
                         <div class="relative h-96 lg:h-auto">
                             <a href="{{ route('blog.show', $featuredPost['slug']) }}">
-                                <img src="{{ $featuredPost['featured_image'] }}" alt="{{ $featuredPost['title'] }}"
-                                    class="w-full h-full object-cover">
+                                <x-initials-image
+                                    :src="$featuredPost['featured_image'] ?? null"
+                                    :title="$featuredPost['title'] ?? ''"
+                                    imgClass="w-full h-full object-cover"
+                                    fallbackClass="bg-purple-700/90"
+                                    textClass="text-4xl font-bold text-white"
+                                />
                             </a>
                             <div class="absolute top-6 left-6">
                                 <span class="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-full shadow-lg">
@@ -230,8 +235,13 @@
                                     <!-- Image -->
                                     <div class="relative h-56 overflow-hidden">
                                         <a href="{{ route('blog.show', $post['slug']) }}">
-                                            <img src="{{ $post['featured_image'] }}" alt="{{ $post['title'] }}"
-                                                class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                            <x-initials-image
+                                                :src="$post['featured_image'] ?? null"
+                                                :title="$post['title'] ?? ''"
+                                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                                fallbackClass="bg-purple-700/90"
+                                                textClass="text-3xl font-bold text-white"
+                                            />
                                         </a>
                                         <div class="absolute top-4 left-4">
                                             <span

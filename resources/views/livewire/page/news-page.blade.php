@@ -32,8 +32,13 @@
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
                             <div class="relative h-80 lg:h-auto">
                                 <a href="{{ route('news.show', $featuredHero['slug']) }}">
-                                    <img src="{{ $featuredHero['featured_image'] }}" alt="{{ $featuredHero['title'] }}"
-                                        class="w-full h-full object-cover">
+                                    <x-initials-image
+                                        :src="$featuredHero['featured_image'] ?? null"
+                                        :title="$featuredHero['title'] ?? ''"
+                                        imgClass="w-full h-full object-cover"
+                                        fallbackClass="bg-emerald-700/90"
+                                        textClass="text-4xl font-bold text-white"
+                                    />
                                 </a>
                                 <div class="absolute top-6 left-6">
                                     <span class="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-full shadow-lg">
@@ -74,8 +79,13 @@
                             <article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group border border-gray-100">
                                 <div class="relative h-44 overflow-hidden">
                                     <a href="{{ route('news.show', $secondary['slug']) }}">
-                                        <img src="{{ $secondary['featured_image'] }}" alt="{{ $secondary['title'] }}"
-                                            class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
+                                        <x-initials-image
+                                            :src="$secondary['featured_image'] ?? null"
+                                            :title="$secondary['title'] ?? ''"
+                                            imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                            fallbackClass="bg-emerald-700/90"
+                                            textClass="text-3xl font-bold text-white"
+                                        />
                                     </a>
                                     <div class="absolute top-3 left-3">
                                         <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
@@ -158,8 +168,15 @@
                             <div class="space-y-4">
                                 @foreach($featuredSidebar as $sidebarItem)
                                     <a href="{{ route('news.show', $sidebarItem['slug']) }}" class="flex items-start space-x-3 group">
-                                        <img src="{{ $sidebarItem['featured_image'] }}" alt="{{ $sidebarItem['title'] }}"
-                                            class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
+                                        <div class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                                            <x-initials-image
+                                                :src="$sidebarItem['featured_image'] ?? null"
+                                                :title="$sidebarItem['title'] ?? ''"
+                                                imgClass="w-full h-full object-cover"
+                                                fallbackClass="bg-emerald-700/90"
+                                                textClass="text-xl font-bold text-white"
+                                            />
+                                        </div>
                                         <div class="flex-1">
                                             <h4 class="text-sm font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
                                                 {{ $sidebarItem['title'] }}
@@ -273,8 +290,13 @@
                                     <!-- Image -->
                                     <div class="relative h-56 overflow-hidden">
                                         <a href="{{ route('news.show', $article['slug']) }}">
-                                            <img src="{{ $article['featured_image'] }}" alt="{{ $article['title'] }}"
-                                                class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                            <x-initials-image
+                                                :src="$article['featured_image'] ?? null"
+                                                :title="$article['title'] ?? ''"
+                                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                                fallbackClass="bg-emerald-700/90"
+                                                textClass="text-3xl font-bold text-white"
+                                            />
                                         </a>
                                         <div class="absolute top-4 left-4">
                                             <span

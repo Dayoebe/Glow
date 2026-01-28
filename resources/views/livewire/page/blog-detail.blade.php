@@ -16,9 +16,13 @@
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white py-16">
         <div class="absolute inset-0 opacity-20">
-            @if($post->featured_image)
-            <img src="{{ $post->featured_image }}" class="w-full h-full object-cover">
-            @endif
+            <x-initials-image
+                :src="$post->featured_image"
+                :title="$post->title"
+                imgClass="w-full h-full object-cover"
+                fallbackClass="bg-purple-800/60"
+                textClass="text-6xl font-bold text-white/80"
+            />
         </div>
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
         
@@ -170,11 +174,15 @@
                 <article class="bg-white rounded-2xl shadow-lg overflow-hidden">
                     
                     <!-- Featured Image -->
-                    @if($post->featured_image)
                     <div class="relative h-96">
-                        <img src="{{ $post->featured_image }}" class="w-full h-full object-cover">
+                        <x-initials-image
+                            :src="$post->featured_image"
+                            :title="$post->title"
+                            imgClass="w-full h-full object-cover"
+                            fallbackClass="bg-purple-700/90"
+                            textClass="text-5xl font-bold text-white"
+                        />
                     </div>
-                    @endif
 
                     <!-- Video Embed -->
                     @if($post->video_url)
@@ -221,7 +229,13 @@
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 @foreach($post->gallery as $image)
                                 <div class="relative h-64 rounded-xl overflow-hidden group cursor-pointer">
-                                    <img src="{{ $image }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300">
+                                    <x-initials-image
+                                        :src="$image"
+                                        :title="$post->title"
+                                        imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
+                                        fallbackClass="bg-purple-700/90"
+                                        textClass="text-4xl font-bold text-white"
+                                    />
                                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                                         <i class="fas fa-search-plus text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity"></i>
                                     </div>
@@ -394,8 +408,15 @@
                         @foreach($relatedPosts as $related)
                         <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
                             <div class="h-48 overflow-hidden">
-                                <img src="{{ $related->featured_image }}" 
-                                     class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300">
+                                <div class="relative h-full">
+                                    <x-initials-image
+                                        :src="$related->featured_image"
+                                        :title="$related->title"
+                                        imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
+                                        fallbackClass="bg-purple-700/90"
+                                        textClass="text-3xl font-bold text-white"
+                                    />
+                                </div>
                             </div>
                             <div class="p-6">
                                 <h4 class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
