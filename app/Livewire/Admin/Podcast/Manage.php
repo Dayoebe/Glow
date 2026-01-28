@@ -352,9 +352,10 @@ class Manage extends Component
         ];
 
         // Audio validation
-        if (!$this->editMode) {
-            $rules['episode_audio'] = 'nullable|file|mimes:mp3,m4a,wav,aac,ogg|max:512000';
-            $rules['episode_audio_url'] = 'nullable|url';
+        $requiresAudio = !$this->editMode || empty($this->existing_episode_audio);
+        if ($requiresAudio) {
+            $rules['episode_audio'] = 'required_without:episode_audio_url|file|mimes:mp3,m4a,wav,aac,ogg|max:512000';
+            $rules['episode_audio_url'] = 'required_without:episode_audio|url';
         } else {
             $rules['episode_audio'] = 'nullable|file|mimes:mp3,m4a,wav,aac,ogg|max:512000';
             $rules['episode_audio_url'] = 'nullable|url';

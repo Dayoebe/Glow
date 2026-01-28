@@ -55,8 +55,8 @@ class Register extends Component
         // Regenerate session
         session()->regenerate();
 
-        // Redirect to dashboard
-        return $this->redirect(route('dashboard'), navigate: true);
+        // Regular users should not go to the dashboard
+        return $this->redirect(route('home'), navigate: true);
     }
 
     public function render()

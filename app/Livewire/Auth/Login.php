@@ -37,8 +37,15 @@ class Login extends Component
             // Regenerate session to prevent fixation attacks
             session()->regenerate();
             
-            // Redirect to intended page or dashboard
-            return $this->redirect(route('dashboard'), navigate: true);
+            $user = Auth::user();
+            if ($user && ($user->isAdmin() || $user->isStaff())) {
+                // Redirect staff/admin to intended page or dashboard
+                return $this->redirect(route('dashboard'), navigate: true);
+            }
+
+            // Regular users should not inherit stale intended admin URLs
+            session()->forget('url.intended');
+            return $this->redirect(route('home'), navigate: true);
         }
 
         // Authentication failed - add error

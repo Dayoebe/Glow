@@ -614,6 +614,24 @@
     <!-- Spacer for Fixed Header -->
     <div class="h-28"></div>
 
+    @if (session()->has('error'))
+        <div class="bg-red-50 border-b border-red-200 text-red-700">
+            <div class="container mx-auto px-4 py-3 flex items-start space-x-3 text-sm">
+                <i class="fas fa-circle-exclamation mt-0.5"></i>
+                <span>{{ session('error') }}</span>
+            </div>
+        </div>
+    @endif
+
+    @if (session()->has('success'))
+        <div class="bg-emerald-50 border-b border-emerald-200 text-emerald-700">
+            <div class="container mx-auto px-4 py-3 flex items-start space-x-3 text-sm">
+                <i class="fas fa-circle-check mt-0.5"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        </div>
+    @endif
+
     <!-- Main Content -->
     <main>
         {{ $slot }}

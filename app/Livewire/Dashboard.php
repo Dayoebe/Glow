@@ -31,6 +31,12 @@ class Dashboard extends Component
 
     public function mount()
     {
+        $user = auth()->user();
+        if (!$user || (!$user->isAdmin() && !$user->isStaff())) {
+            $this->redirect(route('home'), navigate: true);
+            return;
+        }
+
         $this->loadStats();
         $this->loadStream();
         $this->loadShows();

@@ -146,7 +146,7 @@ Route::middleware('guest')->group(function () {
 
 
 // Admin Blog Routes
-Route::middleware(['auth', 'role:admin|staff'])->prefix('admin/blog')->name('admin.blog.')->group(function () {
+Route::middleware(['auth', 'admin_or_staff'])->prefix('admin/blog')->name('admin.blog.')->group(function () {
     Route::get('/', \App\Livewire\Admin\Blog\BlogIndex::class)->name('index');
     Route::get('/analytics', \App\Livewire\Admin\Blog\Analytics::class)->name('analytics');
     Route::get('/create', \App\Livewire\Admin\Blog\BlogForm::class)->name('create');
@@ -155,7 +155,7 @@ Route::middleware(['auth', 'role:admin|staff'])->prefix('admin/blog')->name('adm
     Route::get('/{slug}/preview', \App\Livewire\Page\BlogDetail::class)->name('preview');
 });
 
-Route::middleware(['auth', 'role:admin|staff'])->group(function () {
+Route::middleware(['auth', 'admin_or_staff'])->group(function () {
     Route::prefix('admin/listeners')->name('admin.listeners.')->group(function () {
         Route::get('/', \App\Livewire\Admin\Community\Placeholder::class)->name('index')
             ->defaults('title', 'Listeners')
@@ -234,7 +234,7 @@ Route::middleware(['auth', 'role:admin|staff'])->group(function () {
 });
 
 // Admin Event Routes
-Route::middleware(['auth', 'role:admin|staff'])->prefix('admin/events')->name('admin.events.')->group(function () {
+Route::middleware(['auth', 'admin_or_staff'])->prefix('admin/events')->name('admin.events.')->group(function () {
     Route::get('/', AdminEventIndex::class)->name('index');
     Route::get('/create', AdminEventForm::class)->name('create');
     Route::get('/categories', AdminEventCategories::class)->name('categories');
@@ -262,7 +262,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin dashboard routes (role restricted inside)
-Route::middleware(['auth', 'role:admin|staff'])->group(function () {
+Route::middleware(['auth', 'admin_or_staff'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     Route::get('/admin/profile', AdminProfileForm::class)->name('admin.profile');
 
