@@ -340,6 +340,220 @@
         </div>
     </section>
 
+    <!-- Newsroom Spotlight Section -->
+    <section class="relative py-24 bg-gradient-to-br from-amber-50 via-white to-emerald-50 overflow-hidden"
+        x-data="{
+            loading: false,
+            initObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    if (!entries[0].isIntersecting) return;
+                    if (this.loading || !$wire.get('newsHasMore')) return;
+                    this.loading = true;
+                    $wire.loadMoreNews().then(() => { this.loading = false; });
+                }, { rootMargin: '200px' });
+                observer.observe(this.$refs.newsSentinel);
+            }
+        }"
+        x-init="initObserver()"
+    >
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-emerald-200/40 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-200/50 rounded-full blur-3xl"></div>
+        <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.12) 1px, transparent 0); background-size: 24px 24px;"></div>
+
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+                <div>
+                    <p class="uppercase tracking-[0.3em] text-xs text-emerald-700 font-semibold">Newsroom</p>
+                    <h2 class="text-4xl md:text-6xl font-black text-slate-900 mt-2" style="font-family: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', serif;">
+                        Featured, Most Viewed, and Fresh Drops
+                    </h2>
+                    <p class="text-lg text-slate-600 mt-4 max-w-2xl">
+                        Curated highlights and what the city is reading right now — refreshed in batches as you scroll.
+                    </p>
+                </div>
+                <a href="/news" class="inline-flex items-center space-x-2 text-emerald-700 font-semibold hover:text-emerald-800 transition-colors">
+                    <span>Explore Newsroom</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            @if(count($trendingNews) > 0)
+                <div class="flex flex-wrap gap-3 mb-10">
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-900 text-white">
+                        <i class="fas fa-fire text-amber-300"></i> Trending Now
+                    </span>
+                    @foreach($trendingNews as $trend)
+                        <a href="/news/{{ $trend['slug'] ?? '#' }}" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/80 border border-emerald-100 text-emerald-800 hover:bg-emerald-600 hover:text-white transition-colors">
+                            <span>{{ $trend['title'] }}</span>
+                            <span class="text-[10px] opacity-70">{{ $trend['published_at'] }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            @endif
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-8 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-2xl font-bold text-slate-900">Featured News</h3>
+                        <span class="text-sm font-semibold text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full">Editor's picks</span>
+                    </div>
+
+                    @php $mainFeatured = $featuredNews[0] ?? null; @endphp
+                    @if($mainFeatured)
+                        <article class="group relative overflow-hidden rounded-3xl shadow-xl bg-white">
+                            <div class="relative h-80">
+                                <x-initials-image
+                                    :src="$mainFeatured['image'] ?? null"
+                                    :title="$mainFeatured['title'] ?? ''"
+                                    imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                    fallbackClass="bg-emerald-700/90"
+                                    textClass="text-4xl font-bold text-white"
+                                />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                                <div class="absolute bottom-6 left-6 right-6">
+                                    <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-white/90 text-emerald-700">
+                                        {{ $mainFeatured['category'] }}
+                                    </span>
+                                    <h4 class="text-2xl md:text-3xl font-bold text-white mt-3">
+                                        <a href="/news/{{ $mainFeatured['slug'] }}">{{ $mainFeatured['title'] }}</a>
+                                    </h4>
+                                    <p class="text-sm text-white/80 mt-2 line-clamp-2">{{ $mainFeatured['excerpt'] }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+                                <div class="flex items-center gap-4 text-sm text-slate-500">
+                                    <span class="inline-flex items-center gap-1"><i class="fas fa-clock text-xs"></i>{{ $mainFeatured['read_time'] }}</span>
+                                    <span class="inline-flex items-center gap-1"><i class="fas fa-eye text-xs"></i>{{ $mainFeatured['views'] }}</span>
+                                </div>
+                                <a href="/news/{{ $mainFeatured['slug'] }}" class="inline-flex items-center gap-2 text-emerald-700 font-semibold">
+                                    <span>Read Story</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </article>
+                    @endif
+
+                    @if(count($featuredNews) > 1)
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            @foreach(array_slice($featuredNews, 1) as $news)
+                                <article class="group rounded-2xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                                    <div class="relative h-48">
+                                        <x-initials-image
+                                            :src="$news['image'] ?? null"
+                                            :title="$news['title'] ?? ''"
+                                            imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                            fallbackClass="bg-slate-800"
+                                            textClass="text-2xl font-bold text-white"
+                                        />
+                                        <span class="absolute top-4 left-4 px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
+                                            {{ $news['category'] }}
+                                        </span>
+                                    </div>
+                                    <div class="p-5">
+                                        <p class="text-xs uppercase tracking-widest text-emerald-700 font-semibold">{{ $news['date'] }}</p>
+                                        <h4 class="text-lg font-bold text-slate-900 mt-2 group-hover:text-emerald-700 transition-colors">
+                                            <a href="/news/{{ $news['slug'] }}">{{ $news['title'] }}</a>
+                                        </h4>
+                                        <p class="text-sm text-slate-600 mt-2 line-clamp-2">{{ $news['excerpt'] }}</p>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                <div class="lg:col-span-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-2xl font-bold text-slate-900">Most Viewed</h3>
+                        <span class="text-xs font-semibold text-amber-700 bg-amber-100/80 px-3 py-1 rounded-full">Top reads</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        @forelse($mostViewedNews as $index => $news)
+                            <a href="/news/{{ $news['slug'] }}" class="group flex items-start gap-4 p-4 rounded-2xl bg-white/80 border border-white hover:bg-white shadow-sm hover:shadow-lg transition-all duration-300">
+                                <div class="text-2xl font-black text-emerald-700/60 w-8">{{ $index + 1 }}</div>
+                                <div class="flex-1">
+                                    <p class="text-xs uppercase tracking-widest text-amber-700 font-semibold">{{ $news['category'] }}</p>
+                                    <h4 class="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mt-1">
+                                        {{ $news['title'] }}
+                                    </h4>
+                                    <div class="flex items-center gap-3 text-xs text-slate-500 mt-2">
+                                        <span class="inline-flex items-center gap-1"><i class="fas fa-eye text-[10px]"></i>{{ $news['views'] }}</span>
+                                        <span class="inline-flex items-center gap-1"><i class="fas fa-clock text-[10px]"></i>{{ $news['date'] }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="p-6 rounded-2xl bg-white text-center text-slate-500">
+                                No popular stories yet.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-16">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-slate-900">More News</h3>
+                    <span class="text-sm text-slate-500">Keep scrolling for more updates</span>
+                </div>
+
+                @if(count($otherNews) > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        @foreach($otherNews as $news)
+                            <article class="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300">
+                                <div class="relative h-48 overflow-hidden">
+                                    <x-initials-image
+                                        :src="$news['image'] ?? null"
+                                        :title="$news['title'] ?? ''"
+                                        imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                        fallbackClass="bg-emerald-700/80"
+                                        textClass="text-2xl font-bold text-white"
+                                    />
+                                    <div class="absolute top-4 left-4">
+                                        <span class="px-3 py-1 bg-slate-900/80 text-white text-xs font-semibold rounded-full">
+                                            {{ $news['category'] }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="p-5">
+                                    <div class="flex items-center gap-3 text-xs text-slate-500">
+                                        <span class="inline-flex items-center gap-1"><i class="fas fa-calendar text-[10px]"></i>{{ $news['date'] }}</span>
+                                        <span class="inline-flex items-center gap-1"><i class="fas fa-clock text-[10px]"></i>{{ $news['read_time'] }}</span>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-slate-900 mt-2 group-hover:text-emerald-700 transition-colors">
+                                        <a href="/news/{{ $news['slug'] }}">{{ $news['title'] }}</a>
+                                    </h4>
+                                    <p class="text-sm text-slate-600 mt-2 line-clamp-2">{{ $news['excerpt'] }}</p>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="bg-white rounded-2xl shadow-lg p-10 text-center text-slate-500">
+                        No additional news to show yet.
+                    </div>
+                @endif
+
+                <div class="mt-10 flex items-center justify-center">
+                    <div x-ref="newsSentinel" class="w-full max-w-sm">
+                        @if($newsHasMore)
+                            <div class="flex items-center justify-center gap-3 text-sm text-slate-500">
+                                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span>Loading more stories...</span>
+                            </div>
+                            <div wire:loading.flex wire:target="loadMoreNews" class="mt-3 justify-center text-xs text-emerald-700">
+                                Fetching the next batch
+                            </div>
+                        @else
+                            <div class="text-sm text-slate-500 text-center">You're all caught up.</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
 
     <!-- Latest Blog Posts Section -->
 <section class="py-20 bg-white">

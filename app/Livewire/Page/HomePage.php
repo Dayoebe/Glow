@@ -26,12 +26,19 @@ class HomePage extends Component
     public $testimonials = [];
     public $breakingNews = null;
     public $trendingNews = [];
+    public $featuredNews = [];
+    public $mostViewedNews = [];
+    public $otherNews = [];
+    public $newsBatch = 1;
+    public $newsBatchSize = 6;
+    public $newsHasMore = true;
     public $homeContent = [];
     public $currentShow = null;
 
     public function mount()
     {
         $this->loadRealNews();
+        $this->loadNewsShowcase();
         $this->loadRealPodcasts();
         $this->loadCurrentShow();
         $this->loadUpcomingEvents();
@@ -50,11 +57,11 @@ class HomePage extends Component
             ->latest('published_at')
             ->first();
 
-        // Get Latest News (3 most recent)
+        // Get Latest News (6 most recent)
         $this->latestNews = News::with(['category', 'author'])
             ->published()
             ->latest('published_at')
-            ->take(3)
+            ->take(6)
             ->get()
             ->map(function ($news) {
                 return [
@@ -90,6 +97,115 @@ class HomePage extends Component
                 ];
             })
             ->toArray();
+    }
+
+    private function loadNewsShowcase(): void
+    {
+        $featured = News::with(['category', 'author'])
+            ->published()
+            ->featured()
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+
+        if ($featured->isEmpty()) {
+            $featured = News::with(['category', 'author'])
+                ->published()
+                ->latest('published_at')
+                ->take(3)
+                ->get();
+        }
+
+        $mostViewed = News::with(['category', 'author'])
+            ->published()
+            ->orderByDesc('views')
+            ->take(5)
+            ->get();
+
+        $this->featuredNews = $featured->map(fn ($news) => $this->mapNewsCard($news))->toArray();
+        $this->mostViewedNews = $mostViewed->map(fn ($news) => $this->mapNewsCompact($news))->toArray();
+
+        $this->newsBatch = 1;
+        [$other, $hasMore] = $this->fetchOtherNewsBatch($this->getExcludedNewsIds(), $this->newsBatch);
+        $this->otherNews = $other;
+        $this->newsHasMore = $hasMore;
+    }
+
+    public function loadMoreNews(): void
+    {
+        if (!$this->newsHasMore) {
+            return;
+        }
+
+        $nextBatch = $this->newsBatch + 1;
+        [$other, $hasMore] = $this->fetchOtherNewsBatch($this->getExcludedNewsIds(), $nextBatch);
+
+        $this->newsBatch = $nextBatch;
+        $this->otherNews = array_values(array_merge($this->otherNews, $other));
+        $this->newsHasMore = $hasMore;
+    }
+
+    private function fetchOtherNewsBatch(array $excludeIds, int $page): array
+    {
+        $offset = ($page - 1) * $this->newsBatchSize;
+
+        $items = News::with(['category', 'author'])
+            ->published()
+            ->when(!empty($excludeIds), function ($query) use ($excludeIds) {
+                $query->whereNotIn('id', $excludeIds);
+            })
+            ->latest('published_at')
+            ->skip($offset)
+            ->take($this->newsBatchSize + 1)
+            ->get();
+
+        $hasMore = $items->count() > $this->newsBatchSize;
+        if ($hasMore) {
+            $items = $items->take($this->newsBatchSize);
+        }
+
+        return [$items->map(fn ($news) => $this->mapNewsCard($news))->toArray(), $hasMore];
+    }
+
+    private function getExcludedNewsIds(): array
+    {
+        return collect($this->featuredNews)
+            ->pluck('id')
+            ->merge(collect($this->mostViewedNews)->pluck('id'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+    }
+
+    private function mapNewsCard(News $news): array
+    {
+        return [
+            'id' => $news->id,
+            'slug' => $news->slug,
+            'title' => $news->title,
+            'excerpt' => $news->excerpt,
+            'image' => $news->featured_image ?? 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&h=600&fit=crop',
+            'category' => $news->category->name,
+            'date' => $news->time_ago,
+            'author' => $news->author->name,
+            'read_time' => $news->read_time,
+            'views' => number_format($news->views),
+            'likes' => $news->likes,
+        ];
+    }
+
+    private function mapNewsCompact(News $news): array
+    {
+        return [
+            'id' => $news->id,
+            'slug' => $news->slug,
+            'title' => $news->title,
+            'category' => $news->category->name,
+            'date' => $news->time_ago,
+            'views' => number_format($news->views),
+            'image' => $news->featured_image ?? 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&h=600&fit=crop',
+        ];
     }
 
     private function loadRealPodcasts()
@@ -284,6 +400,7 @@ class HomePage extends Component
     public function refreshHomeData()
     {
         $this->loadRealNews();
+        $this->loadNewsShowcase();
         $this->loadRealPodcasts();
         $this->loadUpcomingEvents();
         $this->loadRealBlogPosts();
