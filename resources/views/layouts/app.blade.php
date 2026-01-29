@@ -84,6 +84,7 @@
     @endif
     @if (!empty($stationLogoUrl))
         <link rel="icon" href="{{ $stationLogoUrl }}">
+        <link rel="apple-touch-icon" href="{{ $stationLogoUrl }}">
     @endif
     <script type="application/ld+json">
         @json($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)

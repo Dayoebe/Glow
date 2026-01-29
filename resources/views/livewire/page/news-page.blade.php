@@ -382,7 +382,7 @@
                             <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
                             <h3 class="text-2xl font-bold text-gray-900 mb-2">No articles found</h3>
                             <p class="text-gray-600 mb-6">Try adjusting your search or filters</p>
-                            <button wire:click="$set('searchQuery', ''); $set('selectedCategory', 'all')"
+                            <button wire:click="$set('searchQuery', ''); $set('selectedCategory', 'all'); $set('tag', '')"
                                 class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full transition-colors">
                                 Clear All Filters
                             </button>

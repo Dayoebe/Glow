@@ -4,7 +4,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Glow FM 99.1 - Admin Dashboard' }}</title>
+    @php
+        $stationSettings = \App\Models\Setting::get('station', []);
+        $stationName = data_get($stationSettings, 'name', 'Glow FM');
+        $stationFrequency = data_get($stationSettings, 'frequency', '99.1 MHz');
+        $stationLogoUrl = data_get($stationSettings, 'logo_url', '');
+        if (!empty($stationLogoUrl) && !\Illuminate\Support\Str::startsWith($stationLogoUrl, ['http://', 'https://'])) {
+            $stationLogoUrl = url($stationLogoUrl);
+        }
+    @endphp
+    <title>{{ $title ?? ($stationName . ' - Admin Dashboard') }}</title>
+    @if (!empty($stationLogoUrl))
+        <link rel="icon" href="{{ $stationLogoUrl }}">
+        <link rel="apple-touch-icon" href="{{ $stationLogoUrl }}">
+    @endif
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -22,12 +35,17 @@
             <!-- Brand -->
             <div class="flex items-center justify-between h-16 px-5 border-b border-gray-200 bg-emerald-600">
                 <div class="flex items-center space-x-3">
-                    <div class="flex items-center justify-center w-10 h-10 bg-white rounded-lg shadow-sm">
-                        <i class="fas fa-radio text-emerald-600 text-xl"></i>
-                    </div>
+                    @if (!empty($stationLogoUrl))
+                        <img src="{{ $stationLogoUrl }}" alt="{{ $stationName }} logo"
+                            class="w-10 h-10 rounded-lg object-contain bg-white shadow-sm p-1">
+                    @else
+                        <div class="flex items-center justify-center w-10 h-10 bg-white rounded-lg shadow-sm">
+                            <i class="fas fa-radio text-emerald-600 text-xl"></i>
+                        </div>
+                    @endif
                     <div class="text-white leading-tight">
-                        <h1 class="text-lg font-bold">Glow FM</h1>
-                        <p class="text-xs text-emerald-100">99.1 MHz</p>
+                        <h1 class="text-lg font-bold">{{ $stationName }}</h1>
+                        <p class="text-xs text-emerald-100">{{ $stationFrequency }}</p>
                     </div>
                 </div>
                 <button @click="sidebarOpen = false" class="lg:hidden text-white hover:text-emerald-100">
