@@ -257,6 +257,55 @@ class News extends Model
             ->exists();
     }
 
+    // Open Graph / Social Sharing Helper Methods
+    public function getShareDescription(): string
+    {
+        $description = trim($this->excerpt ?? '');
+        if (empty($description)) {
+            $description = Str::limit(strip_tags($this->content ?? ''), 180);
+        }
+        return $description;
+    }
+
+    public function getShareImage(): string
+    {
+        $image = $this->featured_image ?? '';
+        
+        // Ensure absolute URL
+        if (!empty($image) && !Str::startsWith($image, ['http://', 'https://'])) {
+            $image = url($image);
+        }
+        
+        return $image;
+    }
+
+    public function getShareUrl(): string
+    {
+        return route('news.show', $this->slug);
+    }
+
+    public function getFacebookShareUrl(): string
+    {
+        return 'https://www.facebook.com/sharer/sharer.php?u=' . urlencode($this->getShareUrl());
+    }
+
+    public function getTwitterShareUrl(): string
+    {
+        $text = $this->title . ' - ' . $this->getShareDescription();
+        return 'https://x.com/intent/post?text=' . urlencode($text . ' ' . $this->getShareUrl());
+    }
+
+    public function getLinkedInShareUrl(): string
+    {
+        return 'https://www.linkedin.com/sharing/share-offsite/?url=' . urlencode($this->getShareUrl());
+    }
+
+    public function getWhatsAppShareUrl(): string
+    {
+        $text = $this->title . ' - ' . $this->getShareDescription();
+        return 'https://wa.me/?text=' . urlencode($text . ' ' . $this->getShareUrl());
+    }
+
     // Accessors
     public function getFormattedPublishedDateAttribute(): string
     {

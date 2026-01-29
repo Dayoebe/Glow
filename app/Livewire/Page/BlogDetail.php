@@ -210,6 +210,9 @@ class BlogDetail extends Component
             'meta_title' => $this->post->title . ' - Glow FM Blog',
             'meta_description' => $excerpt,
             'meta_image' => $this->post->featured_image,
+            'meta_image_alt' => $this->post->title,
+            'meta_type' => 'article',
+            'canonical_url' => route('blog.show', $this->post->slug),
         ]);
     }
 }

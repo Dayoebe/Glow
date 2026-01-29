@@ -101,12 +101,15 @@ class NewsDetail extends Component
         $this->news->trackShare($platform);
         
         $rawUrl = $this->shareUrl ?: url()->current();
+        $rawUrl = url($rawUrl);
         $url = urlencode($rawUrl);
         $title = $this->news->title;
         $excerpt = trim($this->news->excerpt ?? '');
         if ($excerpt === '') {
             $excerpt = Str::limit(strip_tags($this->news->content ?? ''), 180);
         }
+        
+        // For share tracking and building share text
         $shareText = trim($title . ' - ' . $excerpt);
         $textWithUrl = urlencode($shareText . ' ' . $rawUrl);
         $encodedTitle = urlencode($title);
@@ -116,7 +119,12 @@ class NewsDetail extends Component
         $shareUrls = [
             'x' => "https://x.com/intent/post?text={$textWithUrl}",
             'twitter' => "https://x.com/intent/post?text={$textWithUrl}",
-            'facebook' => "https://www.facebook.com/sharer/sharer.php?u={$url}",
+            
+            // Facebook - Using the v parameter to force the new share dialog
+            // This works without requiring a Facebook App ID
+            // Facebook will automatically read Open Graph tags from your page
+            'facebook' => "https://www.facebook.com/sharer/sharer.php?u={$url}&quote={$encodedShareText}",
+            
             'linkedin' => "https://www.linkedin.com/sharing/share-offsite/?url={$url}",
             'whatsapp' => "https://wa.me/?text={$textWithUrl}",
             'telegram' => "https://t.me/share/url?url={$url}&text={$encodedShareText}",
@@ -124,7 +132,7 @@ class NewsDetail extends Component
             'email' => "mailto:?subject={$encodedTitle}&body={$textWithUrl}",
         ];
 
-        return redirect()->away($shareUrls[$platform] ?? url()->current());
+        $this->dispatch('open-share-url', url: $shareUrls[$platform] ?? $rawUrl);
     }
 
     public function getRelatedNewsProperty()
@@ -149,9 +157,11 @@ class NewsDetail extends Component
             'reactions' => $this->news->getAllReactionCounts(),
         ])->layout('layouts.app', [
             'title' => $this->news->title . ' - Glow FM News',
-            'meta_title' => $this->news->title . ' - Glow FM News',
+            'meta_title' => $this->news->title,
             'meta_description' => $excerpt,
             'meta_image' => $this->news->featured_image,
+            'meta_image_alt' => $this->news->title,
+            'meta_type' => 'article',
             'canonical_url' => $this->shareUrl ?: request()->url(),
         ]);
     }

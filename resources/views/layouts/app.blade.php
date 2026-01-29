@@ -32,9 +32,12 @@
         if (!empty($metaImage) && !\Illuminate\Support\Str::startsWith($metaImage, ['http://', 'https://'])) {
             $metaImage = url($metaImage);
         }
+        $metaImageAlt = $meta_image_alt ?? $metaTitle;
         $canonicalUrl = $canonical_url ?? request()->url();
         $metaRobots = $meta_robots ?? 'index, follow';
         $metaType = $meta_type ?? 'website';
+        $metaPublishedTime = $meta_published_time ?? null;
+        $metaModifiedTime = $meta_modified_time ?? null;
         $locale = str_replace('-', '_', app()->getLocale());
         $twitterSite = $twitter_site ?? data_get($stationSettings, 'twitter_handle', '');
         $structuredData = [
@@ -59,10 +62,19 @@
     <meta property="og:title" content="{{ $metaTitle }}">
     <meta property="og:description" content="{{ $metaDescription }}">
     <meta property="og:image" content="{{ $metaImage }}">
+    <meta property="og:image:secure_url" content="{{ $metaImage }}">
+    <meta property="og:image:alt" content="{{ $metaImageAlt }}">
     <meta property="og:url" content="{{ $canonicalUrl }}">
     <meta property="og:type" content="{{ $metaType }}">
     <meta property="og:site_name" content="{{ $stationName }}">
     <meta property="og:locale" content="{{ $locale }}">
+    @if (!empty($metaPublishedTime))
+        <meta property="article:published_time" content="{{ $metaPublishedTime }}">
+    @endif
+    @if (!empty($metaModifiedTime))
+        <meta property="article:modified_time" content="{{ $metaModifiedTime }}">
+        <meta property="og:updated_time" content="{{ $metaModifiedTime }}">
+    @endif
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ $metaTitle }}">
     <meta name="twitter:description" content="{{ $metaDescription }}">
@@ -989,6 +1001,25 @@
         });
     </script>
     @livewireScripts
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            const openShareUrl = (url) => {
+                if (!url || typeof url !== 'string') return;
+                window.open(url, '_blank', 'noopener,noreferrer');
+            };
+
+            if (window.Livewire && typeof Livewire.on === 'function') {
+                Livewire.on('open-share-url', ({ url }) => openShareUrl(url));
+                return;
+            }
+
+            if (window.livewire && typeof window.livewire.on === 'function') {
+                window.livewire.on('open-share-url', (payload) => {
+                    openShareUrl(payload?.url ?? payload);
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
