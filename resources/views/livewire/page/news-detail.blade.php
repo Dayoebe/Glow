@@ -155,6 +155,9 @@
                                 <button wire:click="shareNews('facebook')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
                                     <i class="fab fa-facebook text-blue-600"></i><span class="text-sm">Facebook</span>
                                 </button>
+                                <button wire:click="shareNews('instagram')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
+                                    <i class="fab fa-instagram text-pink-500"></i><span class="text-sm">Instagram</span>
+                                </button>
                                 <button wire:click="shareNews('linkedin')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
                                     <i class="fab fa-linkedin text-blue-700"></i><span class="text-sm">LinkedIn</span>
                                 </button>
@@ -282,11 +285,15 @@
                                     <i class="fab fa-x-twitter"></i><span>X</span>
                                 </button>
                                 <button wire:click="shareNews('facebook')" 
-                                    class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2">
+                                        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2">
                                     <i class="fab fa-facebook"></i><span>Facebook</span>
                                 </button>
+                                <button wire:click="shareNews('instagram')" 
+                                        class="px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white rounded-lg transition-colors flex items-center space-x-2">
+                                    <i class="fab fa-instagram"></i><span>Instagram</span>
+                                </button>
                                 <button wire:click="shareNews('linkedin')" 
-                                    class="px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-colors flex items-center space-x-2">
+                                        class="px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-colors flex items-center space-x-2">
                                     <i class="fab fa-linkedin"></i><span>LinkedIn</span>
                                 </button>
                                 <button wire:click="shareNews('whatsapp')" 

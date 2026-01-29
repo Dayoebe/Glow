@@ -160,7 +160,8 @@ class BlogDetail extends Component
         $shareUrls = [
             'x' => "https://x.com/intent/post?text={$textWithUrl}",
             'twitter' => "https://x.com/intent/post?text={$textWithUrl}",
-            'facebook' => "https://www.facebook.com/sharer/sharer.php?u={$url}",
+            'facebook' => "https://m.facebook.com/sharer.php?u={$url}&quote={$encodedShareText}",
+            'instagram' => "https://www.instagram.com/",
             'linkedin' => "https://www.linkedin.com/sharing/share-offsite/?url={$url}",
             'whatsapp' => "https://wa.me/?text={$textWithUrl}",
             'telegram' => "https://t.me/share/url?url={$url}&text={$encodedShareText}",
@@ -168,7 +169,11 @@ class BlogDetail extends Component
             'email' => "mailto:?subject={$encodedTitle}&body={$textWithUrl}",
         ];
 
-        $this->dispatch('open-share-url', url: $shareUrls[$platform] ?? route('blog.show', $this->post->slug));
+        $shareUrl = $shareUrls[$platform] ?? route('blog.show', $this->post->slug);
+        if (method_exists($this, 'dispatchBrowserEvent')) {
+            $this->dispatchBrowserEvent('open-share-url', ['url' => $shareUrl]);
+        }
+        $this->dispatch('open-share-url', url: $shareUrl);
     }
 
     public function getRelatedPostsProperty()

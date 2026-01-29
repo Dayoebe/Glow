@@ -119,12 +119,8 @@ class NewsDetail extends Component
         $shareUrls = [
             'x' => "https://x.com/intent/post?text={$textWithUrl}",
             'twitter' => "https://x.com/intent/post?text={$textWithUrl}",
-            
-            // Facebook - Using the v parameter to force the new share dialog
-            // This works without requiring a Facebook App ID
-            // Facebook will automatically read Open Graph tags from your page
-            'facebook' => "https://www.facebook.com/sharer/sharer.php?u={$url}&quote={$encodedShareText}",
-            
+            'facebook' => "https://m.facebook.com/sharer.php?u={$url}&quote={$encodedShareText}",
+            'instagram' => "https://www.instagram.com/",
             'linkedin' => "https://www.linkedin.com/sharing/share-offsite/?url={$url}",
             'whatsapp' => "https://wa.me/?text={$textWithUrl}",
             'telegram' => "https://t.me/share/url?url={$url}&text={$encodedShareText}",
@@ -132,7 +128,11 @@ class NewsDetail extends Component
             'email' => "mailto:?subject={$encodedTitle}&body={$textWithUrl}",
         ];
 
-        $this->dispatch('open-share-url', url: $shareUrls[$platform] ?? $rawUrl);
+        $shareUrl = $shareUrls[$platform] ?? $rawUrl;
+        if (method_exists($this, 'dispatchBrowserEvent')) {
+            $this->dispatchBrowserEvent('open-share-url', ['url' => $shareUrl]);
+        }
+        $this->dispatch('open-share-url', url: $shareUrl);
     }
 
     public function getRelatedNewsProperty()

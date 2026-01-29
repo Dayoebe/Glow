@@ -1002,21 +1002,26 @@
     </script>
     @livewireScripts
     <script>
-        document.addEventListener('livewire:initialized', () => {
-            const openShareUrl = (url) => {
-                if (!url || typeof url !== 'string') return;
-                window.open(url, '_blank', 'noopener,noreferrer');
-            };
+        const openShareUrl = (url) => {
+            if (!url || typeof url !== 'string') return;
+            window.location.href = url;
+        };
 
-            if (window.Livewire && typeof Livewire.on === 'function') {
-                Livewire.on('open-share-url', ({ url }) => openShareUrl(url));
-                return;
-            }
+        window.addEventListener('open-share-url', (event) => {
+            openShareUrl(event?.detail?.url ?? event?.detail);
+        });
 
+        document.addEventListener('livewire:load', () => {
             if (window.livewire && typeof window.livewire.on === 'function') {
                 window.livewire.on('open-share-url', (payload) => {
                     openShareUrl(payload?.url ?? payload);
                 });
+            }
+        });
+
+        document.addEventListener('livewire:initialized', () => {
+            if (window.Livewire && typeof Livewire.on === 'function') {
+                Livewire.on('open-share-url', ({ url }) => openShareUrl(url));
             }
         });
     </script>
