@@ -19,6 +19,7 @@ class User extends Authenticatable
         'department_id',
         'team_role_id',
         'avatar',
+        'bio',
         'is_active',
     ];
 

@@ -5,18 +5,25 @@ namespace App\Livewire\Admin\Users;
 use App\Models\User;
 use App\Models\Team\Department;
 use App\Models\Team\Role as TeamRole;
+use App\Support\CloudinaryUploader;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Models\Role;
 
 class Form extends Component
 {
+    use WithFileUploads;
+
     public $userId = null;
     public $isEditing = false;
 
     public $name = '';
     public $email = '';
+    public $avatar = '';
+    public $avatar_upload;
+    public $bio = '';
     public $role = 'user';
     public $department_id = '';
     public $team_role_id = '';
@@ -31,6 +38,9 @@ class Form extends Component
         $rules = [
             'name' => 'required|min:3|max:255',
             'email' => 'required|email|unique:users,email',
+            'avatar' => 'nullable|url|max:500',
+            'avatar_upload' => 'nullable|image|max:5120',
+            'bio' => 'nullable|string|max:2000',
             'role' => 'required|in:admin,staff,user',
             'department_id' => 'required|exists:team_departments,id',
             'team_role_id' => 'required|exists:team_roles,id',
@@ -60,6 +70,8 @@ class Form extends Component
             $this->isEditing = true;
             $this->name = $user->name;
             $this->email = $user->email;
+            $this->avatar = $user->avatar ?? '';
+            $this->bio = $user->bio ?? '';
             $this->role = $user->role ?? 'user';
             $this->department_id = $user->department_id;
             $this->team_role_id = $user->team_role_id;
@@ -73,6 +85,13 @@ class Form extends Component
                 ->orderBy('name')
                 ->get()
             : collect();
+    }
+
+    public function updatedAvatarUpload()
+    {
+        $this->resetErrorBag('avatar_upload');
+        $this->avatar = '';
+        $this->validateOnly('avatar_upload');
     }
 
     public function updatedDepartmentId()
@@ -101,9 +120,16 @@ class Form extends Component
             return;
         }
 
+        $avatarPath = $this->avatar;
+        if ($this->avatar_upload) {
+            $avatarPath = CloudinaryUploader::uploadImage($this->avatar_upload, 'users/avatars');
+        }
+
         $data = [
             'name' => $this->name,
             'email' => $this->email,
+            'avatar' => $avatarPath ?: null,
+            'bio' => $this->bio ?: null,
             'role' => $this->role,
             'department_id' => $this->department_id,
             'team_role_id' => $this->team_role_id,
