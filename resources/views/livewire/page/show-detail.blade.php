@@ -1,10 +1,10 @@
 <div class="min-h-screen bg-gray-50">
     <section class="relative bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white py-16">
-        <div class="absolute inset-0 opacity-20">
+        <div class="absolute inset-0 opacity-20 group">
             <x-initials-image
                 :src="$show->cover_image"
                 :title="$show->title"
-                imgClass="w-full h-full object-cover"
+                imgClass="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 fallbackClass="bg-emerald-800/60"
                 textClass="text-6xl font-bold text-white/80"
             />
@@ -38,15 +38,28 @@
 
                 <div class="flex flex-wrap items-center gap-6 mb-8">
                     <div class="flex items-center space-x-3">
-                        <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-300">
-                            <x-initials-image
-                                :src="$show->primaryHost?->profile_photo"
-                                :title="$show->primaryHost?->name ?? $show->title"
-                                imgClass="w-full h-full object-cover"
-                                fallbackClass="bg-emerald-700/90"
-                                textClass="text-sm font-bold text-white"
-                            />
-                        </div>
+                        @if($show->primaryHost?->slug)
+                            <a href="{{ route('oaps.show', $show->primaryHost->slug) }}"
+                                class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-300 group">
+                                <x-initials-image
+                                    :src="$show->primaryHost?->profile_photo"
+                                    :title="$show->primaryHost?->name ?? $show->title"
+                                    imgClass="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                    fallbackClass="bg-emerald-700/90"
+                                    textClass="text-sm font-bold text-white"
+                                />
+                            </a>
+                        @else
+                            <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-300">
+                                <x-initials-image
+                                    :src="$show->primaryHost?->profile_photo"
+                                    :title="$show->primaryHost?->name ?? $show->title"
+                                    imgClass="w-full h-full object-cover"
+                                    fallbackClass="bg-emerald-700/90"
+                                    textClass="text-sm font-bold text-white"
+                                />
+                            </div>
+                        @endif
                         <div>
                             <p class="font-semibold">{{ $show->primaryHost?->name ?? 'Host TBA' }}</p>
                             <p class="text-sm text-emerald-200">{{ ucfirst($show->format) }} • {{ $show->content_rating }}</p>
@@ -54,7 +67,8 @@
                     </div>
                     <div class="flex flex-wrap items-center gap-4 text-sm text-emerald-200">
                         <span><i class="fas fa-users mr-1"></i>{{ number_format($show->total_listeners) }} listeners</span>
-                        <span><i class="fas fa-star mr-1"></i>{{ number_format($show->average_rating, 1) }} rating</span>
+                        <span><i class="fas fa-star mr-1"></i>{{ number_format($averageRating, 1) }} rating</span>
+                        <span><i class="fas fa-comment mr-1"></i>{{ number_format($ratingCount) }} ratings</span>
                     </div>
                 </div>
 

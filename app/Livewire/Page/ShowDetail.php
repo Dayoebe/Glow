@@ -21,6 +21,7 @@ class ShowDetail extends Component
             ->where('slug', $slug)
             ->firstOrFail();
 
+        $this->trackListener();
         $this->ensureDeviceId();
         $this->loadUserReview();
     }
@@ -62,6 +63,18 @@ class ShowDetail extends Component
         if (!request()->cookie('device_id')) {
             Cookie::queue('device_id', (string) Str::uuid(), 60 * 24 * 365);
         }
+    }
+
+    private function trackListener(): void
+    {
+        $cookieKey = 'show_viewed_' . $this->show->id;
+
+        if (request()->cookie($cookieKey)) {
+            return;
+        }
+
+        $this->show->increment('total_listeners');
+        Cookie::queue($cookieKey, '1', 60 * 24);
     }
 
     private function getDeviceHash(): ?string
@@ -122,9 +135,15 @@ class ShowDetail extends Component
 
     public function render()
     {
+        $reviewsQuery = $this->show->reviews()->approved();
+        $ratingCount = (clone $reviewsQuery)->count();
+        $averageRating = (clone $reviewsQuery)->avg('rating') ?: 0;
+
         return view('livewire.page.show-detail', [
             'upcomingSlots' => $this->upcomingSlots,
             'reviews' => $this->show->reviews()->approved()->latest()->with('user')->get(),
+            'ratingCount' => $ratingCount,
+            'averageRating' => $averageRating,
         ])->layout('layouts.app', [
             'title' => $this->show->title . ' - Glow FM',
             'meta_title' => $this->show->title . ' - Glow FM',
