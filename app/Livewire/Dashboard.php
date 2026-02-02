@@ -26,6 +26,8 @@ class Dashboard extends Component
     public $nowPlaying = [];
     public $currentShow = null;
     public $nowPlayingProgress = 0;
+    public $showTimeline = [];
+    public $currentDay = '';
     public $recentReviews = [];
     public $todaySchedule = [];
 
@@ -120,35 +122,53 @@ class Dashboard extends Component
 
     private function loadStream(): void
     {
+        $station = Setting::get('station', []);
         $stream = Setting::get('stream', []);
+        $streamUrl = $stream['stream_url'] ?? ($station['stream_url'] ?? '');
         $this->nowPlaying = [
             'title' => $stream['now_playing_title'] ?? 'Not set',
             'artist' => $stream['now_playing_artist'] ?? 'Not set',
             'status' => $stream['status_message'] ?? 'Status not set',
             'is_live' => $stream['is_live'] ?? false,
+            'stream_url' => $streamUrl,
+            'show_name' => $stream['show_name'] ?? null,
+            'show_time' => $stream['show_time'] ?? null,
         ];
     }
 
     private function loadShows(): void
     {
         $systemSettings = Setting::get('system', []);
-        $timezone = data_get($systemSettings, 'timezone', config('app.timezone', 'UTC'));
+        $timezone = $this->resolveTimezone(
+            data_get($systemSettings, 'timezone', config('app.timezone', 'UTC'))
+        );
         $now = now($timezone);
+        $this->currentDay = $now->format('l');
         $day = strtolower($now->format('l'));
         $time = $now->format('H:i:s');
 
-        $currentSlot = ScheduleSlot::query()
+        $slotsToday = ScheduleSlot::query()
             ->with(['show', 'oap'])
             ->active()
             ->forDay($day)
-            ->where('start_time', '<=', $time)
-            ->where('end_time', '>', $time)
-            ->orderBy('start_time', 'desc')
-            ->first();
+            ->orderBy('start_time')
+            ->get()
+            ->filter(function ($slot) use ($now) {
+                return $slot->isActiveOn($now);
+            })
+            ->values();
 
-        if ($currentSlot && !$currentSlot->isActiveOn($now)) {
-            $currentSlot = null;
-        }
+        $currentSlot = $slotsToday->filter(function ($slot) use ($time) {
+            return $slot->start_time <= $time && $slot->end_time > $time;
+        })->last();
+
+        $previousSlot = $slotsToday->filter(function ($slot) use ($time) {
+            return $slot->end_time <= $time;
+        })->last();
+
+        $nextSlot = $slotsToday->first(function ($slot) use ($time) {
+            return $slot->start_time > $time;
+        });
 
         if ($currentSlot) {
             $this->currentShow = [
@@ -178,14 +198,23 @@ class Dashboard extends Component
             $this->nowPlayingProgress = 0;
         }
 
-        $this->upcomingShows = ScheduleSlot::query()
-            ->with(['show', 'oap'])
-            ->active()
-            ->forDay($day)
-            ->where('start_time', '>', $time)
-            ->orderBy('start_time')
+        $this->showTimeline = [
+            $this->mapSlotToTimeline('Previous Show', $previousSlot),
+            [
+                'label' => 'Current Show',
+                'title' => $this->currentShow['title'] ?? 'Unknown',
+                'host' => $this->currentShow['host'] ?? 'Unknown',
+                'time' => $this->currentShow['time'] ?? 'Unknown',
+                'is_current' => true,
+            ],
+            $this->mapSlotToTimeline('Next Show', $nextSlot),
+        ];
+
+        $this->upcomingShows = $slotsToday
+            ->filter(function ($slot) use ($time) {
+                return $slot->start_time > $time;
+            })
             ->take(3)
-            ->get()
             ->map(function ($slot) {
                 return [
                     'title' => $slot->show?->title ?? 'Unknown',
@@ -196,15 +225,7 @@ class Dashboard extends Component
             ->values()
             ->all();
 
-        $this->todaySchedule = ScheduleSlot::query()
-            ->with(['show', 'oap'])
-            ->active()
-            ->forDay($day)
-            ->orderBy('start_time')
-            ->get()
-            ->filter(function ($slot) use ($now) {
-                return $slot->isActiveOn($now);
-            })
+        $this->todaySchedule = $slotsToday
             ->map(function ($slot) use ($time) {
                 $isCurrent = $slot->start_time <= $time && $slot->end_time > $time;
                 return [
@@ -322,6 +343,31 @@ class Dashboard extends Component
             })
             ->values()
             ->all();
+    }
+
+    private function resolveTimezone(?string $timezone): string
+    {
+        $timezone = trim((string) $timezone);
+        if ($timezone === '' || strtoupper($timezone) === 'WAT' || strtoupper($timezone) === 'UTC') {
+            return 'Africa/Lagos';
+        }
+
+        if (!in_array($timezone, timezone_identifiers_list(), true)) {
+            return 'Africa/Lagos';
+        }
+
+        return $timezone;
+    }
+
+    private function mapSlotToTimeline(string $label, ?ScheduleSlot $slot): array
+    {
+        return [
+            'label' => $label,
+            'title' => $slot?->show?->title ?? 'Unknown',
+            'host' => $slot?->oap?->name ?? 'Unknown',
+            'time' => $slot?->time_range ?? 'Unknown',
+            'is_current' => false,
+        ];
     }
 
     public function render()

@@ -41,37 +41,52 @@
                 </span>
             </div>
             
-            <div class="flex items-center space-x-6">
+            <div class="flex flex-col lg:flex-row gap-6">
                 <div class="flex-shrink-0">
                     <div class="w-32 h-32 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg shadow-lg flex items-center justify-center">
-                        <i class="fas fa-play text-white text-4xl"></i>
+                        <i class="fas fa-broadcast-tower text-white text-4xl"></i>
                     </div>
+                    <p class="text-xs text-gray-500 mt-3">{{ $nowPlaying['status'] }}</p>
                 </div>
                 <div class="flex-1">
                     <h4 class="text-xl font-bold text-gray-900 mb-1">{{ $nowPlaying['title'] }}</h4>
-                    <p class="text-lg text-gray-600 mb-4">{{ $nowPlaying['artist'] }}</p>
+                    <p class="text-lg text-gray-600 mb-3">{{ $nowPlaying['artist'] }}</p>
+
+                    <div class="mb-4">
+                        @if(!empty($nowPlaying['stream_url']))
+                            <audio controls class="w-full">
+                                <source src="{{ $nowPlaying['stream_url'] }}" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        @else
+                            <div class="text-sm text-gray-500 bg-gray-50 border border-dashed border-gray-200 rounded-lg p-3">
+                                Stream URL not set.
+                            </div>
+                        @endif
+                    </div>
                     
                     <!-- Progress Bar -->
-                    <div class="mb-3">
-                 
+                    <div class="mb-4">
                         <div class="w-full bg-gray-200 rounded-full h-2">
                             <div class="bg-emerald-600 h-2 rounded-full" style="width: {{ $nowPlayingProgress }}%"></div>
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-4">
-                        <button class="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-150">
-                            <i class="fas fa-backward text-gray-700"></i>
-                        </button>
-                        <button class="flex items-center justify-center w-12 h-12 bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-lg transition-colors duration-150">
-                            <i class="fas fa-pause text-white"></i>
-                        </button>
-                        <button class="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-150">
-                            <i class="fas fa-forward text-gray-700"></i>
-                        </button>
-                        <button class="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-150 ml-auto">
-                            <i class="fas fa-ellipsis-v text-gray-700"></i>
-                        </button>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        @forelse($showTimeline as $show)
+                            <div class="p-3 rounded-lg border {{ $show['is_current'] ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200 bg-white' }}">
+                                <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{{ $show['label'] }}</p>
+                                <p class="text-sm font-semibold text-gray-900 mt-1">{{ $show['title'] }}</p>
+                                <p class="text-xs text-gray-600">{{ $show['host'] }}</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    {{ $show['time'] }}
+                                    <span class="ml-1 text-[10px] font-semibold">WAT</span>
+                                </p>
+                            </div>
+                        @empty
+                            <div class="col-span-full text-sm text-gray-500">No show timeline available.</div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -101,7 +116,7 @@
                 </div>
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-gray-600">Schedule</span>
-                    <span class="font-semibold text-gray-900">{{ now()->format('l') }}</span>
+                    <span class="font-semibold text-gray-900">{{ $currentDay ?: now()->format('l') }}</span>
                 </div>
             </div>
         </div>
@@ -240,18 +255,19 @@
         </div>
     </div>
 
-    <!-- Upcoming Shows -->
+    <!-- Recent Shows -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
         <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Upcoming Shows</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Recent Shows</h3>
             <a href="{{ route('admin.shows.schedule') }}" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
                 View Schedule
             </a>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            @forelse($upcomingShows as $show)
-                <div class="p-4 border border-gray-200 rounded-lg hover:border-emerald-300 hover:shadow-sm transition-all duration-150">
+            @forelse($showTimeline as $show)
+                <div class="p-4 border {{ $show['is_current'] ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200' }} rounded-lg hover:border-emerald-300 hover:shadow-sm transition-all duration-150">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">{{ $show['label'] }}</p>
                     <div class="flex items-center space-x-3 mb-3">
                         <div class="flex-shrink-0">
                             <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
@@ -266,10 +282,11 @@
                     <div class="flex items-center text-xs text-gray-600">
                         <i class="fas fa-clock mr-2"></i>
                         {{ $show['time'] }}
+                        <span class="ml-1 text-[10px] font-semibold">WAT</span>
                     </div>
                 </div>
             @empty
-                <div class="col-span-full text-sm text-gray-500">No upcoming shows scheduled for today.</div>
+                <div class="col-span-full text-sm text-gray-500">No show timeline available.</div>
             @endforelse
         </div>
     </div>
