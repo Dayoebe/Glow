@@ -24,7 +24,19 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>[x-cloak]{display:none!important;}</style>
+    <style>
+        [x-cloak]{display:none!important;}
+        .flash-auto-dismiss{
+            overflow:hidden;
+            max-height:200px;
+            pointer-events:none;
+            animation:flashAutoDismiss 5s ease forwards;
+        }
+        @keyframes flashAutoDismiss{
+            0%,85%{opacity:1;max-height:200px;}
+            100%{opacity:0;max-height:0;padding-top:0;padding-bottom:0;margin-top:0;margin-bottom:0;border-width:0;}
+        }
+    </style>
     @livewireStyles
 </head>
 <body class="bg-gray-50 font-sans antialiased" x-data="{ sidebarOpen: false }">
@@ -312,7 +324,7 @@
             <!-- Main Content -->
             <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
                 @if (session()->has('error'))
-                    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flash-auto-dismiss">
                         {{ session('error') }}
                     </div>
                 @endif

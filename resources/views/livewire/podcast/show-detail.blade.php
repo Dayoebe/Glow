@@ -113,7 +113,7 @@
 
                         <!-- Flash Messages -->
                         @if (session()->has('success'))
-                        <div class="mt-4 p-3 bg-green-500 text-white rounded-lg">
+                        <div class="mt-4 p-3 bg-green-500 text-white rounded-lg flash-auto-dismiss">
                             {{ session('success') }}
                         </div>
                         @endif

@@ -95,7 +95,19 @@
         @json($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
     </script>
 
-    <style>[x-cloak]{display:none!important;}</style>
+    <style>
+        [x-cloak]{display:none!important;}
+        .flash-auto-dismiss{
+            overflow:hidden;
+            max-height:200px;
+            pointer-events:none;
+            animation:flashAutoDismiss 5s ease forwards;
+        }
+        @keyframes flashAutoDismiss{
+            0%,85%{opacity:1;max-height:200px;}
+            100%{opacity:0;max-height:0;padding-top:0;padding-bottom:0;margin-top:0;margin-bottom:0;border-width:0;}
+        }
+    </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @livewireStyles
@@ -633,7 +645,7 @@
     <div class="h-28"></div>
 
     @if (session()->has('error'))
-        <div class="bg-red-50 border-b border-red-200 text-red-700">
+        <div class="bg-red-50 border-b border-red-200 text-red-700 flash-auto-dismiss">
             <div class="container mx-auto px-4 py-3 flex items-start space-x-3 text-sm">
                 <i class="fas fa-circle-exclamation mt-0.5"></i>
                 <span>{{ session('error') }}</span>
@@ -642,7 +654,7 @@
     @endif
 
     @if (session()->has('success'))
-        <div class="bg-emerald-50 border-b border-emerald-200 text-emerald-700">
+        <div class="bg-emerald-50 border-b border-emerald-200 text-emerald-700 flash-auto-dismiss">
             <div class="container mx-auto px-4 py-3 flex items-start space-x-3 text-sm">
                 <i class="fas fa-circle-check mt-0.5"></i>
                 <span>{{ session('success') }}</span>
@@ -926,13 +938,13 @@
     @endif
 
     @if (session()->has('newsletter_success'))
-        <div class="fixed bottom-4 left-4 z-50 bg-emerald-600 text-white px-6 py-3 rounded-lg shadow-lg">
+        <div class="fixed bottom-4 left-4 z-50 bg-emerald-600 text-white px-6 py-3 rounded-lg shadow-lg flash-auto-dismiss">
             {{ session('newsletter_success') }}
         </div>
     @endif
 
     @if (session()->has('error'))
-        <div class="fixed bottom-4 left-4 z-50 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg">
+        <div class="fixed bottom-4 left-4 z-50 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flash-auto-dismiss">
             {{ session('error') }}
         </div>
     @endif

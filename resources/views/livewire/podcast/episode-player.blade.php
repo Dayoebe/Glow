@@ -139,7 +139,7 @@
                     </div>
 
                     @if (session()->has('success'))
-                        <div class="mt-4 p-3 bg-green-100 text-green-700 rounded-lg">
+                        <div class="mt-4 p-3 bg-green-100 text-green-700 rounded-lg flash-auto-dismiss">
                             {{ session('success') }}
                         </div>
                     @endif

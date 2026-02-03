@@ -119,7 +119,7 @@
                         <div class="border-t border-gray-200 pt-8">
                             <h3 class="text-2xl font-bold text-gray-900 mb-4">Rate & Comment</h3>
                             @if (session()->has('success'))
-                                <p class="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2">
+                                <p class="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 flash-auto-dismiss">
                                     {{ session('success') }}
                                 </p>
                             @endif

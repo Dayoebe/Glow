@@ -79,7 +79,7 @@
 
                         <!-- Success Message -->
                         @if($successMessage)
-                            <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-600 rounded-lg">
+                            <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-600 rounded-lg flash-auto-dismiss">
                                 <div class="flex items-center">
                                     <i class="fas fa-check-circle text-emerald-600 text-2xl mr-3"></i>
                                     <p class="text-emerald-800 font-medium">{{ $successMessage }}</p>
@@ -89,7 +89,7 @@
 
                         <!-- Error Message -->
                         @if($errorMessage)
-                            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-600 rounded-lg">
+                            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-600 rounded-lg flash-auto-dismiss">
                                 <div class="flex items-center">
                                     <i class="fas fa-exclamation-circle text-red-600 text-2xl mr-3"></i>
                                     <p class="text-red-800 font-medium">{{ $errorMessage }}</p>

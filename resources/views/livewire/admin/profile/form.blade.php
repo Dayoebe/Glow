@@ -10,7 +10,7 @@
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         @if (session('success'))
-            <div class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-emerald-700 text-sm">
+            <div class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-emerald-700 text-sm flash-auto-dismiss">
                 {{ session('success') }}
             </div>
         @endif

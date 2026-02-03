@@ -366,7 +366,7 @@
 
                             <!-- Flash Messages -->
                             @if (session()->has('success'))
-                            <div class="mb-6 p-4 bg-green-100 text-green-700 rounded-lg flex items-center">
+                            <div class="mb-6 p-4 bg-green-100 text-green-700 rounded-lg flex items-center flash-auto-dismiss">
                                 <i class="fas fa-check-circle mr-3"></i>
                                 {{ session('success') }}
                             </div>

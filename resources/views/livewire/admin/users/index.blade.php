@@ -76,13 +76,13 @@
     </div>
 
     @if (session()->has('success'))
-        <div class="fixed bottom-4 right-4 z-50 bg-emerald-600 text-white px-6 py-3 rounded-lg shadow-lg">
+        <div class="fixed bottom-4 right-4 z-50 bg-emerald-600 text-white px-6 py-3 rounded-lg shadow-lg flash-auto-dismiss">
             {{ session('success') }}
         </div>
     @endif
 
     @if (session()->has('error'))
-        <div class="fixed bottom-4 right-4 z-50 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg">
+        <div class="fixed bottom-4 right-4 z-50 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flash-auto-dismiss">
             {{ session('error') }}
         </div>
     @endif
