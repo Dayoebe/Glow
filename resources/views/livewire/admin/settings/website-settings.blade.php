@@ -304,8 +304,8 @@
                             placeholder="Image URL (optional)">
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Bio (Rich Text)</label>
-                            <div x-data="richTextEditor(@entangle('about.team.' . $index . '.bio').defer)"
-                                class="border border-gray-300 rounded-lg overflow-hidden" wire:ignore>
+                            <div x-data="richTextEditor(@js($member['bio'] ?? ''))"
+                                class="border border-gray-300 rounded-lg overflow-hidden">
                                 <div class="flex flex-wrap items-center gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200">
                                     <button type="button" class="px-2 py-1 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-100"
                                         @click="format('bold')"><strong>B</strong></button>
@@ -324,10 +324,11 @@
                                     <button type="button" class="px-2 py-1 text-sm text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-100"
                                         @click="format('unlink')"><i class="fas fa-unlink"></i></button>
                                 </div>
-                                <div x-ref="editor" contenteditable="true"
+                                <div x-ref="editor" contenteditable="true" wire:ignore
                                     class="min-h-[120px] px-4 py-3 text-gray-800 focus:outline-none"
                                     @input="sync()"
                                     @blur="sync()">{!! $member['bio'] ?? '' !!}</div>
+                                <textarea x-ref="model" class="hidden" wire:model.defer="about.team.{{ $index }}.bio"></textarea>
                             </div>
                             <p class="mt-2 text-xs text-gray-500">Use the toolbar for bold, italics, lists, and links. This will render on the About page.</p>
                         </div>
@@ -614,28 +615,25 @@
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('richTextEditor', (model) => ({
-            content: model,
+        Alpine.data('richTextEditor', (initial = '') => ({
+            content: typeof initial === 'string' ? initial : '',
             init() {
                 this.$nextTick(() => {
-                    const current = typeof this.content === 'string' ? this.content : '';
                     const existing = this.$refs.editor.innerHTML || '';
-                    const initial = current || existing;
-                    this.$refs.editor.innerHTML = initial;
-                    if (!current && initial) {
-                        this.content = initial;
-                    }
-                });
-
-                this.$watch('content', (value) => {
-                    const html = typeof value === 'string' ? value : '';
-                    if (this.$refs.editor && this.$refs.editor.innerHTML !== html) {
-                        this.$refs.editor.innerHTML = html;
+                    const initialHtml = this.content || existing;
+                    this.$refs.editor.innerHTML = initialHtml;
+                    if (this.$refs.model) {
+                        this.$refs.model.value = initialHtml;
                     }
                 });
             },
             sync() {
-                this.content = this.$refs.editor.innerHTML;
+                const html = this.$refs.editor.innerHTML;
+                this.content = html;
+                if (this.$refs.model) {
+                    this.$refs.model.value = html;
+                    this.$refs.model.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             },
             format(command) {
                 this.$refs.editor.focus();
