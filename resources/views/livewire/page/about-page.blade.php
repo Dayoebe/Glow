@@ -1,5 +1,19 @@
 <div>
     @normalizeArray($aboutContent)
+    @php
+        $allowedRichTextTags = '<p><br><strong><em><b><i><u><ul><ol><li><a><span><div><h1><h2><h3><h4><h5><h6><blockquote>';
+        $sanitizeRichText = function ($value) use ($allowedRichTextTags) {
+            $html = trim((string) $value);
+            if ($html === '') {
+                return '';
+            }
+            $clean = strip_tags($html, $allowedRichTextTags);
+            if ($clean === strip_tags($clean)) {
+                return nl2br(e($clean));
+            }
+            return $clean;
+        };
+    @endphp
     <!-- Page Header -->
     <section
         class="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white py-20 overflow-hidden">
@@ -28,7 +42,9 @@
                     <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{{ $aboutContent['story_title'] }}</h2>
                     <div class="space-y-6 text-lg text-gray-700 leading-relaxed">
                         @foreach((array) data_get($aboutContent, 'story_paragraphs', []) as $paragraph)
-                            <p>{{ $paragraph }}</p>
+                            <div class="prose prose-lg max-w-none text-gray-700">
+                                {!! $sanitizeRichText($paragraph) !!}
+                            </div>
                         @endforeach
                     </div>
                     <div class="mt-8 flex flex-wrap gap-4">
@@ -62,9 +78,9 @@
                         <i class="fas fa-bullseye text-3xl text-emerald-600"></i>
                     </div>
                     <h3 class="text-3xl font-bold text-gray-900 mb-4">{{ $aboutContent['mission_title'] }}</h3>
-                    <p class="text-lg text-gray-700 leading-relaxed">
-                        {{ $aboutContent['mission_body'] }}
-                    </p>
+                    <div class="prose prose-lg max-w-none text-gray-700">
+                        {!! $sanitizeRichText($aboutContent['mission_body'] ?? '') !!}
+                    </div>
                 </div>
 
                 <!-- Vision -->
@@ -73,9 +89,9 @@
                         <i class="fas fa-eye text-3xl text-blue-600"></i>
                     </div>
                     <h3 class="text-3xl font-bold text-gray-900 mb-4">{{ $aboutContent['vision_title'] }}</h3>
-                    <p class="text-lg text-gray-700 leading-relaxed">
-                        {{ $aboutContent['vision_body'] }}
-                    </p>
+                    <div class="prose prose-lg max-w-none text-gray-700">
+                        {!! $sanitizeRichText($aboutContent['vision_body'] ?? '') !!}
+                    </div>
                 </div>
             </div>
         </div>
@@ -101,7 +117,9 @@
                             <i class="{{ $value['icon'] }} text-3xl text-{{ $value['color'] }}-600"></i>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ $value['title'] }}</h3>
-                        <p class="text-gray-600 leading-relaxed">{{ $value['description'] }}</p>
+                        <div class="prose max-w-none text-gray-600">
+                            {!! $sanitizeRichText($value['description'] ?? '') !!}
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -137,7 +155,9 @@
                                 </span>
                             </div>
                             <h4 class="text-2xl font-bold text-gray-900 mb-3">{{ $milestone['title'] }}</h4>
-                            <p class="text-gray-600 leading-relaxed">{{ $milestone['description'] }}</p>
+                            <div class="prose max-w-none text-gray-600">
+                                {!! $sanitizeRichText($milestone['description'] ?? '') !!}
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -161,7 +181,7 @@
                     @php
                         $memberBio = $member['bio'] ?? '';
                         $memberBioPreview = \Illuminate\Support\Str::limit(trim(strip_tags($memberBio)), 240);
-                        $memberBioHtml = strip_tags($memberBio, '<p><br><strong><em><b><i><ul><ol><li><a>');
+                        $memberBioHtml = $sanitizeRichText($memberBio);
                         $memberModalPayload = $member;
                         $memberModalPayload['bio_html'] = $memberBioHtml;
                         $memberModalPayload['bio_preview'] = $memberBioPreview;
@@ -256,9 +276,9 @@
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
                 <h2 class="text-4xl md:text-5xl font-bold mb-4">{{ $aboutContent['achievements_title'] }}</h2>
-                <p class="text-xl text-emerald-100 max-w-2xl mx-auto">
-                    {{ $aboutContent['achievements_subtitle'] }}
-                </p>
+                <div class="prose prose-lg max-w-none text-emerald-100 mx-auto">
+                    {!! $sanitizeRichText($aboutContent['achievements_subtitle'] ?? '') !!}
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -337,9 +357,9 @@
         <div class="container mx-auto px-4">
             <div class="max-w-4xl mx-auto text-center">
                 <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{{ $aboutContent['cta_title'] }}</h2>
-                <p class="text-xl text-gray-600 mb-8 leading-relaxed">
-                    {{ $aboutContent['cta_body'] }}
-                </p>
+                <div class="prose prose-lg max-w-none text-gray-600 mb-8 leading-relaxed">
+                    {!! $sanitizeRichText($aboutContent['cta_body'] ?? '') !!}
+                </div>
                 <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                     <a href="{{ $aboutContent['cta_primary_url'] }}"
                         class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
