@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Glow FM 99.1 - Your Voice, Your Music' }}</title>
+    <title>{{ $title ?? 'Glow FM 99.1 - Your Station, Your Voice' }}</title>
     <meta name="google-adsense-account" content="ca-pub-3970534274644088">
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEVJRFYBL8"></script>
@@ -23,7 +23,7 @@
         $stationSettings = \App\Models\Setting::get('station', []);
         $stationName = data_get($stationSettings, 'name', 'Glow FM');
         $stationFrequency = data_get($stationSettings, 'frequency', '99.1 MHz');
-        $stationTagline = data_get($stationSettings, 'tagline', 'Your Voice, Your Music');
+        $stationTagline = data_get($stationSettings, 'tagline', 'Your Station, Your Voice');
         $stationLogoUrl = data_get($stationSettings, 'logo_url', '');
         if (empty($stationLogoUrl)) {
             $stationLogoUrl = asset('glowfm logo.jpeg');
@@ -168,7 +168,7 @@
     @php
         $stationName = $stationName ?? data_get($stationSettings, 'name', 'Glow FM');
         $stationFrequency = $stationFrequency ?? data_get($stationSettings, 'frequency', '99.1 MHz');
-        $stationTagline = $stationTagline ?? data_get($stationSettings, 'tagline', 'Your Voice, Your Music');
+        $stationTagline = $stationTagline ?? data_get($stationSettings, 'tagline', 'Your Station, Your Voice');
         $stationPhone = data_get($stationSettings, 'phone', '+1 (234) 567-890');
         $stationEmail = data_get($stationSettings, 'email', 'info@glowfm.com');
         $stationAddress = data_get($stationSettings, 'address', '123 Radio Street, Broadcasting City, BC 12345');

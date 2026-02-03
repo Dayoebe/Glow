@@ -530,7 +530,7 @@ class HomePage extends Component
     public function render()
     {
         return view('livewire.page.home-page')->layout('layouts.app', [
-            'title' => 'Glow FM 99.1 - Your Voice, Your Music'
+            'title' => 'Glow FM 99.1 - Your Station, Your Voice'
         ]);
     }
 }

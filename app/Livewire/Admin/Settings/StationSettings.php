@@ -31,7 +31,7 @@ class StationSettings extends Component
         $defaults = [
             'name' => 'Glow FM',
             'frequency' => '99.1 MHz',
-            'tagline' => 'Your Voice, Your Music',
+            'tagline' => 'Your Station, Your Voice',
             'phone' => '+1 (234) 567-890',
             'email' => 'info@glowfm.com',
             'address' => '123 Radio Street, Broadcasting City, BC 12345',
