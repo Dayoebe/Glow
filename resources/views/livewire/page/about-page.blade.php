@@ -39,7 +39,8 @@
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div>
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{{ $aboutContent['story_title'] }}</h2>
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{{ $aboutContent['story_title'] }}
+                    </h2>
                     <div class="space-y-6 text-lg text-gray-700 leading-relaxed">
                         @foreach((array) data_get($aboutContent, 'story_paragraphs', []) as $paragraph)
                             <div class="prose prose-lg max-w-none text-gray-700">
@@ -130,7 +131,8 @@
     <section class="py-20 bg-gray-50">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{{ $aboutContent['milestones_title'] }}</h2>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{{ $aboutContent['milestones_title'] }}
+                </h2>
                 <p class="text-xl text-gray-600 max-w-2xl mx-auto">
                     {{ $aboutContent['milestones_subtitle'] }}
                 </p>
@@ -188,8 +190,7 @@
                     @endphp
                     <div
                         class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                        <button type="button"
-                            class="relative h-80 w-full overflow-hidden text-left"
+                        <button type="button" class="relative h-80 w-full overflow-hidden text-left"
                             @click="activeMember = @js($memberModalPayload)">
                             <img src="{{ $member['image'] }}" alt="{{ $member['name'] }}"
                                 class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
@@ -231,37 +232,39 @@
 
         <div x-cloak x-show="activeMember" class="fixed inset-0 z-50 flex items-center justify-center p-6">
             <div class="absolute inset-0 bg-black/60" @click="activeMember = null"></div>
-            <div class="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div
+                class="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
                 <button type="button"
                     class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/80 text-gray-700 hover:bg-gray-100 flex items-center justify-center"
                     @click="activeMember = null">
                     <i class="fas fa-times"></i>
                 </button>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
-                    <div class="relative h-72 md:h-full bg-gray-900">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-0 flex-1 min-h-0">
+                    <div class="relative h-64 md:h-auto bg-gray-900">
                         <img :src="activeMember && activeMember.image ? activeMember.image : '{{ asset('glowfm logo.jpeg') }}'"
-                            :alt="activeMember ? activeMember.name : 'Team member'"
-                            class="w-full h-full object-cover">
+                            :alt="activeMember ? activeMember.name : 'Team member'" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
                     </div>
-                    <div class="p-8">
+                    <div class="p-8 overflow-y-auto min-h-0">
                         <p class="text-sm uppercase tracking-[0.3em] text-emerald-600 font-semibold">Leadership</p>
-                        <h3 class="text-3xl font-bold text-gray-900 mt-2" x-text="activeMember ? activeMember.name : ''"></h3>
-                        <p class="text-emerald-600 font-semibold mt-1" x-text="activeMember ? activeMember.position : ''"></p>
+                        <h3 class="text-3xl font-bold text-gray-900 mt-2"
+                            x-text="activeMember ? activeMember.name : ''"></h3>
+                        <p class="text-emerald-600 font-semibold mt-1"
+                            x-text="activeMember ? activeMember.position : ''"></p>
                         <div class="prose prose-emerald max-w-none mt-6">
                             <div x-html="activeMember ? activeMember.bio_html : ''"></div>
                         </div>
                         <div class="mt-6 flex items-center gap-3 text-gray-500">
                             <a :href="activeMember && activeMember.social ? activeMember.social.linkedin : '#'"
-                               class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
+                                class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
                                 <i class="fab fa-linkedin-in"></i>
                             </a>
                             <a :href="activeMember && activeMember.social ? activeMember.social.twitter : '#'"
-                               class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
+                                class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
                                 <i class="fab fa-twitter"></i>
                             </a>
                             <a :href="activeMember && activeMember.social && activeMember.social.email ? 'mailto:' + activeMember.social.email : '#'"
-                               class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
+                                class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
                                 <i class="fas fa-envelope"></i>
                             </a>
                         </div>
