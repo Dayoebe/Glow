@@ -26,17 +26,18 @@ class StaffDirectory extends Component
         $staff = StaffMember::query()
             ->with(['departmentRelation', 'teamRole'])
             ->where('is_active', true)
-            ->whereDoesntHave('oap')
             ->when($this->searchQuery, function ($query) {
-                $query->where('name', 'like', "%{$this->searchQuery}%")
-                    ->orWhere('role', 'like', "%{$this->searchQuery}%")
-                    ->orWhere('department', 'like', "%{$this->searchQuery}%")
-                    ->orWhereHas('departmentRelation', function ($dept) {
-                        $dept->where('name', 'like', "%{$this->searchQuery}%");
-                    })
-                    ->orWhereHas('teamRole', function ($role) {
-                        $role->where('name', 'like', "%{$this->searchQuery}%");
-                    });
+                $query->where(function ($search) {
+                    $search->where('name', 'like', "%{$this->searchQuery}%")
+                        ->orWhere('role', 'like', "%{$this->searchQuery}%")
+                        ->orWhere('department', 'like', "%{$this->searchQuery}%")
+                        ->orWhereHas('departmentRelation', function ($dept) {
+                            $dept->where('name', 'like', "%{$this->searchQuery}%");
+                        })
+                        ->orWhereHas('teamRole', function ($role) {
+                            $role->where('name', 'like', "%{$this->searchQuery}%");
+                        });
+                });
             })
             ->orderBy('name')
             ->paginate(12);
