@@ -8,6 +8,7 @@ use App\Models\Show\OAP;
 use App\Models\Show\ScheduleSlot;
 use App\Models\Show\Segment;
 use App\Support\CloudinaryUploader;
+use App\Support\PersonProfileSync;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
@@ -268,11 +269,16 @@ class Manage extends Component
         ];
 
         if ($this->editMode) {
-            OAP::find($this->itemId)->update($data);
+            $oap = OAP::find($this->itemId);
+            $oap?->update($data);
             session()->flash('success', 'OAP updated successfully!');
         } else {
-            OAP::create($data);
+            $oap = OAP::create($data);
             session()->flash('success', 'OAP created successfully!');
+        }
+
+        if (isset($oap) && $oap) {
+            PersonProfileSync::fromOap($oap);
         }
 
         $this->closeModal();

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Show;
 use App\Models\Show\OAP;
 use App\Models\Staff\StaffMember;
 use App\Support\CloudinaryUploader;
+use App\Support\PersonProfileSync;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -159,12 +160,15 @@ class OapForm extends Component
         }
 
         if ($this->isEditing) {
-            OAP::findOrFail($this->oapId)->update($data);
+            $oap = OAP::findOrFail($this->oapId);
+            $oap->update($data);
             $message = 'OAP updated successfully.';
         } else {
-            OAP::create($data);
+            $oap = OAP::create($data);
             $message = 'OAP created successfully.';
         }
+
+        PersonProfileSync::fromOap($oap);
 
         return redirect()
             ->route('admin.shows.oaps')

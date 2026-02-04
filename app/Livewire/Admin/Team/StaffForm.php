@@ -6,6 +6,7 @@ use App\Models\Staff\StaffMember;
 use App\Models\Team\Department;
 use App\Models\Team\Role as TeamRole;
 use App\Support\CloudinaryUploader;
+use App\Support\PersonProfileSync;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -216,12 +217,15 @@ class StaffForm extends Component
         ];
 
         if ($this->isEditing) {
-            StaffMember::findOrFail($this->staffId)->update($data);
+            $staff = StaffMember::findOrFail($this->staffId);
+            $staff->update($data);
             $message = 'Staff member updated successfully.';
         } else {
-            StaffMember::create($data);
+            $staff = StaffMember::create($data);
             $message = 'Staff member created successfully.';
         }
+
+        PersonProfileSync::fromStaff($staff);
 
         return redirect()->route('admin.team.staff')->with('success', $message);
     }
