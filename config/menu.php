@@ -379,6 +379,11 @@ return [
                         'route' => 'admin.team.roles',
                         'active' => 'admin.team.roles*'
                     ],
+                    [
+                        'title' => 'Profile Links',
+                        'route' => 'admin.team.links',
+                        'active' => 'admin.team.links'
+                    ],
                 ]
             ],
             [

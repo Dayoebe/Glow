@@ -52,6 +52,7 @@ use App\Livewire\Admin\Team\Oaps as AdminOaps;
 use App\Livewire\Admin\Team\OapForm as AdminOapForm;
 use App\Livewire\Admin\Team\StaffIndex as AdminStaffIndex;
 use App\Livewire\Admin\Team\StaffForm as AdminStaffForm;
+use App\Livewire\Admin\Team\ProfileLinks as AdminTeamProfileLinks;
 use App\Livewire\Admin\Inbox\ContactInbox as AdminContactInbox;
 use App\Livewire\Admin\Newsletter\Subscriptions as AdminNewsletterSubscriptions;
 use App\Http\Controllers\NewsletterController;
@@ -318,6 +319,7 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::get('/staff', AdminStaffIndex::class)->name('staff');
             Route::get('/staff/create', AdminStaffForm::class)->name('staff.create');
             Route::get('/staff/{staffId}/edit', AdminStaffForm::class)->name('staff.edit');
+            Route::get('/links', AdminTeamProfileLinks::class)->name('links');
             Route::get('/departments', \App\Livewire\Admin\Team\DepartmentsIndex::class)->name('departments');
             Route::get('/departments/create', \App\Livewire\Admin\Team\DepartmentForm::class)->name('departments.create');
             Route::get('/departments/{departmentId}/edit', \App\Livewire\Admin\Team\DepartmentForm::class)->name('departments.edit');
