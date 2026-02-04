@@ -111,6 +111,13 @@ class OapForm extends Component
             : collect();
     }
 
+    private function normalizeOptionalString($value): ?string
+    {
+        $value = is_string($value) ? trim($value) : $value;
+
+        return $value === '' ? null : $value;
+    }
+
     public function mount($oapId = null)
     {
         $this->social_media = $this->defaultSocialMedia();
@@ -186,6 +193,15 @@ class OapForm extends Component
         $this->department_id = $staff->department_id ?: '';
         $this->setTeamRolesForDepartment();
         $this->team_role_id = $staff->team_role_id ?: '';
+        if (!$this->team_role_id && $this->department_id && !empty($staff->role)) {
+            $matchedRole = TeamRole::query()
+                ->where('is_active', true)
+                ->where('department_id', $this->department_id)
+                ->whereRaw('LOWER(name) = ?', [Str::lower(trim((string) $staff->role))])
+                ->value('id');
+
+            $this->team_role_id = $matchedRole ?: '';
+        }
         $this->social_media = $this->normalizedSocialMedia($staff->social_links);
         $this->is_active = (bool) $staff->is_active;
         $this->available = true;
@@ -211,8 +227,15 @@ class OapForm extends Component
     public function save()
     {
         $this->staff_member_id = $this->staff_member_id ?: null;
+        $this->bio = $this->normalizeOptionalString($this->bio);
+        $this->profile_photo = $this->normalizeOptionalString($this->profile_photo);
+        $this->voice_sample_url = $this->normalizeOptionalString($this->voice_sample_url);
+        $this->specializations = $this->normalizeOptionalString($this->specializations);
+        $this->email = $this->normalizeOptionalString($this->email);
+        $this->phone = $this->normalizeOptionalString($this->phone);
         $this->department_id = $this->department_id ?: null;
         $this->team_role_id = $this->team_role_id ?: null;
+        $this->joined_date = $this->joined_date ?: null;
         $this->validate();
 
         if ($this->team_role_id && !$this->department_id) {

@@ -13,6 +13,17 @@
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        @if($errors->any())
+            <div class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+                <p class="font-semibold">Could not save OAP. Please fix the highlighted fields.</p>
+                <ul class="mt-2 list-disc pl-5 text-sm">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Staff Member (optional)</label>
@@ -187,12 +198,13 @@
 
         <div class="mt-6 flex items-center justify-end space-x-3">
             <a href="{{ route('admin.team.oaps') }}"
-               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
+                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
                 Cancel
             </a>
-            <button wire:click="save"
-                class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-                {{ $isEditing ? 'Update OAP' : 'Create OAP' }}
+            <button type="button" wire:click="save" wire:loading.attr="disabled" wire:target="save"
+                class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed">
+                <span wire:loading.remove wire:target="save">{{ $isEditing ? 'Update OAP' : 'Create OAP' }}</span>
+                <span wire:loading wire:target="save">Saving...</span>
             </button>
         </div>
     </div>
