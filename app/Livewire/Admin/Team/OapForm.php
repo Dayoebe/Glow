@@ -56,7 +56,7 @@ class OapForm extends Component
                 Rule::unique('oaps', 'staff_member_id')->ignore($this->oapId),
             ],
             'name' => 'required|min:3|max:255',
-            'bio' => 'nullable|min:10',
+            'bio' => 'nullable|string|max:5000',
             'profile_photo' => 'nullable|string|max:2048',
             'profile_photo_upload' => 'nullable|image|max:5120',
             'voice_sample_url' => 'nullable|url',
@@ -227,7 +227,7 @@ class OapForm extends Component
     public function save()
     {
         $this->staff_member_id = $this->staff_member_id ?: null;
-        $this->bio = $this->normalizeOptionalString($this->bio);
+        $this->bio = is_string($this->bio) ? trim($this->bio) : '';
         $this->profile_photo = $this->normalizeOptionalString($this->profile_photo);
         $this->voice_sample_url = $this->normalizeOptionalString($this->voice_sample_url);
         $this->specializations = $this->normalizeOptionalString($this->specializations);
