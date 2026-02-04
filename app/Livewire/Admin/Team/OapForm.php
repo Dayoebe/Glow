@@ -57,7 +57,7 @@ class OapForm extends Component
             ],
             'name' => 'required|min:3|max:255',
             'bio' => 'nullable|min:10',
-            'profile_photo' => 'nullable|url',
+            'profile_photo' => 'nullable|string|max:2048',
             'profile_photo_upload' => 'nullable|image|max:5120',
             'voice_sample_url' => 'nullable|url',
             'email' => 'nullable|email',
