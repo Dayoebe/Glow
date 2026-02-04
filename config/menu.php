@@ -379,12 +379,13 @@ return [
                         'route' => 'admin.team.roles',
                         'active' => 'admin.team.roles*'
                     ],
-                    [
-                        'title' => 'Profile Links',
-                        'route' => 'admin.team.links',
-                        'active' => 'admin.team.links'
-                    ],
                 ]
+            ],
+            [
+                'title' => 'Profile Links',
+                'icon' => 'fas fa-link',
+                'route' => 'admin.team.links',
+                'active' => 'admin.team.links*'
             ],
             [
                 'title' => 'Users',
