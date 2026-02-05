@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Settings;
 
 use App\Models\Setting;
 use App\Support\CloudinaryUploader;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -26,6 +27,8 @@ class WebsiteSettings extends Component
         $this->home = $data['home'];
         $this->about = $data['about'];
         $this->contact = $data['contact'];
+
+        $this->normalizeAboutTeamSocials();
     }
 
     public function save()
@@ -110,12 +113,32 @@ class WebsiteSettings extends Component
             'position' => '',
             'bio' => '',
             'image' => '',
-            'social' => [
-                'linkedin' => '#',
-                'twitter' => '#',
-                'email' => '',
-            ],
+            'socials' => [],
         ];
+    }
+
+    public function addAboutTeamSocial($memberIndex)
+    {
+        if (!isset($this->about['team'][$memberIndex])) {
+            return;
+        }
+
+        $this->about['team'][$memberIndex]['socials'][] = [
+            'name' => '',
+            'icon' => 'fas fa-link',
+            'url' => '',
+        ];
+    }
+
+    public function removeAboutTeamSocial($memberIndex, $socialIndex)
+    {
+        if (!isset($this->about['team'][$memberIndex]['socials'][$socialIndex])) {
+            return;
+        }
+
+        $socials = $this->about['team'][$memberIndex]['socials'];
+        unset($socials[$socialIndex]);
+        $this->about['team'][$memberIndex]['socials'] = array_values($socials);
     }
 
     public function removeAboutTeamMember($index)
@@ -404,5 +427,60 @@ class WebsiteSettings extends Component
         ksort($shifted);
 
         return $shifted;
+    }
+
+    private function normalizeAboutTeamSocials(): void
+    {
+        if (empty($this->about['team']) || !is_array($this->about['team'])) {
+            return;
+        }
+
+        foreach ($this->about['team'] as $index => $member) {
+            if (!is_array($member)) {
+                continue;
+            }
+
+            $existingSocials = $member['socials'] ?? null;
+            if (is_array($existingSocials)) {
+                $this->about['team'][$index]['socials'] = array_values($existingSocials);
+                continue;
+            }
+
+            $legacy = data_get($member, 'social', []);
+            if (!is_array($legacy)) {
+                $legacy = [];
+            }
+
+            $legacyMap = [
+                'linkedin' => ['name' => 'LinkedIn', 'icon' => 'fab fa-linkedin-in', 'mailto' => false],
+                'twitter' => ['name' => 'Twitter', 'icon' => 'fab fa-twitter', 'mailto' => false],
+                'email' => ['name' => 'Email', 'icon' => 'fas fa-envelope', 'mailto' => true],
+            ];
+
+            $socials = [];
+            foreach ($legacyMap as $key => $meta) {
+                $value = $legacy[$key] ?? '';
+                if (!is_string($value)) {
+                    continue;
+                }
+
+                $value = trim($value);
+                if ($value === '' || $value === '#') {
+                    continue;
+                }
+
+                if ($meta['mailto'] && !Str::startsWith($value, 'mailto:')) {
+                    $value = 'mailto:' . $value;
+                }
+
+                $socials[] = [
+                    'name' => $meta['name'],
+                    'icon' => $meta['icon'],
+                    'url' => $value,
+                ];
+            }
+
+            $this->about['team'][$index]['socials'] = $socials;
+        }
     }
 }

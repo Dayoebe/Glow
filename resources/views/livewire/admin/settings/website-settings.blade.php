@@ -332,12 +332,40 @@
                             </div>
                             <p class="mt-2 text-xs text-gray-500">Use the toolbar for bold, italics, lists, and links. This will render on the About page.</p>
                         </div>
-                        <input type="text" wire:model="about.team.{{ $index }}.social.linkedin"
-                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="LinkedIn URL">
-                        <input type="text" wire:model="about.team.{{ $index }}.social.twitter"
-                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Twitter URL">
-                        <input type="text" wire:model="about.team.{{ $index }}.social.email"
-                            class="md:col-span-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Email">
+                        <div class="md:col-span-2">
+                            <div class="flex items-center justify-between">
+                                <h5 class="text-sm font-semibold text-gray-700">Social Links</h5>
+                                <button type="button" wire:click="addAboutTeamSocial({{ $index }})"
+                                    class="text-xs font-semibold text-emerald-700 hover:text-emerald-800">
+                                    Add Social
+                                </button>
+                            </div>
+                            <div class="mt-3 space-y-3">
+                                @foreach((array) data_get($member, 'socials', []) as $socialIndex => $social)
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50"
+                                        wire:key="about-team-{{ $index }}-social-{{ $socialIndex }}">
+                                        <input type="text" wire:model="about.team.{{ $index }}.socials.{{ $socialIndex }}.name"
+                                            class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            placeholder="Label (e.g., Instagram)">
+                                        <input type="text" wire:model="about.team.{{ $index }}.socials.{{ $socialIndex }}.icon"
+                                            class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            placeholder="Icon class (e.g., fab fa-instagram)">
+                                        <input type="text" wire:model="about.team.{{ $index }}.socials.{{ $socialIndex }}.url"
+                                            class="md:col-span-3 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            placeholder="URL or mailto:">
+                                        <div class="md:col-span-3 flex justify-end">
+                                            <button type="button" wire:click="removeAboutTeamSocial({{ $index }}, {{ $socialIndex }})"
+                                                class="text-xs font-semibold text-red-600 hover:text-red-700">
+                                                Remove Social
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                                @if(empty((array) data_get($member, 'socials', [])))
+                                    <p class="text-xs text-gray-500">No social links added yet.</p>
+                                @endif
+                            </div>
+                        </div>
                         <button type="button" wire:click="removeAboutTeamMember({{ $index }})"
                             class="md:col-span-2 justify-self-end px-4 py-2 bg-red-600 text-white rounded-lg">Remove Member</button>
                     </div>

@@ -184,9 +184,65 @@
                         $memberBio = $member['bio'] ?? '';
                         $memberBioPreview = \Illuminate\Support\Str::limit(trim(strip_tags($memberBio)), 240);
                         $memberBioHtml = $sanitizeRichText($memberBio);
+                        $memberSocials = [];
+                        $rawSocials = data_get($member, 'socials', null);
+
+                        if (is_array($rawSocials)) {
+                            foreach ($rawSocials as $social) {
+                                if (!is_array($social)) {
+                                    continue;
+                                }
+
+                                $url = trim((string) ($social['url'] ?? ''));
+                                if ($url === '') {
+                                    continue;
+                                }
+
+                                $memberSocials[] = [
+                                    'name' => $social['name'] ?? '',
+                                    'icon' => $social['icon'] ?? 'fas fa-link',
+                                    'url' => $url,
+                                ];
+                            }
+                        }
+
+                        if (!$memberSocials && !array_key_exists('socials', $member)) {
+                            $legacySocial = data_get($member, 'social', []);
+                            if (is_array($legacySocial)) {
+                                $legacyMap = [
+                                    'linkedin' => ['name' => 'LinkedIn', 'icon' => 'fab fa-linkedin-in', 'mailto' => false],
+                                    'twitter' => ['name' => 'Twitter', 'icon' => 'fab fa-twitter', 'mailto' => false],
+                                    'email' => ['name' => 'Email', 'icon' => 'fas fa-envelope', 'mailto' => true],
+                                ];
+
+                                foreach ($legacyMap as $key => $meta) {
+                                    $value = $legacySocial[$key] ?? '';
+                                    if (!is_string($value)) {
+                                        continue;
+                                    }
+
+                                    $value = trim($value);
+                                    if ($value === '' || $value === '#') {
+                                        continue;
+                                    }
+
+                                    if ($meta['mailto'] && !\Illuminate\Support\Str::startsWith($value, 'mailto:')) {
+                                        $value = 'mailto:' . $value;
+                                    }
+
+                                    $memberSocials[] = [
+                                        'name' => $meta['name'],
+                                        'icon' => $meta['icon'],
+                                        'url' => $value,
+                                    ];
+                                }
+                            }
+                        }
+
                         $memberModalPayload = $member;
                         $memberModalPayload['bio_html'] = $memberBioHtml;
                         $memberModalPayload['bio_preview'] = $memberBioPreview;
+                        $memberModalPayload['socials'] = $memberSocials;
                     @endphp
                     <div
                         class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
@@ -210,20 +266,16 @@
                             <p class="text-gray-600 mb-4 leading-relaxed">
                                 {{ $memberBioPreview ?: 'Profile details coming soon.' }}
                             </p>
-                            <div class="flex items-center space-x-3">
-                                <a href="{{ data_get($member, 'social.linkedin', '#') }}"
-                                    class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 text-gray-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
-                                    <i class="fab fa-linkedin-in"></i>
-                                </a>
-                                <a href="{{ data_get($member, 'social.twitter', '#') }}"
-                                    class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 text-gray-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
-                                    <i class="fab fa-twitter"></i>
-                                </a>
-                                <a href="mailto:{{ data_get($member, 'social.email', '') }}"
-                                    class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 text-gray-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
-                                    <i class="fas fa-envelope"></i>
-                                </a>
-                            </div>
+                            @if(!empty($memberSocials))
+                                <div class="flex items-center space-x-3">
+                                    @foreach($memberSocials as $social)
+                                        <a href="{{ $social['url'] }}"
+                                            class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 text-gray-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
+                                            <i class="{{ $social['icon'] ?? 'fas fa-link' }}"></i>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -254,19 +306,14 @@
                         <div class="prose prose-emerald max-w-none mt-6">
                             <div x-html="activeMember ? activeMember.bio_html : ''"></div>
                         </div>
-                        <div class="mt-6 flex items-center gap-3 text-gray-500">
-                            <a :href="activeMember && activeMember.social ? activeMember.social.linkedin : '#'"
-                                class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
-                                <i class="fab fa-linkedin-in"></i>
-                            </a>
-                            <a :href="activeMember && activeMember.social ? activeMember.social.twitter : '#'"
-                                class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
-                                <i class="fab fa-twitter"></i>
-                            </a>
-                            <a :href="activeMember && activeMember.social && activeMember.social.email ? 'mailto:' + activeMember.social.email : '#'"
-                                class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
-                                <i class="fas fa-envelope"></i>
-                            </a>
+                        <div class="mt-6 flex items-center gap-3 text-gray-500"
+                            x-show="activeMember && activeMember.socials && activeMember.socials.length">
+                            <template x-for="(social, index) in (activeMember && activeMember.socials ? activeMember.socials : [])" :key="index">
+                                <a :href="social.url"
+                                    class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
+                                    <i :class="social.icon || 'fas fa-link'"></i>
+                                </a>
+                            </template>
                         </div>
                     </div>
                 </div>
