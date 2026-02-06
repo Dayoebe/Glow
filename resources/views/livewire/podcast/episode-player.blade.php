@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-gray-50">
 
     <!-- Episode Header -->
-    <section class="relative bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white py-12">
+    <section class="relative bg-linear-to-br from-purple-900 via-purple-800 to-indigo-900 text-white py-12">
         <div class="container mx-auto px-4">
             <div class="max-w-5xl mx-auto">
                 <!-- Breadcrumb -->
