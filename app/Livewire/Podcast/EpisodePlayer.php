@@ -14,6 +14,8 @@ class EpisodePlayer extends Component
     public $comment = '';
     public $commentTimestamp = null;
     public $replyTo = null;
+    public $qualifiedPlayRecorded = false;
+    public $rawPlayRecorded = false;
     
     // Player state
     public $currentPosition = 0;
@@ -29,8 +31,6 @@ class EpisodePlayer extends Component
                 $query->where('slug', $showSlug);
             })
             ->firstOrFail();
-
-        $this->episode->trackPlay(auth()->id(), 0, 0);
 
         // Load last position if user is logged in
         if (auth()->check()) {
@@ -67,6 +67,26 @@ class EpisodePlayer extends Component
         if ($position % 30 === 0) {
             $this->episode->trackPlay(auth()->id(), $position, $position);
         }
+    }
+
+    public function recordQualifiedPlay()
+    {
+        if ($this->qualifiedPlayRecorded) {
+            return;
+        }
+
+        $this->qualifiedPlayRecorded = true;
+        $this->episode->recordQualifiedPlay(auth()->id(), $this->currentPosition, $this->currentPosition);
+    }
+
+    public function recordRawPlay()
+    {
+        if ($this->rawPlayRecorded) {
+            return;
+        }
+
+        $this->rawPlayRecorded = true;
+        $this->episode->recordRawPlay();
     }
 
     public function trackDownload()

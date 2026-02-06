@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -30,6 +30,19 @@
                 </div>
             </div>
             <p class="text-xs text-gray-500 mt-4">Listen time: {{ $stats['listen_hours'] }} hrs</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Raw Plays</p>
+                    <p class="text-2xl font-bold text-slate-700">{{ number_format($stats['raw_plays']) }}</p>
+                </div>
+                <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-layer-group text-slate-600 text-xl"></i>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-4">All-time play starts</p>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

@@ -20,7 +20,7 @@ class Episode extends Model
         'episode_number', 'season_number', 'episode_type', 'published_at', 'status', 
         'approval_status', 'approval_reason', 'reviewed_by', 'reviewed_at',
         'is_featured', 'explicit', 'guests', 'chapters', 'transcript', 'plays', 'downloads',
-        'shares', 'average_listen_duration', 'tags',
+        'shares', 'average_listen_duration', 'tags', 'raw_plays',
         'spotify_url', 'apple_url', 'youtube_music_url', 'audiomack_url', 
         'soundcloud_url', 'custom_links'
     ];
@@ -31,6 +31,7 @@ class Episode extends Model
         'is_featured' => 'boolean',
         'explicit' => 'boolean',
         'duration' => 'float',
+        'raw_plays' => 'integer',
         'guests' => 'array',
         'chapters' => 'array',
         'transcript' => 'array',
@@ -111,36 +112,20 @@ class Episode extends Model
     public function trackPlay($userId = null, $duration = 0, $position = 0)
     {
         $sessionId = session()->getId();
+        $play = Play::where('episode_id', $this->id)
+            ->where('session_id', $sessionId)
+            ->first();
+
+        if (!$play) {
+            $play = $this->recordQualifiedPlay($userId, $duration, $position);
+            if (!$play) {
+                return;
+            }
+        }
+
         $totalSeconds = $this->duration ? (int) round($this->duration * 60) : 0;
         $completionRate = $totalSeconds > 0 ? ($duration / $totalSeconds) * 100 : 0;
         $completed = $totalSeconds > 0 ? $duration >= ($totalSeconds * 0.9) : false;
-
-        $play = Play::firstOrCreate(
-            [
-                'episode_id' => $this->id,
-                'session_id' => $sessionId,
-            ],
-            [
-                'user_id' => $userId,
-                'ip_address' => request()->ip(),
-                'listen_duration' => $duration,
-                'total_duration' => $totalSeconds,
-                'completion_rate' => $completionRate,
-                'last_position' => $position,
-                'device_type' => $this->detectDeviceType(),
-                'platform' => 'web',
-                'user_agent' => request()->userAgent(),
-                'started_at' => now(),
-                'last_listened_at' => now(),
-                'completed' => $completed,
-            ]
-        );
-
-        if ($play->wasRecentlyCreated) {
-            $this->increment('plays');
-            $this->show?->increment('total_plays');
-            return;
-        }
 
         $play->listen_duration = max($play->listen_duration ?? 0, $duration);
         $play->total_duration = $totalSeconds;
@@ -154,6 +139,58 @@ class Episode extends Model
         }
 
         $play->save();
+    }
+
+    public function recordQualifiedPlay($userId = null, $duration = 0, $position = 0)
+    {
+        $sessionId = session()->getId();
+        $ipAddress = request()->ip();
+
+        $recentPlay = Play::where('episode_id', $this->id)
+            ->where('ip_address', $ipAddress)
+            ->where('started_at', '>=', now()->subDay())
+            ->latest('started_at')
+            ->first();
+
+        if ($recentPlay) {
+            if (!$recentPlay->user_id && $userId) {
+                $recentPlay->user_id = $userId;
+            }
+            $recentPlay->last_listened_at = now();
+            $recentPlay->save();
+            return $recentPlay;
+        }
+
+        $totalSeconds = $this->duration ? (int) round($this->duration * 60) : 0;
+        $completionRate = $totalSeconds > 0 ? ($duration / $totalSeconds) * 100 : 0;
+        $completed = $totalSeconds > 0 ? $duration >= ($totalSeconds * 0.9) : false;
+
+        $play = Play::create([
+            'episode_id' => $this->id,
+            'session_id' => $sessionId,
+            'user_id' => $userId,
+            'ip_address' => $ipAddress,
+            'listen_duration' => $duration,
+            'total_duration' => $totalSeconds,
+            'completion_rate' => $completionRate,
+            'last_position' => $position,
+            'device_type' => $this->detectDeviceType(),
+            'platform' => 'web',
+            'user_agent' => request()->userAgent(),
+            'started_at' => now(),
+            'last_listened_at' => now(),
+            'completed' => $completed,
+        ]);
+
+        $this->increment('plays');
+        $this->show?->increment('total_plays');
+
+        return $play;
+    }
+
+    public function recordRawPlay(): void
+    {
+        $this->increment('raw_plays');
     }
 
     public function trackDownload()

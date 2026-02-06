@@ -14,6 +14,7 @@ class BlogDetail extends Component
     public $replyTo = null;
     public $userReactions = [];
     public $isBookmarked = false;
+    public $qualifiedViewRecorded = false;
 
     protected $rules = [
         'comment' => 'required|min:3|max:1000',
@@ -42,8 +43,9 @@ class BlogDetail extends Component
 
         $this->post = $query->where('slug', $slug)->firstOrFail();
 
-        // Track view
-        $this->post->incrementViews(request()->ip(), auth()->id());
+        if (!request()->routeIs('admin.blog.preview')) {
+            $this->post->incrementRawView();
+        }
 
         // Load user interactions if authenticated
         if (auth()->check()) {
@@ -100,6 +102,16 @@ class BlogDetail extends Component
             'Added to reading list' : 
             'Removed from reading list'
         );
+    }
+
+    public function recordQualifiedView()
+    {
+        if ($this->qualifiedViewRecorded) {
+            return;
+        }
+
+        $this->qualifiedViewRecorded = true;
+        $this->post->incrementViews(request()->ip(), auth()->id());
     }
 
     public function setReplyTo($commentId)

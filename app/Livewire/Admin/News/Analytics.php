@@ -60,6 +60,7 @@ class Analytics extends Component
         }
 
         $totalViews = (clone $interactionQuery)->views()->count();
+        $rawViews = News::sum('raw_views');
         $uniqueReaders = (clone $interactionQuery)
             ->views()
             ->whereNotNull('ip_address')
@@ -140,6 +141,7 @@ class Analytics extends Component
                 'published_posts' => $publishedPosts,
                 'pending_posts' => $pendingPosts,
                 'total_views' => $totalViews,
+                'raw_views' => $rawViews,
                 'unique_readers' => $uniqueReaders,
                 'total_reactions' => $totalReactions,
                 'total_shares' => $totalShares,

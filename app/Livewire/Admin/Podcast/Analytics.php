@@ -36,6 +36,7 @@ class Analytics extends Component
         }
 
         $totalPlays = (clone $basePlays)->count();
+        $rawPlays = \App\Models\Podcast\Episode::sum('raw_plays');
         $uniqueListeners = (clone $basePlays)->distinct('session_id')->count('session_id');
         $avgCompletion = (clone $basePlays)->avg('completion_rate');
         $totalDownloads = (clone $baseDownloads)->count();
@@ -43,6 +44,7 @@ class Analytics extends Component
 
         $stats = [
             'total_plays' => $totalPlays,
+            'raw_plays' => $rawPlays,
             'unique_listeners' => $uniqueListeners,
             'avg_completion' => $avgCompletion ? round($avgCompletion, 1) : 0,
             'total_downloads' => $totalDownloads,

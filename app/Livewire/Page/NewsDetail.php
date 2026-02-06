@@ -13,6 +13,7 @@ class NewsDetail extends Component
     public $userReactions = [];
     public $isBookmarked = false;
     public $shareUrl = '';
+    public $qualifiedViewRecorded = false;
 
     public function mount($slug)
     {
@@ -21,7 +22,7 @@ class NewsDetail extends Component
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $this->news->incrementViews(request()->ip(), auth()->id());
+        $this->news->incrementRawView();
         $this->shareUrl = route('news.show', $this->news->slug);
 
         if (auth()->check()) {
@@ -133,6 +134,16 @@ class NewsDetail extends Component
             $this->dispatchBrowserEvent('open-share-url', ['url' => $shareUrl]);
         }
         $this->dispatch('open-share-url', url: $shareUrl);
+    }
+
+    public function recordQualifiedView()
+    {
+        if ($this->qualifiedViewRecorded) {
+            return;
+        }
+
+        $this->qualifiedViewRecorded = true;
+        $this->news->incrementViews(request()->ip(), auth()->id());
     }
 
     public function getRelatedNewsProperty()

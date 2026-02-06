@@ -162,28 +162,46 @@
                 @if($episode->video_type === 'youtube' && $episode->youtube_video_id)
                     <!-- YouTube Embed -->
                     <div class="relative pb-[56.25%]">
-                        <iframe 
-                            class="absolute top-0 left-0 w-full h-full"
-                            src="https://www.youtube.com/embed/{{ $episode->youtube_video_id }}" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
+                        <button type="button"
+                            class="absolute inset-0 z-10 flex items-center justify-center bg-black/60 text-white"
+                            data-video-overlay>
+                            <span class="inline-flex items-center px-5 py-3 bg-purple-600 hover:bg-purple-700 rounded-full font-semibold">
+                                <i class="fas fa-play mr-2"></i>Start Video
+                            </span>
+                        </button>
+                        <iframe
+                            class="absolute top-0 left-0 w-full h-full hidden"
+                            src="about:blank"
+                            data-src="https://www.youtube.com/embed/{{ $episode->youtube_video_id }}"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                            data-video-iframe>
                         </iframe>
                     </div>
                 @elseif($episode->video_type === 'vimeo')
                     <!-- Vimeo Embed -->
                     <div class="relative pb-[56.25%]">
-                        <iframe 
-                            class="absolute top-0 left-0 w-full h-full"
-                            src="{{ str_replace('vimeo.com/', 'player.vimeo.com/video/', $episode->video_url) }}" 
-                            frameborder="0" 
-                            allow="autoplay; fullscreen; picture-in-picture" 
-                            allowfullscreen>
+                        <button type="button"
+                            class="absolute inset-0 z-10 flex items-center justify-center bg-black/60 text-white"
+                            data-video-overlay>
+                            <span class="inline-flex items-center px-5 py-3 bg-purple-600 hover:bg-purple-700 rounded-full font-semibold">
+                                <i class="fas fa-play mr-2"></i>Start Video
+                            </span>
+                        </button>
+                        <iframe
+                            class="absolute top-0 left-0 w-full h-full hidden"
+                            src="about:blank"
+                            data-src="{{ str_replace('vimeo.com/', 'player.vimeo.com/video/', $episode->video_url) }}"
+                            frameborder="0"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowfullscreen
+                            data-video-iframe>
                         </iframe>
                     </div>
                 @elseif($episode->video_type === 'upload')
                     <!-- Uploaded Video -->
-                    <video class="w-full" controls>
+                    <video id="podcastVideoPlayer" class="w-full" controls>
                         <source src="{{ $episode->video_url }}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
@@ -192,7 +210,7 @@
                     <div class="p-8 text-center">
                         <i class="fas fa-external-link-alt text-4xl text-purple-600 mb-4"></i>
                         <p class="text-gray-700 mb-4">Video available on external platform</p>
-                        <a href="{{ $episode->video_url }}" target="_blank" 
+                        <a href="{{ $episode->video_url }}" target="_blank" data-video-external
                            class="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
                             <i class="fas fa-play mr-2"></i>Watch Video
                         </a>
@@ -465,34 +483,105 @@
         </div>
     </div>
 
-    @if($episode->audio_file)
+    @if($episode->audio_file || $episode->has_video)
         <!-- JavaScript for Player -->
         <script>
-            const player = document.getElementById('podcastPlayer');
-            let lastTracked = 0;
+            (function () {
+                let lastTracked = 0;
+                let qualifiedRecorded = false;
+                let rawRecorded = false;
 
-            player.addEventListener('timeupdate', function () {
-                const currentTime = Math.floor(player.currentTime);
-                const duration = Math.floor(player.duration);
+                const recordQualifiedPlay = () => {
+                    if (qualifiedRecorded) return;
+                    qualifiedRecorded = true;
+                    @this.call('recordQualifiedPlay');
+                };
 
-                // Track progress every 30 seconds
-                if (currentTime > 0 && currentTime % 30 === 0 && currentTime !== lastTracked) {
-                    @this.call('updateProgress', currentTime, duration);
-                    lastTracked = currentTime;
+                const recordRawPlay = () => {
+                    if (rawRecorded) return;
+                    rawRecorded = true;
+                    @this.call('recordRawPlay');
+                };
+
+                const player = document.getElementById('podcastPlayer');
+                if (player) {
+                    player.addEventListener('play', function () {
+                        recordRawPlay();
+                    });
+
+                    player.addEventListener('timeupdate', function () {
+                        const currentTime = Math.floor(player.currentTime);
+                        const duration = Math.floor(player.duration);
+
+                        if (!qualifiedRecorded && currentTime >= 10) {
+                            recordQualifiedPlay();
+                        }
+
+                        // Track progress every 30 seconds
+                        if (currentTime > 0 && currentTime % 30 === 0 && currentTime !== lastTracked) {
+                            @this.call('updateProgress', currentTime, duration);
+                            lastTracked = currentTime;
+                        }
+                    });
+
+                    // Resume from last position
+                    @if($currentPosition > 0)
+                        player.addEventListener('loadedmetadata', function () {
+                            player.currentTime = {{ $currentPosition }};
+                        });
+                    @endif
                 }
-            });
 
-            function addTimestamp() {
-                const currentTime = Math.floor(player.currentTime);
-                @this.call('setCommentTime', currentTime);
-            }
+                const videoPlayer = document.getElementById('podcastVideoPlayer');
+                if (videoPlayer) {
+                    videoPlayer.addEventListener('play', function () {
+                        recordRawPlay();
+                    });
 
-            // Resume from last position
-            @if($currentPosition > 0)
-                player.addEventListener('loadedmetadata', function () {
-                    player.currentTime = {{ $currentPosition }};
-                });
-            @endif
+                    videoPlayer.addEventListener('timeupdate', function () {
+                        const currentTime = Math.floor(videoPlayer.currentTime);
+                        const duration = Math.floor(videoPlayer.duration);
+
+                        if (!qualifiedRecorded && currentTime >= 10) {
+                            recordQualifiedPlay();
+                        }
+
+                        if (currentTime > 0 && currentTime % 30 === 0 && currentTime !== lastTracked) {
+                            @this.call('updateProgress', currentTime, duration);
+                            lastTracked = currentTime;
+                        }
+                    });
+                }
+
+                const overlay = document.querySelector('[data-video-overlay]');
+                const iframe = document.querySelector('[data-video-iframe]');
+                if (overlay && iframe) {
+                    overlay.addEventListener('click', function () {
+                        const src = iframe.getAttribute('data-src');
+                        if (src) {
+                            iframe.setAttribute('src', src);
+                        }
+                        overlay.classList.add('hidden');
+                        iframe.classList.remove('hidden');
+                        recordRawPlay();
+                        recordQualifiedPlay();
+                    }, { once: true });
+                }
+
+                const externalVideo = document.querySelector('[data-video-external]');
+                if (externalVideo) {
+                    externalVideo.addEventListener('click', function () {
+                        recordRawPlay();
+                        recordQualifiedPlay();
+                    }, { once: true });
+                }
+
+                window.addTimestamp = function () {
+                    if (!player) return;
+                    const currentTime = Math.floor(player.currentTime);
+                    @this.call('setCommentTime', currentTime);
+                };
+            })();
         </script>
     @endif
 

@@ -13,6 +13,7 @@ class News extends Model
     protected $fillable = [
         'title', 'slug', 'excerpt', 'content', 'featured_image', 'gallery', 'video_url',
         'category_id', 'author_id', 'published_at', 'read_time', 'views', 'likes', 'shares',
+        'raw_views',
         'is_featured', 'featured_position', 'is_published', 'breaking', 'breaking_until',
         'approval_status', 'approval_reason', 'reviewed_by', 'reviewed_at',
         'meta_description', 'meta_keywords', 'tags',
@@ -25,6 +26,7 @@ class News extends Model
         'is_published' => 'boolean',
         'reviewed_at' => 'datetime',
         'views' => 'integer',
+        'raw_views' => 'integer',
         'likes' => 'integer',
         'shares' => 'integer',
         'tags' => 'array',
@@ -158,6 +160,11 @@ class News extends Model
                 'referer' => request()->header('referer'),
             ]);
         }
+    }
+
+    public function incrementRawView(): void
+    {
+        $this->increment('raw_views');
     }
 
     public function trackShare(string $platform)

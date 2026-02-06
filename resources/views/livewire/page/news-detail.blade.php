@@ -514,3 +514,39 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        function setupQualifiedViewTracking() {
+            let qualifiedRecorded = false;
+
+            const recordQualified = () => {
+                if (qualifiedRecorded) return;
+                qualifiedRecorded = true;
+                @this.call('recordQualifiedView');
+            };
+
+            const onScroll = () => {
+                const doc = document.documentElement;
+                const scrollTop = window.scrollY || doc.scrollTop;
+                const scrollHeight = doc.scrollHeight - window.innerHeight;
+                if (scrollHeight <= 0) return;
+                const percent = (scrollTop / scrollHeight) * 100;
+                if (percent >= 25) {
+                    recordQualified();
+                }
+            };
+
+            setTimeout(recordQualified, 10000);
+            window.addEventListener('scroll', onScroll, { passive: true });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupQualifiedViewTracking, { once: true });
+        } else {
+            setupQualifiedViewTracking();
+        }
+
+        document.addEventListener('livewire:navigated', setupQualifiedViewTracking);
+    })();
+</script>

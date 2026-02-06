@@ -36,6 +36,7 @@ class Analytics extends Component
         }
 
         $totalViews = (clone $baseInteractions)->where('type', 'view')->count();
+        $rawViews = \App\Models\Blog\Post::sum('raw_views');
         $uniqueReaders = (clone $baseInteractions)
             ->where('type', 'view')
             ->whereNotNull('ip_address')
@@ -73,6 +74,7 @@ class Analytics extends Component
 
         $stats = [
             'total_views' => $totalViews,
+            'raw_views' => $rawViews,
             'unique_readers' => $uniqueReaders,
             'total_reactions' => $totalReactions,
             'total_comments' => $totalComments,
