@@ -81,6 +81,21 @@ class StaffBirthdays extends Component
         session()->flash('success', 'Test birthday email sent to ' . $this->test_email . '.');
     }
 
+    public function updatedTestStaffId($value)
+    {
+        if (!$value) {
+            return;
+        }
+
+        $staff = StaffMember::query()->find($value);
+        if (!$staff) {
+            return;
+        }
+
+        $this->test_email = (string) ($staff->email ?? '');
+        $this->resetErrorBag('test_email');
+    }
+
     public function sendTodayEmails()
     {
         $this->validate([
