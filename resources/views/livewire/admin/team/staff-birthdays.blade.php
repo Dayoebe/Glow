@@ -141,7 +141,7 @@
                                 · {{ $row['staff']->departmentRelation?->name ?? ($row['staff']->department ?? 'General') }}
                             </p>
                         </div>
-                        <div class="text-sm text-gray-600">DOB: {{ $row['dob']->format('M j, Y') }}</div>
+                        <div class="text-sm text-gray-600">DOB: {{ $row['dob_display'] }}</div>
                         <div class="text-sm font-semibold text-emerald-600">Today</div>
                         <div>
                             @if($row['staff']->email)
@@ -185,7 +185,7 @@
                                         · {{ $row['staff']->departmentRelation?->name ?? ($row['staff']->department ?? 'General') }}
                                     </p>
                                 </td>
-                                <td class="py-3 pr-4 text-gray-600">{{ $row['dob']->format('M j, Y') }}</td>
+                                <td class="py-3 pr-4 text-gray-600">{{ $row['dob_display'] }}</td>
                                 <td class="py-3 pr-4 text-gray-600">{{ $row['next_birthday']->format('M j, Y') }}</td>
                                 <td class="py-3 pr-4">
                                     @if($row['days_until'] === 0)

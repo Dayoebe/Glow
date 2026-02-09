@@ -92,32 +92,103 @@
             </div>
         </div>
 
-        <!-- Current Show Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Current Show</h3>
-            
-            <div class="text-center mb-6">
-                <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full shadow-lg flex items-center justify-center">
-                    <i class="fas fa-microphone-alt text-white text-3xl"></i>
+        <div class="space-y-6">
+            <!-- Current Show Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Current Show</h3>
+                
+                <div class="text-center mb-6">
+                    <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full shadow-lg flex items-center justify-center">
+                        <i class="fas fa-microphone-alt text-white text-3xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 mb-1">{{ $currentShow['title'] ?? 'Unknown' }}</h4>
+                    <p class="text-sm text-gray-600 mb-2">{{ $currentShow['host'] ?? 'Unknown' }}</p>
+                    <span class="inline-flex items-center px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
+                        <i class="fas fa-clock mr-1"></i>
+                        {{ $currentShow['time'] ?? 'Unknown' }}
+                        <span class="ml-2 text-[10px] font-semibold">WAT</span>
+                    </span>
                 </div>
-                <h4 class="text-xl font-bold text-gray-900 mb-1">{{ $currentShow['title'] ?? 'Unknown' }}</h4>
-                <p class="text-sm text-gray-600 mb-2">{{ $currentShow['host'] ?? 'Unknown' }}</p>
-                <span class="inline-flex items-center px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
-                    <i class="fas fa-clock mr-1"></i>
-                    {{ $currentShow['time'] ?? 'Unknown' }}
-                    <span class="ml-2 text-[10px] font-semibold">WAT</span>
-                </span>
+
+                <div class="space-y-2 border-t border-gray-200 pt-4">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Status</span>
+                        <span class="font-semibold text-gray-900">{{ $currentShow['status'] ?? 'Unknown' }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Schedule</span>
+                        <span class="font-semibold text-gray-900">{{ $currentDay ?: now()->format('l') }}</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="space-y-2 border-t border-gray-200 pt-4">
-                <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">Status</span>
-                    <span class="font-semibold text-gray-900">{{ $currentShow['status'] ?? 'Unknown' }}</span>
+            <!-- Next Birthday Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Next Birthday</h3>
+                    <a href="{{ route('admin.team.birthdays') }}" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                        View All
+                    </a>
                 </div>
-                <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">Schedule</span>
-                    <span class="font-semibold text-gray-900">{{ $currentDay ?: now()->format('l') }}</span>
-                </div>
+
+                @if($nextBirthday)
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <div class="h-16 w-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center overflow-hidden">
+                                @if($nextBirthday['staff']->photo_url)
+                                    <img src="{{ $nextBirthday['staff']->photo_url }}" alt="{{ $nextBirthday['staff']->name }}" class="h-full w-full object-cover">
+                                @else
+                                    <span class="text-lg font-semibold">{{ $nextBirthday['initials'] ?: 'NA' }}</span>
+                                @endif
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+                                <i class="fas fa-gift text-[10px]"></i>
+                            </div>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-base font-semibold text-gray-900 truncate">{{ $nextBirthday['staff']->name }}</p>
+                            <p class="text-xs text-gray-500">
+                                {{ $nextBirthday['staff']->teamRole?->name ?? ($nextBirthday['staff']->role ?? 'Staff Member') }}
+                                · {{ $nextBirthday['staff']->departmentRelation?->name ?? ($nextBirthday['staff']->department ?? 'General') }}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Birthday: <span class="font-medium text-gray-700">{{ $nextBirthday['dob_display'] }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-100">
+                            <p class="text-[11px] uppercase tracking-wide text-emerald-700 font-semibold">Countdown</p>
+                            <p class="text-lg font-semibold text-emerald-800 mt-1">{{ $nextBirthday['countdown'] }}</p>
+                            <p class="text-xs text-emerald-700">{{ $nextBirthday['next_birthday']->format('M j, Y') }}</p>
+                        </div>
+                        <div class="p-3 rounded-lg bg-amber-50 border border-amber-100">
+                            <p class="text-[11px] uppercase tracking-wide text-amber-700 font-semibold">Turning</p>
+                            <p class="text-lg font-semibold text-amber-800 mt-1">{{ $nextBirthday['turning_display'] }}</p>
+                            <p class="text-xs text-amber-700">
+                                {{ $nextBirthday['turning_note'] }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between text-xs text-gray-500">
+                        <span class="inline-flex items-center">
+                            <i class="fas fa-calendar-day mr-1"></i>
+                            {{ $nextBirthday['next_birthday']->diffForHumans() }}
+                        </span>
+                        <a href="{{ route('admin.team.staff.edit', $nextBirthday['staff']->id) }}" class="text-emerald-600 hover:text-emerald-700 font-medium">
+                            View Profile
+                        </a>
+                    </div>
+                @else
+                    <div class="text-sm text-gray-500 bg-gray-50 border border-dashed border-gray-200 rounded-lg p-4">
+                        No birthdays on record yet. Add a month and day to start tracking.
+                    </div>
+                    <a href="{{ route('admin.team.staff.create') }}" class="mt-4 inline-flex items-center text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                        Add Staff DOB
+                    </a>
+                @endif
             </div>
         </div>
     </div>

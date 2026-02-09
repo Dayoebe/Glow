@@ -27,18 +27,19 @@ Artisan::command('staff:send-birthday-emails {--date=}', function () {
     $query = StaffMember::query()
         ->with(['departmentRelation', 'teamRole'])
         ->where('is_active', true)
-        ->whereNotNull('date_of_birth')
+        ->whereNotNull('birth_month')
+        ->whereNotNull('birth_day')
         ->whereNotNull('email')
         ->where('email', '!=', '');
 
     $query->where(function ($query) use ($date) {
-        $query->whereMonth('date_of_birth', $date->month)
-            ->whereDay('date_of_birth', $date->day);
+        $query->where('birth_month', $date->month)
+            ->where('birth_day', $date->day);
 
         if ($date->month === 2 && $date->day === 28 && !$date->isLeapYear()) {
             $query->orWhere(function ($subQuery) {
-                $subQuery->whereMonth('date_of_birth', 2)
-                    ->whereDay('date_of_birth', 29);
+                $subQuery->where('birth_month', 2)
+                    ->where('birth_day', 29);
             });
         }
     });

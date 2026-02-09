@@ -140,10 +140,44 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-                <input type="date" wire:model="date_of_birth"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                <p class="mt-1 text-xs text-gray-500">Used for birthday messages. Not shown publicly.</p>
-                @error('date_of_birth') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                @php
+                    $birthMonths = [
+                        1 => 'January',
+                        2 => 'February',
+                        3 => 'March',
+                        4 => 'April',
+                        5 => 'May',
+                        6 => 'June',
+                        7 => 'July',
+                        8 => 'August',
+                        9 => 'September',
+                        10 => 'October',
+                        11 => 'November',
+                        12 => 'December',
+                    ];
+                @endphp
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <select wire:model="birth_month"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="">Month</option>
+                        @foreach($birthMonths as $monthValue => $monthLabel)
+                            <option value="{{ $monthValue }}">{{ $monthLabel }}</option>
+                        @endforeach
+                    </select>
+                    <select wire:model="birth_day"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="">Day</option>
+                        @for($day = 1; $day <= 31; $day++)
+                            <option value="{{ $day }}">{{ $day }}</option>
+                        @endfor
+                    </select>
+                    <input type="number" wire:model="birth_year" placeholder="Year (optional)" min="1900" max="{{ now()->year }}"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <p class="mt-1 text-xs text-gray-500">Month and day are required. Year is optional. Used for birthday messages. Not shown publicly.</p>
+                @error('birth_month') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                @error('birth_day') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                @error('birth_year') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Bio</label>

@@ -29,6 +29,9 @@ class StaffMember extends Model
         'is_active',
         'joined_date',
         'date_of_birth',
+        'birth_month',
+        'birth_day',
+        'birth_year',
         'social_links',
     ];
 
@@ -36,6 +39,9 @@ class StaffMember extends Model
         'is_active' => 'boolean',
         'joined_date' => 'date',
         'date_of_birth' => 'date',
+        'birth_month' => 'integer',
+        'birth_day' => 'integer',
+        'birth_year' => 'integer',
         'social_links' => 'array',
     ];
 

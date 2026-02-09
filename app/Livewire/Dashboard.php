@@ -30,6 +30,7 @@ class Dashboard extends Component
     public $currentDay = '';
     public $recentReviews = [];
     public $todaySchedule = [];
+    public $nextBirthday = null;
 
     public function mount()
     {
@@ -45,6 +46,7 @@ class Dashboard extends Component
         $this->loadRecentActivities();
         $this->loadTopItems();
         $this->loadRecentReviews();
+        $this->loadNextBirthday();
     }
 
     private function loadStats(): void
@@ -347,6 +349,54 @@ class Dashboard extends Component
             ->all();
     }
 
+    private function loadNextBirthday(): void
+    {
+        $today = Carbon::today();
+
+        $staffMembers = StaffMember::query()
+            ->with(['departmentRelation', 'teamRole'])
+            ->where('is_active', true)
+            ->whereNotNull('birth_month')
+            ->whereNotNull('birth_day')
+            ->get();
+
+        $next = null;
+
+        foreach ($staffMembers as $staffMember) {
+            $birthMonth = (int) $staffMember->birth_month;
+            $birthDay = (int) $staffMember->birth_day;
+            $birthYear = $staffMember->birth_year ? (int) $staffMember->birth_year : null;
+
+            $nextBirthday = $this->resolveBirthdayForYear($today->year, $birthMonth, $birthDay);
+            if ($nextBirthday->lt($today)) {
+                $nextBirthday = $this->resolveBirthdayForYear($today->year + 1, $birthMonth, $birthDay);
+            }
+
+            if ($next && $nextBirthday->gte($next['next_birthday'])) {
+                continue;
+            }
+
+            $daysUntil = $today->diffInDays($nextBirthday, false);
+            $turning = $birthYear ? $nextBirthday->year - $birthYear : null;
+            $turningDisplay = $turning !== null ? $turning . ' years' : '—';
+            $turningNote = $turning !== null ? 'Age on next birthday' : 'Year not provided';
+
+            $next = [
+                'staff' => $staffMember,
+                'initials' => $this->initialsFor($staffMember->name),
+                'dob_display' => $this->formatDobDisplay($birthYear, $birthMonth, $birthDay),
+                'next_birthday' => $nextBirthday,
+                'days_until' => $daysUntil,
+                'countdown' => $this->formatCountdown($daysUntil),
+                'turning' => $turning,
+                'turning_display' => $turningDisplay,
+                'turning_note' => $turningNote,
+            ];
+        }
+
+        $this->nextBirthday = $next;
+    }
+
     private function resolveTimezone(?string $timezone): string
     {
         $timezone = trim((string) $timezone);
@@ -359,6 +409,54 @@ class Dashboard extends Component
         }
 
         return $timezone;
+    }
+
+    private function resolveBirthdayForYear(int $year, int $month, int $day): Carbon
+    {
+        if ($month === 2 && $day === 29 && !Carbon::create($year)->isLeapYear()) {
+            return Carbon::create($year, 2, 28);
+        }
+
+        return Carbon::create($year, $month, $day);
+    }
+
+    private function formatDobDisplay(?int $year, int $month, int $day): string
+    {
+        $displayYear = $year ?: 2000;
+        $format = $year ? 'M j, Y' : 'M j';
+
+        return Carbon::create($displayYear, $month, $day)->format($format);
+    }
+
+    private function formatCountdown(int $daysUntil): string
+    {
+        if ($daysUntil === 0) {
+            return 'Today';
+        }
+
+        if ($daysUntil === 1) {
+            return 'Tomorrow';
+        }
+
+        return $daysUntil . ' days';
+    }
+
+    private function initialsFor(?string $name): string
+    {
+        $name = trim((string) $name);
+        if ($name === '') {
+            return '';
+        }
+
+        $parts = preg_split('/\\s+/', $name, -1, PREG_SPLIT_NO_EMPTY);
+        if (!$parts) {
+            return '';
+        }
+
+        $first = strtoupper(substr($parts[0], 0, 1));
+        $last = count($parts) > 1 ? strtoupper(substr($parts[count($parts) - 1], 0, 1)) : '';
+
+        return $first . $last;
     }
 
     private function mapSlotToTimeline(string $label, ?ScheduleSlot $slot): array

@@ -7,6 +7,7 @@ use App\Models\Team\Department;
 use App\Models\Team\Role as TeamRole;
 use App\Support\CloudinaryUploader;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -32,7 +33,9 @@ class StaffForm extends Component
     public $employment_status = 'full-time';
     public $is_active = true;
     public $joined_date = '';
-    public $date_of_birth = '';
+    public $birth_month = '';
+    public $birth_day = '';
+    public $birth_year = '';
     public $departments = [];
     public $teamRoles = [];
     public $users = [];
@@ -56,7 +59,9 @@ class StaffForm extends Component
         'photo_upload' => 'nullable|image|max:5120',
         'email' => 'nullable|email',
         'joined_date' => 'nullable|date',
-        'date_of_birth' => 'nullable|date|before_or_equal:today',
+        'birth_month' => 'nullable|integer|between:1,12|required_with:birth_day,birth_year',
+        'birth_day' => 'nullable|integer|between:1,31|required_with:birth_month,birth_year',
+        'birth_year' => 'nullable|integer|min:1900',
         'employment_status' => 'required',
         'is_active' => 'boolean',
     ];
@@ -86,7 +91,19 @@ class StaffForm extends Component
             $this->employment_status = $staff->employment_status;
             $this->is_active = $staff->is_active;
             $this->joined_date = $staff->joined_date?->format('Y-m-d') ?? '';
-            $this->date_of_birth = $staff->date_of_birth?->format('Y-m-d') ?? '';
+            $birthMonth = $staff->birth_month;
+            $birthDay = $staff->birth_day;
+            $birthYear = $staff->birth_year;
+
+            if ((!$birthMonth || !$birthDay) && $staff->date_of_birth) {
+                $birthMonth = $staff->date_of_birth->month;
+                $birthDay = $staff->date_of_birth->day;
+                $birthYear = $staff->date_of_birth->year;
+            }
+
+            $this->birth_month = $birthMonth ?: '';
+            $this->birth_day = $birthDay ?: '';
+            $this->birth_year = $birthYear ?: '';
             $this->social_links = $staff->social_links ?? $this->social_links;
         }
 
@@ -168,7 +185,38 @@ class StaffForm extends Component
     {
         $rules = $this->rules;
         $rules['user_id'] = 'nullable|exists:users,id|unique:staff_members,user_id' . ($this->staffId ? ',' . $this->staffId . ',id' : '');
+        $rules['birth_year'] = $rules['birth_year'] . '|max:' . now()->year;
         $this->validate($rules);
+
+        $birthMonth = $this->birth_month !== '' ? (int) $this->birth_month : null;
+        $birthDay = $this->birth_day !== '' ? (int) $this->birth_day : null;
+        $birthYear = $this->birth_year !== '' ? (int) $this->birth_year : null;
+
+        if ($birthMonth || $birthDay || $birthYear) {
+            if (!$birthMonth || !$birthDay) {
+                $this->addError('birth_day', 'Birth month and day are required.');
+                return;
+            }
+
+            $validationYear = $birthYear ?: 2000;
+            if (!checkdate($birthMonth, $birthDay, $validationYear)) {
+                $this->addError('birth_day', 'Selected month and day are not a valid date.');
+                return;
+            }
+
+            if ($birthYear) {
+                $dob = Carbon::create($birthYear, $birthMonth, $birthDay);
+                if ($dob->greaterThan(Carbon::today())) {
+                    $this->addError('birth_year', 'Date of birth cannot be in the future.');
+                    return;
+                }
+            }
+        }
+
+        $dateOfBirth = null;
+        if ($birthMonth && $birthDay && $birthYear) {
+            $dateOfBirth = Carbon::create($birthYear, $birthMonth, $birthDay)->toDateString();
+        }
 
         $validRole = TeamRole::query()
             ->where('id', $this->team_role_id)
@@ -215,7 +263,10 @@ class StaffForm extends Component
             'employment_status' => $this->employment_status,
             'is_active' => $this->is_active,
             'joined_date' => $this->joined_date ?: null,
-            'date_of_birth' => $this->date_of_birth ?: null,
+            'date_of_birth' => $dateOfBirth,
+            'birth_month' => $birthMonth,
+            'birth_day' => $birthDay,
+            'birth_year' => $birthYear,
             'social_links' => $this->social_links,
         ];
 

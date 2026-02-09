@@ -111,18 +111,19 @@ class StaffBirthdays extends Component
         $query = StaffMember::query()
             ->with(['departmentRelation', 'teamRole'])
             ->where('is_active', true)
-            ->whereNotNull('date_of_birth')
+            ->whereNotNull('birth_month')
+            ->whereNotNull('birth_day')
             ->whereNotNull('email')
             ->where('email', '!=', '');
 
         $query->where(function ($query) use ($date) {
-            $query->whereMonth('date_of_birth', $date->month)
-                ->whereDay('date_of_birth', $date->day);
+            $query->where('birth_month', $date->month)
+                ->where('birth_day', $date->day);
 
             if ($date->month === 2 && $date->day === 28 && !$date->isLeapYear()) {
                 $query->orWhere(function ($subQuery) {
-                    $subQuery->whereMonth('date_of_birth', 2)
-                        ->whereDay('date_of_birth', 29);
+                    $subQuery->where('birth_month', 2)
+                        ->where('birth_day', 29);
                 });
             }
         });
@@ -176,7 +177,8 @@ class StaffBirthdays extends Component
         $staff = StaffMember::query()
             ->with(['departmentRelation', 'teamRole'])
             ->where('is_active', true)
-            ->whereNotNull('date_of_birth')
+            ->whereNotNull('birth_month')
+            ->whereNotNull('birth_day')
             ->orderBy('name')
             ->first();
 
@@ -220,22 +222,26 @@ class StaffBirthdays extends Component
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', "%{$this->search}%");
             })
-            ->whereNotNull('date_of_birth')
+            ->whereNotNull('birth_month')
+            ->whereNotNull('birth_day')
             ->get();
 
         return $staff->map(function (StaffMember $staffMember) use ($today) {
-            $dob = $staffMember->date_of_birth instanceof Carbon
-                ? $staffMember->date_of_birth
-                : Carbon::parse($staffMember->date_of_birth);
+            $birthMonth = (int) $staffMember->birth_month;
+            $birthDay = (int) $staffMember->birth_day;
+            $birthYear = $staffMember->birth_year ? (int) $staffMember->birth_year : null;
 
-            $nextBirthday = $dob->copy()->year($today->year);
+            $dobDisplay = $this->formatDobDisplay($birthYear, $birthMonth, $birthDay);
+
+            $nextBirthday = $this->resolveBirthdayForYear($today->year, $birthMonth, $birthDay);
             if ($nextBirthday->lt($today)) {
-                $nextBirthday->addYear();
+                $nextBirthday = $this->resolveBirthdayForYear($today->year + 1, $birthMonth, $birthDay);
             }
 
             return [
                 'staff' => $staffMember,
-                'dob' => $dob,
+                'dob_display' => $dobDisplay,
+                'birth_year' => $birthYear,
                 'next_birthday' => $nextBirthday,
                 'days_until' => $today->diffInDays($nextBirthday, false),
             ];
@@ -272,9 +278,29 @@ class StaffBirthdays extends Component
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', "%{$this->search}%");
             })
-            ->whereNull('date_of_birth')
+            ->where(function ($query) {
+                $query->whereNull('birth_month')
+                    ->orWhereNull('birth_day');
+            })
             ->orderBy('name')
             ->get();
+    }
+
+    private function resolveBirthdayForYear(int $year, int $month, int $day): Carbon
+    {
+        if ($month === 2 && $day === 29 && !Carbon::create($year)->isLeapYear()) {
+            return Carbon::create($year, 2, 28);
+        }
+
+        return Carbon::create($year, $month, $day);
+    }
+
+    private function formatDobDisplay(?int $year, int $month, int $day): string
+    {
+        $displayYear = $year ?: 2000;
+        $format = $year ? 'M j, Y' : 'M j';
+
+        return Carbon::create($displayYear, $month, $day)->format($format);
     }
 
     public function render()
