@@ -75,6 +75,11 @@ use App\Livewire\Admin\Show\Reviews as AdminShowReviews;
 
 // Public Routes
 Route::get('/sitemap', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/ads.txt', function () {
+    return response()->file(public_path('ads.txt'), [
+        'Content-Type' => 'text/plain; charset=UTF-8',
+    ]);
+})->name('ads.txt');
 Route::get('/', HomePage::class)->name('home');
 Route::get('/about', AboutPage::class)->name('about');
 Route::get('/contact', ContactPage::class)->name('contact');
