@@ -25,8 +25,6 @@ class Categories extends Component
 
     // Modal states
     public $showFormModal = false;
-    public $showDeleteModal = false;
-    public $categoryToDelete = null;
 
     // Search
     public $search = '';
@@ -156,30 +154,23 @@ class Categories extends Component
         $this->closeModal();
     }
 
-    public function confirmDelete($categoryId)
+    public function deleteCategory($categoryId)
     {
-        $this->categoryToDelete = $categoryId;
-        $this->showDeleteModal = true;
-    }
-
-    public function deleteCategory()
-    {
-        if ($this->categoryToDelete) {
-            $category = NewsCategory::find($this->categoryToDelete);
-            
-            if ($category) {
-                // Check if category has news
-                if ($category->news()->count() > 0) {
-                    session()->flash('error', 'Cannot delete category with existing news articles. Please reassign or delete the articles first.');
-                } else {
-                    $category->delete();
-                    session()->flash('success', 'Category deleted successfully!');
-                }
-            }
+        $category = NewsCategory::find($categoryId);
+        
+        if (!$category) {
+            session()->flash('error', 'Category not found.');
+            return;
         }
 
-        $this->showDeleteModal = false;
-        $this->categoryToDelete = null;
+        // Check if category has news
+        if ($category->news()->count() > 0) {
+            session()->flash('error', 'Cannot delete category with existing news articles. Please reassign or delete the articles first.');
+            return;
+        }
+
+        $category->delete();
+        session()->flash('success', 'Category deleted successfully!');
     }
 
     public function toggleStatus($categoryId)
