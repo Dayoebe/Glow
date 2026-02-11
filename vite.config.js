@@ -12,7 +12,13 @@ export default defineConfig({
     ],
     server: {
         watch: {
-            ignored: ['**/storage/framework/views/**'],
+            ignored: [
+                '**/storage/framework/views/**',
+                '**/mobile/**',
+                '**/android/**',
+                '**/.gradle/**',
+                '**/node_modules/**',
+            ],
         },
     },
 });
