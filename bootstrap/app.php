@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminOnly::class,
             'admin_or_staff' => \App\Http\Middleware\AdminOrStaff::class,
             'api_token' => \App\Http\Middleware\ApiTokenAuth::class,
+            'api_optional_token' => \App\Http\Middleware\ApiOptionalToken::class,
             'api_admin_or_staff' => \App\Http\Middleware\ApiAdminOrStaff::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

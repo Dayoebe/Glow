@@ -9,4 +9,9 @@ class Subscription extends Model
     protected $table = 'podcast_subscriptions';
     protected $fillable = ['user_id', 'show_id', 'notifications_enabled', 'subscribed_at'];
     protected $casts = ['subscribed_at' => 'datetime', 'notifications_enabled' => 'boolean'];
+
+    public function show()
+    {
+        return $this->belongsTo(Show::class, 'show_id');
+    }
 }

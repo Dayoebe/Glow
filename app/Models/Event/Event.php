@@ -76,6 +76,11 @@ class Event extends Model
         return $this->hasMany(EventInteraction::class);
     }
 
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(EventAttendance::class);
+    }
+
     public function scopePublished($query)
     {
         return $query->where('is_published', true)

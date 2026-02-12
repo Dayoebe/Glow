@@ -17,8 +17,11 @@ class AdminDashboardController extends Controller
 {
     public function overview(Request $request)
     {
+        $user = $request->user();
+
         return response()->json([
-            'user' => $this->formatUser($request->user()),
+            'user' => $this->formatUser($user),
+            'modules' => $this->getModulesForRole($user?->role ?? 'user'),
             'stats' => [
                 'news' => News::published()->count(),
                 'blog_posts' => Post::published()->count(),
@@ -32,6 +35,47 @@ class AdminDashboardController extends Controller
                 'users' => User::where('is_active', true)->count(),
             ],
         ]);
+    }
+
+    private function getModulesForRole(string $role): array
+    {
+        $allModules = [
+            'news' => [
+                'label' => 'News',
+                'subtitle' => 'Manage articles',
+                'route' => 'AdminNews',
+            ],
+            'blog' => [
+                'label' => 'Blog',
+                'subtitle' => 'Manage posts',
+                'route' => 'AdminBlog',
+            ],
+            'shows' => [
+                'label' => 'Shows',
+                'subtitle' => 'Manage programs',
+                'route' => 'AdminShows',
+            ],
+            'team' => [
+                'label' => 'Team',
+                'subtitle' => 'OAPs and staff',
+                'route' => 'AdminTeam',
+            ],
+        ];
+
+        $roleMap = [
+            'admin' => ['news', 'blog', 'shows', 'team'],
+            'staff' => ['news', 'blog', 'shows'],
+            'corp_member' => ['news', 'blog'],
+            'intern' => ['news'],
+        ];
+
+        $keys = $roleMap[$role] ?? ['news'];
+
+        return collect($keys)
+            ->map(fn ($key) => $allModules[$key])
+            ->filter()
+            ->values()
+            ->all();
     }
 
     private function formatUser(?User $user): ?array

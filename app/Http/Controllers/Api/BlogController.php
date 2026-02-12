@@ -161,6 +161,7 @@ class BlogController extends Controller
                 'shares' => $post->shares,
                 'tags' => $post->tags,
                 'series' => $post->series,
+                'allow_comments' => $post->allow_comments,
             ],
             'related' => $related,
             'series' => $seriesPosts,

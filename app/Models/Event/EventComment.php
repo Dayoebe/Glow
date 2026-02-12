@@ -13,14 +13,19 @@ class EventComment extends Model
     protected $fillable = [
         'event_id',
         'user_id',
+        'parent_id',
+        'author_name',
+        'author_email',
         'comment',
         'is_approved',
         'is_pinned',
+        'likes',
     ];
 
     protected $casts = [
         'is_approved' => 'boolean',
         'is_pinned' => 'boolean',
+        'likes' => 'integer',
     ];
 
     public function event(): BelongsTo
@@ -33,6 +38,16 @@ class EventComment extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function replies()
+    {
+        return $this->hasMany(self::class, 'parent_id')->latest();
+    }
+
     public function scopeApproved($query)
     {
         return $query->where('is_approved', true);
@@ -41,5 +56,10 @@ class EventComment extends Model
     public function scopePinned($query)
     {
         return $query->where('is_pinned', true);
+    }
+
+    public function scopeParentOnly($query)
+    {
+        return $query->whereNull('parent_id');
     }
 }

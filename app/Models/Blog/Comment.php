@@ -20,11 +20,13 @@ class Comment extends Model
         'comment', 
         'is_approved', 
         'is_pinned',
+        'likes',
     ];
 
     protected $casts = [
         'is_approved' => 'boolean',
         'is_pinned' => 'boolean',
+        'likes' => 'integer',
     ];
 
     public function post(): BelongsTo

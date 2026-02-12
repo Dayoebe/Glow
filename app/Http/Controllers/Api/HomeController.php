@@ -12,6 +12,7 @@ use App\Models\Show\ScheduleSlot;
 use App\Models\Show\Show as ProgramShow;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -154,6 +155,7 @@ class HomeController extends Controller
             ->toArray();
 
         $currentShow = $this->getCurrentShow();
+        $recommendations = $this->buildRecommendations($request->user()?->id);
 
         $upcomingEvents = Event::with(['category'])
             ->published()
@@ -273,7 +275,98 @@ class HomeController extends Controller
             'stats' => $stats,
             'homeContent' => $homeContent,
             'currentShow' => $currentShow,
+            'recommendations' => $recommendations,
+            'personalized' => !empty($recommendations),
         ]);
+    }
+
+    private function buildRecommendations(?int $userId): array
+    {
+        if (!$userId) {
+            return [];
+        }
+
+        return [
+            'news' => $this->recommendNews($userId),
+            'blog' => $this->recommendBlog($userId),
+            'events' => $this->recommendEvents($userId),
+        ];
+    }
+
+    private function recommendNews(int $userId): array
+    {
+        $categoryIds = DB::table('news_interactions')
+            ->join('news', 'news.id', '=', 'news_interactions.news_id')
+            ->where('news_interactions.user_id', $userId)
+            ->whereIn('news_interactions.type', ['view', 'reaction', 'bookmark', 'share'])
+            ->groupBy('news.category_id')
+            ->orderByRaw('count(*) desc')
+            ->limit(2)
+            ->pluck('news.category_id');
+
+        if ($categoryIds->isEmpty()) {
+            return [];
+        }
+
+        return News::with(['category', 'author'])
+            ->published()
+            ->whereIn('category_id', $categoryIds)
+            ->latest('published_at')
+            ->take(6)
+            ->get()
+            ->map(fn ($news) => $this->mapNewsCard($news))
+            ->toArray();
+    }
+
+    private function recommendBlog(int $userId): array
+    {
+        $categoryIds = DB::table('blog_interactions')
+            ->join('blog_posts', 'blog_posts.id', '=', 'blog_interactions.post_id')
+            ->where('blog_interactions.user_id', $userId)
+            ->whereIn('blog_interactions.type', ['view', 'reaction', 'bookmark', 'share'])
+            ->groupBy('blog_posts.category_id')
+            ->orderByRaw('count(*) desc')
+            ->limit(2)
+            ->pluck('blog_posts.category_id');
+
+        if ($categoryIds->isEmpty()) {
+            return [];
+        }
+
+        return Post::with(['category', 'author'])
+            ->published()
+            ->whereIn('category_id', $categoryIds)
+            ->latest('published_at')
+            ->take(4)
+            ->get()
+            ->map(fn ($post) => $this->mapBlogCard($post))
+            ->toArray();
+    }
+
+    private function recommendEvents(int $userId): array
+    {
+        $categoryIds = DB::table('event_interactions')
+            ->join('events', 'events.id', '=', 'event_interactions.event_id')
+            ->where('event_interactions.user_id', $userId)
+            ->whereIn('event_interactions.type', ['view', 'reaction', 'bookmark', 'share'])
+            ->groupBy('events.category_id')
+            ->orderByRaw('count(*) desc')
+            ->limit(2)
+            ->pluck('events.category_id');
+
+        if ($categoryIds->isEmpty()) {
+            return [];
+        }
+
+        return Event::with(['category'])
+            ->published()
+            ->whereIn('category_id', $categoryIds)
+            ->upcoming()
+            ->orderBy('start_at')
+            ->take(4)
+            ->get()
+            ->map(fn ($event) => $this->mapEventCard($event))
+            ->toArray();
     }
 
     private function fetchOtherNewsBatch(array $excludeIds, int $page, int $batchSize): array
@@ -325,6 +418,35 @@ class HomeController extends Controller
             'date' => $news->time_ago,
             'views' => number_format($news->views),
             'image' => $news->featured_image ?? 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&h=600&fit=crop',
+        ];
+    }
+
+    private function mapBlogCard(Post $post): array
+    {
+        return [
+            'id' => $post->id,
+            'slug' => $post->slug,
+            'title' => $post->title,
+            'excerpt' => $post->excerpt,
+            'image' => $post->featured_image ?? 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&h=600&fit=crop',
+            'category' => $post->category?->name,
+            'date' => $post->published_at?->diffForHumans() ?? 'Unpublished',
+            'read_time' => $post->read_time,
+        ];
+    }
+
+    private function mapEventCard(Event $event): array
+    {
+        return [
+            'id' => $event->id,
+            'slug' => $event->slug,
+            'title' => $event->title,
+            'excerpt' => $event->excerpt,
+            'image' => $event->featured_image ?? 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&h=600&fit=crop',
+            'category' => $event->category?->name,
+            'date' => $event->formatted_date,
+            'time' => $event->formatted_time,
+            'location' => $event->venue_name ?? $event->city ?? 'Venue TBA',
         ];
     }
 
