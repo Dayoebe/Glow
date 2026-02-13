@@ -164,6 +164,9 @@ class PodcastController extends Controller
                 'cover_image' => $episode->cover_image,
                 'audio_file' => $episode->audio_file,
                 'audio_format' => $episode->audio_format,
+                'video_url' => $episode->video_url,
+                'video_type' => $episode->video_type,
+                'has_video' => $episode->has_video,
                 'duration' => $episode->formatted_duration,
                 'published_at' => $episode->published_date,
                 'plays' => $episode->plays,
@@ -177,6 +180,7 @@ class PodcastController extends Controller
                     'slug' => $episode->show->slug,
                     'title' => $episode->show->title,
                 ],
+                'platform_links' => $episode->platform_links,
             ],
             'related' => $related,
         ]);
@@ -244,6 +248,8 @@ class PodcastController extends Controller
             'duration' => $episode->formatted_duration,
             'published_at' => $episode->published_date,
             'plays' => $episode->plays,
+            'video_url' => $episode->video_url,
+            'has_video' => $episode->has_video,
             'season_episode' => $episode->season_number ? "S{$episode->season_number} E{$episode->episode_number}" : null,
         ];
     }
