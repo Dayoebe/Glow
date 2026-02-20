@@ -74,9 +74,15 @@ class StaffBirthdays extends Component
         $subject = StaffBirthdayTemplate::render($this->email_subject, $staff, $station, $date);
         $message = StaffBirthdayTemplate::render($this->email_body, $staff, $station, $date);
 
-        Mail::to($this->test_email)->send(
-            new \App\Mail\StaffBirthdayMail($staff, $subject, $message, $stationName, $stationFrequency)
-        );
+        try {
+            Mail::to($this->test_email)->send(
+                new \App\Mail\StaffBirthdayMail($staff, $subject, $message, $stationName, $stationFrequency)
+            );
+        } catch (\Throwable $exception) {
+            report($exception);
+            session()->flash('error', 'Unable to send test email. Check your SMTP credentials and try again.');
+            return;
+        }
 
         session()->flash('success', 'Test birthday email sent to ' . $this->test_email . '.');
     }
@@ -137,6 +143,7 @@ class StaffBirthdays extends Component
 
         $sent = 0;
         $skipped = 0;
+        $failed = 0;
 
         foreach ($staffMembers as $staff) {
             $cacheKey = 'staff_birthday_email_sent:' . $date->toDateString() . ':' . $staff->id;
@@ -148,15 +155,28 @@ class StaffBirthdays extends Component
             $subject = StaffBirthdayTemplate::render($this->email_subject, $staff, $station, $date);
             $message = StaffBirthdayTemplate::render($this->email_body, $staff, $station, $date);
 
-            Mail::to($staff->email)->send(
-                new \App\Mail\StaffBirthdayMail($staff, $subject, $message, $stationName, $stationFrequency)
-            );
+            try {
+                Mail::to($staff->email)->send(
+                    new \App\Mail\StaffBirthdayMail($staff, $subject, $message, $stationName, $stationFrequency)
+                );
+            } catch (\Throwable $exception) {
+                report($exception);
+                Cache::forget($cacheKey);
+                $failed++;
+                continue;
+            }
 
             Cache::put($cacheKey, true, now()->addDays(2));
             $sent++;
         }
 
-        session()->flash('success', "Birthday emails sent: {$sent}. Skipped: {$skipped}.");
+        $message = "Birthday emails sent: {$sent}. Skipped: {$skipped}.";
+        if ($failed > 0) {
+            session()->flash('error', "{$message} Failed: {$failed}. Check SMTP settings.");
+            return;
+        }
+
+        session()->flash('success', $message);
     }
 
     public function getPreviewStaffOptionsProperty()

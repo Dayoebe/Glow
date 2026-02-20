@@ -45,27 +45,27 @@
                 <div class="text-center lg:text-left">
                     <div class="inline-flex items-center space-x-2 glass-panel px-4 py-2 rounded-full mb-6">
                         <span class="w-3 h-3 bg-lime-500 rounded-full glass-glow"></span>
-                        <span class="text-sm font-semibold">{{ $homeContent['hero_badge'] }}</span>
+                        <span class="text-sm font-semibold">{{ $homeContent['hero_badge'] ?? 'NOW LIVE ON AIR' }}</span>
                     </div>
                     
                     <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                        {{ $homeContent['hero_title'] }}<br>
-                        <span class="text-emerald-200">{{ $homeContent['hero_highlight'] }}</span>
+                        {{ $homeContent['hero_title'] ?? 'Your Voice,' }}<br>
+                        <span class="text-emerald-200">{{ $homeContent['hero_highlight'] ?? 'Your Music' }}</span>
                     </h1>
                     
                     <p class="text-xl md:text-2xl text-emerald-100 mb-8 leading-relaxed">
-                        {{ $homeContent['hero_subtitle'] }}
+                        {{ $homeContent['hero_subtitle'] ?? 'Broadcasting the heartbeat of the city of Akure, 24/7 on 99.1 FM' }}
                     </p>
 
                     <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
-                        <a href="{{ $homeContent['primary_cta_url'] }}" @click.prevent="startLive"
+                        <a href="{{ $homeContent['primary_cta_url'] ?? 'https://stream-176.zeno.fm/mwam2yirv1pvv' }}" @click.prevent="startLive"
                             class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-white text-emerald-700 font-bold rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
                             <i class="fas fa-play-circle text-2xl"></i>
-                            <span>{{ $homeContent['primary_cta_text'] }}</span>
+                            <span>{{ $homeContent['primary_cta_text'] ?? 'Listen Live Now' }}</span>
                         </a>
-                        <a href="{{ $homeContent['secondary_cta_url'] }}" class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-amber-700 backdrop-blur-sm text-white font-semibold rounded-full border-2 border-white/30 hover:bg-white/10 transition-all duration-300">
+                        <a href="{{ $homeContent['secondary_cta_url'] ?? '/shows' }}" class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-amber-700 backdrop-blur-sm text-white font-semibold rounded-full border-2 border-white/30 hover:bg-white/10 transition-all duration-300">
                             <i class="fas fa-calendar-alt"></i>
-                            <span>{{ $homeContent['secondary_cta_text'] }}</span>
+                            <span>{{ $homeContent['secondary_cta_text'] ?? 'View Schedule' }}</span>
                         </a>
                     </div>
 
@@ -233,7 +233,7 @@
                                 />
                                 <div class="absolute top-4 left-4">
                                     <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
-                                        {{ $news['category'] }}
+                                        {{ $news['category'] ?? 'News' }}
                                     </span>
                                 </div>
                                 <div class="absolute bottom-4 right-4 flex items-center space-x-2">
@@ -364,7 +364,7 @@
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                                 <div class="absolute bottom-6 left-6 right-6">
                                     <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-white/90 text-emerald-700">
-                                        {{ $mainFeatured['category'] }}
+                                        {{ $mainFeatured['category'] ?? 'News' }}
                                     </span>
                                     <h4 class="text-2xl md:text-3xl font-bold text-white mt-3">
                                         <a href="/news/{{ $mainFeatured['slug'] }}">{{ $mainFeatured['title'] }}</a>
@@ -399,7 +399,7 @@
                                             textClass="text-2xl font-bold text-white"
                                         />
                                         <span class="absolute top-4 left-4 px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
-                                            {{ $news['category'] }}
+                                            {{ $news['category'] ?? 'News' }}
                                         </span>
                                     </div>
                                     <div class="p-5">
@@ -427,7 +427,7 @@
                             <a href="/news/{{ $news['slug'] }}" class="group flex items-start gap-4 p-4 rounded-2xl bg-white/80 border border-white hover:bg-white shadow-sm hover:shadow-lg transition-all duration-300">
                                 <div class="text-2xl font-black text-emerald-700/60 w-8">{{ $index + 1 }}</div>
                                 <div class="flex-1">
-                                    <p class="text-xs uppercase tracking-widest text-amber-700 font-semibold">{{ $news['category'] }}</p>
+                                    <p class="text-xs uppercase tracking-widest text-amber-700 font-semibold">{{ $news['category'] ?? 'News' }}</p>
                                     <h4 class="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mt-1">
                                         {{ $news['title'] }}
                                     </h4>
@@ -467,7 +467,7 @@
                                     />
                                     <div class="absolute top-4 left-4">
                                         <span class="px-3 py-1 bg-slate-900/80 text-white text-xs font-semibold rounded-full">
-                                            {{ $news['category'] }}
+                                            {{ $news['category'] ?? 'News' }}
                                         </span>
                                     </div>
                                 </div>
@@ -538,8 +538,8 @@
                                 textClass="text-3xl font-bold text-white"
                             />
                             <div class="absolute top-4 left-4">
-                                <span class="px-3 py-1 bg-{{ $post['category_color'] }}-600 text-white text-xs font-semibold rounded-full">
-                                    {{ $post['category'] }}
+                                <span class="px-3 py-1 bg-{{ $post['category_color'] ?? 'purple' }}-600 text-white text-xs font-semibold rounded-full">
+                                    {{ $post['category'] ?? 'Blog' }}
                                 </span>
                             </div>
                             <div class="absolute bottom-4 right-4 flex items-center space-x-2">
@@ -649,7 +649,7 @@
                                 textClass="text-3xl font-bold text-white"
                             />
                             <div class="absolute top-4 right-4 bg-white text-emerald-600 px-3 py-1 rounded-full text-sm font-semibold">
-                                <i class="fas fa-users mr-1"></i> {{ $event['attendees'] }}
+                                <i class="fas fa-users mr-1"></i> {{ $event['attendees'] ?? '0' }}
                             </div>
                         </div>
                         <div class="p-6">
@@ -793,7 +793,7 @@
                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                             <div class="absolute top-4 right-4">
                                 <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
-                                    {{ $show['category'] }}
+                                    {{ $show['category'] ?? 'Show' }}
                                 </span>
                             </div>
                             <div class="absolute bottom-4 left-4 right-4">
