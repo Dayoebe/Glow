@@ -833,7 +833,12 @@
             <div class="pt-8 border-t border-gray-800">
                 <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                     <p class="text-gray-400 text-sm">
-                        &copy; {{ date('Y') }} {{ $stationName }} {{ $stationFrequency }}. All rights reserved.
+                        &copy; {{ date('Y') }}
+                        <a href="https://dayoebe.github.io" target="_blank" rel="noopener noreferrer"
+                            class="hover:text-emerald-400 transition-colors">
+                            {{ $stationName }} {{ $stationFrequency }}
+                        </a>.
+                        All rights reserved.
                     </p>
                     <div class="flex items-center space-x-6 text-sm">
                         <a href="privacy-policy" class="text-gray-400 hover:text-emerald-400 transition-colors">Privacy Policy</a>
