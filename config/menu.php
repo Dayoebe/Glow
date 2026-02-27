@@ -138,6 +138,30 @@ return [
                     ],
                 ]
             ],
+            [
+                'title' => 'Careers',
+                'icon' => 'fas fa-briefcase',
+                'route' => 'admin.careers.index',
+                'active' => 'admin.careers*',
+                'roles' => ['admin'],
+                'children' => [
+                    [
+                        'title' => 'All Roles',
+                        'route' => 'admin.careers.index',
+                        'active' => 'admin.careers.index'
+                    ],
+                    [
+                        'title' => 'Create Role',
+                        'route' => 'admin.careers.create',
+                        'active' => 'admin.careers.create'
+                    ],
+                    [
+                        'title' => 'Applications',
+                        'route' => 'admin.careers.applications',
+                        'active' => 'admin.careers.applications'
+                    ],
+                ]
+            ],
         ]
     ],
     [

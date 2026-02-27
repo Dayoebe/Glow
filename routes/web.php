@@ -41,10 +41,15 @@ use App\Livewire\Admin\News\NewsIndex as AdminNewsIndex;
 use App\Livewire\Admin\News\Analytics as AdminNewsAnalytics;
 use App\Livewire\Page\EventPage;
 use App\Livewire\Page\EventDetail;
+use App\Livewire\Page\CareerPage;
+use App\Livewire\Page\CareerDetail;
 use App\Livewire\Admin\Event\EventIndex as AdminEventIndex;
 use App\Livewire\Admin\Event\EventForm as AdminEventForm;
 use App\Livewire\Admin\Event\EventCategories as AdminEventCategories;
 use App\Livewire\Admin\Event\EventCategoryForm as AdminEventCategoryForm;
+use App\Livewire\Admin\Career\CareerIndex as AdminCareerIndex;
+use App\Livewire\Admin\Career\CareerForm as AdminCareerForm;
+use App\Livewire\Admin\Career\CareerApplications as AdminCareerApplications;
 use App\Livewire\Admin\Settings\StationSettings as AdminStationSettings;
 use App\Livewire\Admin\Settings\WebsiteSettings as AdminWebsiteSettings;
 use App\Livewire\Admin\Settings\SystemSettings as AdminSystemSettings;
@@ -109,6 +114,10 @@ Route::get('/news/{slug}', NewsDetail::class)->name('news.show');
 // Public Event Routes
 Route::get('/events', EventPage::class)->name('events.index');
 Route::get('/events/{slug}', EventDetail::class)->name('events.show');
+
+// Public Career Routes
+Route::get('/careers', CareerPage::class)->name('careers.index');
+Route::get('/careers/{slug}', CareerDetail::class)->name('careers.show');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/download-database', function () {
@@ -290,6 +299,13 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
     Route::get('/admin/comms-analytics', \App\Livewire\Admin\Analytics\CommsAnalytics::class)->name('admin.comms.analytics');
 
     Route::middleware('role:admin')->group(function () {
+        Route::prefix('admin/careers')->name('admin.careers.')->group(function () {
+            Route::get('/', AdminCareerIndex::class)->name('index');
+            Route::get('/create', AdminCareerForm::class)->name('create');
+            Route::get('/applications', AdminCareerApplications::class)->name('applications');
+            Route::get('/{id}/edit', AdminCareerForm::class)->name('edit');
+        });
+
         Route::prefix('admin/shows')->name('admin.shows.')->group(function () {
             Route::get('/', ShowManage::class)->name('index');
             Route::get('/create', AdminShowForm::class)->name('create');

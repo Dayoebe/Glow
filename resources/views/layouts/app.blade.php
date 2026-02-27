@@ -331,7 +331,7 @@
                     </a>
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" @click.away="open = false"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 flex items-center {{ request()->is('podcasts*') || request()->is('blog*') || request()->is('oaps*') || request()->is('team*') || request()->is('events*') || request()->is('contact*') ? 'text-emerald-600' : '' }}">
+                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 flex items-center {{ request()->is('podcasts*') || request()->is('blog*') || request()->is('oaps*') || request()->is('team*') || request()->is('events*') || request()->is('contact*') || request()->is('careers*') ? 'text-emerald-600' : '' }}">
                             More
                             <i class="fas fa-chevron-down text-xs ml-2"></i>
                         </button>
@@ -365,9 +365,10 @@
                                 Contact
                             </a>
                             <div class="border-t border-gray-100 my-1"></div>
-                            <span class="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
-                                Careers (Coming Soon)
-                            </span>
+                            <a href="/careers"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
+                                Careers
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -534,9 +535,10 @@
                             class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
                             Contact
                         </a>
-                        <span class="block px-6 py-2 text-sm text-gray-400 cursor-not-allowed">
-                            Careers (Coming Soon)
-                        </span>
+                        <a href="/careers"
+                            class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
+                            Careers
+                        </a>
                     </div>
                 </div>
                 <div class="pt-4">
@@ -719,6 +721,13 @@
                                 class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Contact Us
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/careers"
+                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-chevron-right text-xs mr-2"></i>
+                                Careers
                             </a>
                         </li>
                     </ul>
