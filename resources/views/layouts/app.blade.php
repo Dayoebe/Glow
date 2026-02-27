@@ -317,67 +317,41 @@
                         class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('about') ? 'text-emerald-600' : '' }}">
                         About
                     </a>
+                    <a href="/news"
+                        class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('news*') ? 'text-emerald-600' : '' }}">
+                        News
+                    </a>
+                    <a href="/shows"
+                        class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('shows*') ? 'text-emerald-600' : '' }}">
+                        Shows
+                    </a>
+                    <a href="/schedule"
+                        class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('schedule') ? 'text-emerald-600' : '' }}">
+                        Schedule
+                    </a>
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" @click.away="open = false"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 flex items-center {{ request()->is('shows*') || request()->is('schedule') || request()->is('oaps*') ? 'text-emerald-600' : '' }}">
-                            Program
+                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 flex items-center {{ request()->is('podcasts*') || request()->is('blog*') || request()->is('oaps*') || request()->is('team*') || request()->is('events*') || request()->is('contact*') ? 'text-emerald-600' : '' }}">
+                            More
                             <i class="fas fa-chevron-down text-xs ml-2"></i>
                         </button>
                         <div x-show="open" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
                             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
                             x-transition:leave-end="opacity-0 translate-y-2"
-                            class="absolute left-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                            <a href="/shows"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                Shows
-                            </a>
-                            <a href="/schedule"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                Schedule
-                            </a>
-                            <a href="/oaps"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                OAPs
-                            </a>
-                        </div>
-                    </div>
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" @click.away="open = false"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 flex items-center {{ request()->is('podcasts*') || request()->is('news*') || request()->is('blog*') ? 'text-emerald-600' : '' }}">
-                            Media
-                            <i class="fas fa-chevron-down text-xs ml-2"></i>
-                        </button>
-                        <div x-show="open" x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
-                            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 translate-y-2"
-                            class="absolute left-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                            class="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                             <a href="/podcasts"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
                                 Podcasts
-                            </a>
-                            <a href="/news"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                News
                             </a>
                             <a href="/blog"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
                                 Blog
                             </a>
-                        </div>
-                    </div>
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" @click.away="open = false"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 flex items-center {{ request()->is('team') || request()->is('events*') || request()->is('contact') ? 'text-emerald-600' : '' }}">
-                            Community
-                            <i class="fas fa-chevron-down text-xs ml-2"></i>
-                        </button>
-                        <div x-show="open" x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
-                            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 translate-y-2"
-                            class="absolute left-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                            <a href="/oaps"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
+                                OAPs
+                            </a>
                             <a href="/team"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
                                 Team
@@ -390,6 +364,10 @@
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
                                 Contact
                             </a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <span class="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
+                                Careers (Coming Soon)
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -513,31 +491,22 @@
                     class="block px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
                     About
                 </a>
+                <a href="/news"
+                    class="block px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
+                    News
+                </a>
+                <a href="/shows"
+                    class="block px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
+                    Shows
+                </a>
+                <a href="/schedule"
+                    class="block px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
+                    Schedule
+                </a>
                 <div x-data="{ open: false }" class="rounded-lg border border-gray-200">
                     <button @click="open = !open"
                         class="w-full flex items-center justify-between px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
-                        <span>Program</span>
-                        <i class="fas text-xs" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                    </button>
-                    <div x-show="open" x-transition class="pb-2">
-                        <a href="/shows"
-                            class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                            Shows
-                        </a>
-                        <a href="/schedule"
-                            class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                            Schedule
-                        </a>
-                        <a href="/oaps"
-                            class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                            OAPs
-                        </a>
-                    </div>
-                </div>
-                <div x-data="{ open: false }" class="rounded-lg border border-gray-200">
-                    <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
-                        <span>Media</span>
+                        <span>More</span>
                         <i class="fas text-xs" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                     </button>
                     <div x-show="open" x-transition class="pb-2">
@@ -545,23 +514,14 @@
                             class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
                             Podcasts
                         </a>
-                        <a href="/news"
-                            class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                            News
-                        </a>
                         <a href="/blog"
                             class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
                             Blog
                         </a>
-                    </div>
-                </div>
-                <div x-data="{ open: false }" class="rounded-lg border border-gray-200">
-                    <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
-                        <span>Community</span>
-                        <i class="fas text-xs" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                    </button>
-                    <div x-show="open" x-transition class="pb-2">
+                        <a href="/oaps"
+                            class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
+                            OAPs
+                        </a>
                         <a href="/team"
                             class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
                             Team
@@ -574,6 +534,9 @@
                             class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
                             Contact
                         </a>
+                        <span class="block px-6 py-2 text-sm text-gray-400 cursor-not-allowed">
+                            Careers (Coming Soon)
+                        </span>
                     </div>
                 </div>
                 <div class="pt-4">
