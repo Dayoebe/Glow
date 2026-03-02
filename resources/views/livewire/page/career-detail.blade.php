@@ -1,4 +1,21 @@
 <div>
+    @php
+        $allowedRichTextTags = '<p><br><strong><em><b><i><u><s><strike><ul><ol><li><a><span><div><h1><h2><h3><h4><h5><h6><blockquote>';
+        $renderRichText = function ($value) use ($allowedRichTextTags) {
+            $html = trim((string) $value);
+            if ($html === '') {
+                return '';
+            }
+
+            $clean = strip_tags($html, $allowedRichTextTags);
+            if ($clean === strip_tags($clean)) {
+                return nl2br(e($clean));
+            }
+
+            return $clean;
+        };
+    @endphp
+
     <section class="bg-slate-900 text-white py-16">
         <div class="container mx-auto px-4">
             <a href="{{ route('careers.index') }}" class="inline-flex items-center text-sm text-emerald-300 hover:text-emerald-200 mb-5">
@@ -33,27 +50,27 @@
             <div class="lg:col-span-2 space-y-8">
                 <article class="bg-white border border-gray-200 rounded-2xl p-6">
                     <h2 class="text-2xl font-bold text-gray-900">Role Overview</h2>
-                    <div class="mt-4 prose max-w-none text-gray-700 leading-relaxed">{!! nl2br(e($position->description)) !!}</div>
+                    <div class="mt-4 prose max-w-none text-gray-700 leading-relaxed">{!! $renderRichText($position->description) !!}</div>
                 </article>
 
                 @if(!empty($position->responsibilities))
                     <article class="bg-white border border-gray-200 rounded-2xl p-6">
                         <h2 class="text-2xl font-bold text-gray-900">Key Responsibilities</h2>
-                        <div class="mt-4 prose max-w-none text-gray-700 leading-relaxed">{!! nl2br(e($position->responsibilities)) !!}</div>
+                        <div class="mt-4 prose max-w-none text-gray-700 leading-relaxed">{!! $renderRichText($position->responsibilities) !!}</div>
                     </article>
                 @endif
 
                 @if(!empty($position->requirements))
                     <article class="bg-white border border-gray-200 rounded-2xl p-6">
                         <h2 class="text-2xl font-bold text-gray-900">Requirements</h2>
-                        <div class="mt-4 prose max-w-none text-gray-700 leading-relaxed">{!! nl2br(e($position->requirements)) !!}</div>
+                        <div class="mt-4 prose max-w-none text-gray-700 leading-relaxed">{!! $renderRichText($position->requirements) !!}</div>
                     </article>
                 @endif
 
                 @if(!empty($position->benefits))
                     <article class="bg-white border border-gray-200 rounded-2xl p-6">
                         <h2 class="text-2xl font-bold text-gray-900">Benefits</h2>
-                        <div class="mt-4 prose max-w-none text-gray-700 leading-relaxed">{!! nl2br(e($position->benefits)) !!}</div>
+                        <div class="mt-4 prose max-w-none text-gray-700 leading-relaxed">{!! $renderRichText($position->benefits) !!}</div>
                     </article>
                 @endif
             </div>

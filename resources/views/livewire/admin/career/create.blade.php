@@ -1,4 +1,19 @@
 <div>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css">
+    <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script>
+
+    <style>
+        trix-toolbar .trix-button-group button {
+            background: white;
+        }
+
+        trix-editor.career-trix-editor {
+            min-height: 220px;
+            max-height: 560px;
+            overflow-y: auto;
+        }
+    </style>
+
     <form wire:submit.prevent="saveAsDraft">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 space-y-6">
@@ -31,9 +46,11 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Description <span class="text-red-500">*</span></label>
-                        <textarea rows="9" wire:model="description"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
-                            placeholder="Provide complete role description"></textarea>
+                        <div wire:ignore>
+                            <input id="career_description" type="hidden" wire:model="description">
+                            <trix-editor input="career_description"
+                                class="career-trix-editor trix-content border border-gray-300 rounded-lg"></trix-editor>
+                        </div>
                         @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -43,25 +60,31 @@
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Responsibilities</label>
-                        <textarea rows="7" wire:model="responsibilities"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
-                            placeholder="List responsibilities"></textarea>
+                        <div wire:ignore>
+                            <input id="career_responsibilities" type="hidden" wire:model="responsibilities">
+                            <trix-editor input="career_responsibilities"
+                                class="career-trix-editor trix-content border border-gray-300 rounded-lg"></trix-editor>
+                        </div>
                         @error('responsibilities') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
-                        <textarea rows="7" wire:model="requirements"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
-                            placeholder="List qualifications and requirements"></textarea>
+                        <div wire:ignore>
+                            <input id="career_requirements" type="hidden" wire:model="requirements">
+                            <trix-editor input="career_requirements"
+                                class="career-trix-editor trix-content border border-gray-300 rounded-lg"></trix-editor>
+                        </div>
                         @error('requirements') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Benefits</label>
-                        <textarea rows="6" wire:model="benefits"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
-                            placeholder="Compensation highlights, perks, and growth opportunities"></textarea>
+                        <div wire:ignore>
+                            <input id="career_benefits" type="hidden" wire:model="benefits">
+                            <trix-editor input="career_benefits"
+                                class="career-trix-editor trix-content border border-gray-300 rounded-lg"></trix-editor>
+                        </div>
                         @error('benefits') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -262,4 +285,65 @@
             </div>
         </div>
     </form>
+
+    <script>
+        if (!window.__careerTrixBound) {
+            window.__careerTrixBound = true;
+
+            document.addEventListener('trix-before-initialize', function() {
+                if (!window.Trix || Trix.config.textAttributes.underline) {
+                    return;
+                }
+
+                Trix.config.textAttributes.underline = {
+                    tagName: 'u',
+                    inheritable: true
+                };
+            });
+
+            document.addEventListener('trix-initialize', function(event) {
+                const toolbar = event.target.toolbarElement;
+                if (!toolbar) {
+                    return;
+                }
+
+                if (toolbar.querySelector('[data-trix-attribute=\"underline\"]')) {
+                    return;
+                }
+
+                const textTools = toolbar.querySelector('.trix-button-group--text-tools');
+                if (!textTools) {
+                    return;
+                }
+
+                const underlineButton = document.createElement('button');
+                underlineButton.setAttribute('type', 'button');
+                underlineButton.setAttribute('data-trix-attribute', 'underline');
+                underlineButton.setAttribute('title', 'Underline');
+                underlineButton.setAttribute('tabindex', '-1');
+                underlineButton.className = 'trix-button trix-button--icon';
+                underlineButton.textContent = 'U';
+                underlineButton.style.fontWeight = '700';
+                underlineButton.style.textDecoration = 'underline';
+                textTools.appendChild(underlineButton);
+            });
+
+            document.addEventListener('trix-change', function(event) {
+                const inputId = event.target.getAttribute('input');
+                const bindings = {
+                    career_description: 'description',
+                    career_responsibilities: 'responsibilities',
+                    career_requirements: 'requirements',
+                    career_benefits: 'benefits',
+                };
+
+                const property = bindings[inputId];
+                if (!property) {
+                    return;
+                }
+
+                @this.set(property, event.target.value);
+            });
+        }
+    </script>
 </div>
