@@ -71,6 +71,13 @@ class CareerPosition extends Model
                 $position->slug = Str::slug($position->title);
             }
         });
+
+        static::deleting(function (self $position) {
+            $position->loadMissing('applications');
+            foreach ($position->applications as $application) {
+                $application->delete();
+            }
+        });
     }
 
     public function applications(): HasMany

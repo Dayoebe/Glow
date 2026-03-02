@@ -5,8 +5,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Str;
 use App\Mail\StaffBirthdayMail;
+use App\Models\Career\CareerApplication;
 use App\Models\Setting;
 use App\Models\Show\ScheduleSlot;
 use App\Models\Staff\StaffMember;
@@ -176,3 +179,130 @@ Schedule::command('push:show-starting')
     ->everyFiveMinutes()
     ->withoutOverlapping()
     ->timezone(config('app.timezone'));
+
+Artisan::command('careers:migrate-resumes-to-private {--dry-run : Preview without writing changes} {--limit=0 : Limit applications processed} {--keep-public : Keep old public files after migration}', function () {
+    $dryRun = (bool) $this->option('dry-run');
+    $keepPublic = (bool) $this->option('keep-public');
+    $limit = (int) $this->option('limit');
+
+    $query = CareerApplication::query()
+        ->whereNotNull('resume_path')
+        ->where('resume_path', '!=', '')
+        ->orderBy('id');
+
+    if ($limit > 0) {
+        $query->limit($limit);
+    }
+
+    $applications = $query->get();
+
+    if ($applications->isEmpty()) {
+        $this->info('No career applications with resume paths found.');
+        return;
+    }
+
+    $stats = [
+        'processed' => 0,
+        'updated' => 0,
+        'already_private' => 0,
+        'external_skipped' => 0,
+        'source_missing' => 0,
+        'copy_failed' => 0,
+    ];
+
+    foreach ($applications as $application) {
+        $stats['processed']++;
+        $rawPath = trim((string) $application->resume_path);
+
+        if ($rawPath === '') {
+            $stats['source_missing']++;
+            $this->warn("Application #{$application->id}: empty resume path.");
+            continue;
+        }
+
+        // Parse old paths that might be full URLs, /storage URLs, or disk-relative.
+        $candidatePath = $rawPath;
+        if (Str::startsWith($rawPath, ['http://', 'https://'])) {
+            $urlPath = trim((string) parse_url($rawPath, PHP_URL_PATH), '/');
+            if ($urlPath === '' || (!Str::startsWith($urlPath, 'storage/') && !Str::startsWith($urlPath, 'uploads/'))) {
+                $stats['external_skipped']++;
+                $this->warn("Application #{$application->id}: external resume URL skipped ({$rawPath}).");
+                continue;
+            }
+            $candidatePath = $urlPath;
+        }
+
+        if (Str::startsWith($candidatePath, 'private/careers/resumes/')) {
+            if (Storage::disk('local')->exists($candidatePath)) {
+                $stats['already_private']++;
+                continue;
+            }
+        }
+
+        if (Str::startsWith($candidatePath, '/storage/')) {
+            $candidatePath = Str::after($candidatePath, '/storage/');
+        } elseif (Str::startsWith($candidatePath, 'storage/')) {
+            $candidatePath = Str::after($candidatePath, 'storage/');
+        } elseif (Str::startsWith($candidatePath, 'public/')) {
+            $candidatePath = Str::after($candidatePath, 'public/');
+        }
+
+        if (!Storage::disk('public')->exists($candidatePath)) {
+            if (Storage::disk('local')->exists($candidatePath)) {
+                if (!$dryRun) {
+                    $application->resume_path = $candidatePath;
+                    $application->save();
+                }
+                $stats['updated']++;
+                $this->line("Application #{$application->id}: normalized existing local path.");
+                continue;
+            }
+
+            $stats['source_missing']++;
+            $this->warn("Application #{$application->id}: source file missing on public disk ({$candidatePath}).");
+            continue;
+        }
+
+        $filename = pathinfo($candidatePath, PATHINFO_FILENAME);
+        $extension = pathinfo($candidatePath, PATHINFO_EXTENSION);
+        $safeName = Str::slug($filename ?: 'resume');
+        $targetPath = 'private/careers/resumes/app-' . $application->id . '-' . $safeName
+            . ($extension !== '' ? '.' . strtolower($extension) : '');
+
+        if (!$dryRun) {
+            $stream = Storage::disk('public')->readStream($candidatePath);
+            if (!is_resource($stream)) {
+                $stats['copy_failed']++;
+                $this->error("Application #{$application->id}: failed to read source file.");
+                continue;
+            }
+
+            $copied = Storage::disk('local')->writeStream($targetPath, $stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+
+            if (!$copied) {
+                $stats['copy_failed']++;
+                $this->error("Application #{$application->id}: failed to copy file.");
+                continue;
+            }
+
+            $application->resume_path = $targetPath;
+            $application->save();
+
+            if (!$keepPublic) {
+                Storage::disk('public')->delete($candidatePath);
+            }
+        }
+
+        $stats['updated']++;
+        $this->line("Application #{$application->id}: migrated to {$targetPath}" . ($dryRun ? ' (dry-run)' : ''));
+    }
+
+    $this->newLine();
+    $this->info('Migration summary:');
+    foreach ($stats as $key => $value) {
+        $this->line('- ' . str_replace('_', ' ', $key) . ': ' . $value);
+    }
+})->purpose('Move career resume files from public paths to private local storage.');

@@ -64,7 +64,7 @@ class CareerDetail extends Component
 
         $this->validate();
 
-        $resumePath = $this->resume->store('uploads/careers/resumes', 'public');
+        $resumePath = $this->resume->store('private/careers/resumes', 'local');
 
         $applicationCode = $this->generateApplicationCode();
 

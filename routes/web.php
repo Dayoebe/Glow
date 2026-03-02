@@ -50,6 +50,7 @@ use App\Livewire\Admin\Event\EventCategoryForm as AdminEventCategoryForm;
 use App\Livewire\Admin\Career\CareerIndex as AdminCareerIndex;
 use App\Livewire\Admin\Career\CareerForm as AdminCareerForm;
 use App\Livewire\Admin\Career\CareerApplications as AdminCareerApplications;
+use App\Models\Career\CareerApplication;
 use App\Livewire\Admin\Settings\StationSettings as AdminStationSettings;
 use App\Livewire\Admin\Settings\WebsiteSettings as AdminWebsiteSettings;
 use App\Livewire\Admin\Settings\SystemSettings as AdminSystemSettings;
@@ -303,6 +304,28 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::get('/', AdminCareerIndex::class)->name('index');
             Route::get('/create', AdminCareerForm::class)->name('create');
             Route::get('/applications', AdminCareerApplications::class)->name('applications');
+            Route::get('/applications/{applicationId}/resume', function ($applicationId) {
+                $application = CareerApplication::findOrFail($applicationId);
+
+                $path = trim((string) $application->resume_path);
+                abort_if($path === '', 404);
+
+                if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
+                    return redirect()->away($path);
+                }
+
+                if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+                    return \Illuminate\Support\Facades\Storage::disk('local')
+                        ->download($path, $application->resume_original_name ?: basename($path));
+                }
+
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                    return \Illuminate\Support\Facades\Storage::disk('public')
+                        ->download($path, $application->resume_original_name ?: basename($path));
+                }
+
+                abort(404);
+            })->name('applications.resume');
             Route::get('/{id}/edit', AdminCareerForm::class)->name('edit');
         });
 

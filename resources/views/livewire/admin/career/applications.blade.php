@@ -67,11 +67,6 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($applications as $application)
-                        @php
-                            $resumeUrl = \Illuminate\Support\Str::startsWith($application->resume_path, ['http://', 'https://'])
-                                ? $application->resume_path
-                                : \Illuminate\Support\Facades\Storage::url($application->resume_path);
-                        @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4">
                                 <p class="text-sm font-semibold text-gray-900">{{ $application->full_name }}</p>
@@ -88,7 +83,8 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm">
-                                <a href="{{ $resumeUrl }}" target="_blank" class="inline-flex items-center text-emerald-600 hover:text-emerald-800">
+                                <a href="{{ route('admin.careers.applications.resume', $application->id) }}"
+                                    class="inline-flex items-center text-emerald-600 hover:text-emerald-800">
                                     <i class="fas fa-file-arrow-down mr-2"></i>
                                     View Resume
                                 </a>
