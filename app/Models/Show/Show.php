@@ -79,12 +79,12 @@ class Show extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where($this->qualifyColumn('is_active'), true);
     }
 
     public function scopeFeatured($query)
     {
-        return $query->where('is_featured', true);
+        return $query->where($this->qualifyColumn('is_featured'), true);
     }
 
     public function scopeByCategory($query, $categorySlug)

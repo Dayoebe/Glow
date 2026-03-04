@@ -47,35 +47,35 @@ class ShowPage extends Component
 
         if (!empty($this->searchQuery)) {
             $query->where(function ($q) {
-                $q->where('title', 'like', "%{$this->searchQuery}%")
-                  ->orWhere('description', 'like', "%{$this->searchQuery}%");
+                $q->where('shows.title', 'like', "%{$this->searchQuery}%")
+                  ->orWhere('shows.description', 'like', "%{$this->searchQuery}%");
             });
         }
 
         switch ($this->sortBy) {
             case 'popular':
-                $query->orderBy('total_listeners', 'desc');
+                $query->orderBy('shows.total_listeners', 'desc');
                 break;
             case 'latest':
-                $query->latest();
+                $query->latest('shows.created_at');
                 break;
             case 'title_asc':
-                $query->orderBy('title');
+                $query->orderBy('shows.title');
                 break;
             case 'title_desc':
-                $query->orderBy('title', 'desc');
+                $query->orderBy('shows.title', 'desc');
                 break;
             case 'duration_asc':
-                $query->orderBy('typical_duration');
+                $query->orderBy('shows.typical_duration');
                 break;
             case 'duration_desc':
-                $query->orderBy('typical_duration', 'desc');
+                $query->orderBy('shows.typical_duration', 'desc');
                 break;
             case 'format_asc':
-                $query->orderBy('format');
+                $query->orderBy('shows.format');
                 break;
             case 'format_desc':
-                $query->orderBy('format', 'desc');
+                $query->orderBy('shows.format', 'desc');
                 break;
             case 'category_asc':
             case 'category_desc':
@@ -128,7 +128,7 @@ class ShowPage extends Component
                 }
                 break;
             default:
-                $query->orderBy('is_featured', 'desc')->orderBy('title');
+                $query->orderBy('shows.is_featured', 'desc')->orderBy('shows.title');
         }
 
         return $query->paginate(9);
