@@ -133,6 +133,20 @@
     canInstallApp: false,
     installInProgress: false,
     appInstalled: false,
+    installStorageKey: 'glowfm_pwa_installed',
+    installPromptAttempted: false,
+    getStoredInstallState() {
+        try {
+            return localStorage.getItem(this.installStorageKey) === '1';
+        } catch (e) {
+            return false;
+        }
+    },
+    setStoredInstallState() {
+        try {
+            localStorage.setItem(this.installStorageKey, '1');
+        } catch (e) {}
+    },
     init() {
         try {
             const storedConsent = localStorage.getItem('cmp_consent');
@@ -150,14 +164,24 @@
         this.initInstallApp();
     },
     initInstallApp() {
-        this.appInstalled = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+        const standaloneMode = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
             || window.navigator.standalone === true;
+        const storedInstalled = this.getStoredInstallState();
+        this.appInstalled = standaloneMode || storedInstalled;
+        if (standaloneMode) {
+            this.setStoredInstallState();
+        }
         this.canInstallApp = false;
 
         window.addEventListener('beforeinstallprompt', (event) => {
             event.preventDefault();
             this.installPromptEvent = event;
             this.canInstallApp = !this.appInstalled;
+
+            if (!this.appInstalled && !this.installPromptAttempted) {
+                this.installPromptAttempted = true;
+                setTimeout(() => this.installApp(), 200);
+            }
         });
 
         window.addEventListener('appinstalled', () => {
@@ -165,23 +189,34 @@
             this.canInstallApp = false;
             this.installPromptEvent = null;
             this.mobileMenuOpen = false;
+            this.setStoredInstallState();
         });
     },
     async installApp() {
-        if (!this.installPromptEvent || this.installInProgress) {
+        if (!this.installPromptEvent || this.installInProgress || this.appInstalled) {
             return;
         }
 
         this.installInProgress = true;
         try {
-            this.installPromptEvent.prompt();
-            await this.installPromptEvent.userChoice;
+            await this.installPromptEvent.prompt();
+            const { outcome } = await this.installPromptEvent.userChoice;
+            if (outcome === 'accepted') {
+                this.appInstalled = true;
+                this.canInstallApp = false;
+                this.mobileMenuOpen = false;
+                this.setStoredInstallState();
+            } else {
+                this.canInstallApp = !this.appInstalled;
+            }
         } catch (error) {
             console.error('Install prompt failed:', error);
+            this.canInstallApp = !this.appInstalled;
         } finally {
             this.installInProgress = false;
-            this.installPromptEvent = null;
-            this.canInstallApp = false;
+            if (this.appInstalled) {
+                this.installPromptEvent = null;
+            }
         }
     },
     toggleLive() {
@@ -429,14 +464,6 @@
                         <i class="fas fa-search"></i>
                     </button>
 
-                    <!-- Install App Button -->
-                    <button type="button" x-cloak x-show="canInstallApp" @click="installApp"
-                        :disabled="installInProgress"
-                        class="hidden md:flex items-center space-x-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-semibold rounded-full transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                        <i class="fas fa-download text-sm"></i>
-                        <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
-                    </button>
-
                     <!-- Authentication Links -->
                     @auth
                         <!-- User Dropdown -->
@@ -601,12 +628,6 @@
                     <button @click="searchOpen = !searchOpen"
                         class="w-full px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors text-left">
                         <i class="fas fa-search mr-2"></i> Search
-                    </button>
-                    <button type="button" x-cloak x-show="canInstallApp" @click="installApp"
-                        :disabled="installInProgress"
-                        class="w-full mt-2 px-4 py-3 border border-emerald-200 text-emerald-700 font-semibold hover:bg-emerald-50 rounded-lg transition-colors text-left disabled:opacity-70 disabled:cursor-not-allowed">
-                        <i class="fas fa-download mr-2"></i>
-                        <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
                     </button>
                 </div>
                 @auth
@@ -883,6 +904,19 @@
             </div>
         </div>
     </footer>
+
+    <!-- Floating Install App Button -->
+    <div x-cloak x-show="canInstallApp && !appInstalled" x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-2"
+        class="fixed left-4 bottom-4 sm:left-6 sm:bottom-6 z-40">
+        <button type="button" @click="installApp" :disabled="installInProgress"
+            class="inline-flex items-center space-x-2 px-4 py-2.5 bg-white border border-emerald-200 text-emerald-700 text-sm font-semibold rounded-full shadow-lg hover:bg-emerald-50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
+            <i class="fas fa-download text-xs"></i>
+            <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
+        </button>
+    </div>
 
     <!-- Floating Listen Live Player -->
     <div x-show="playerOpen" x-transition:enter="transition ease-out duration-300"
