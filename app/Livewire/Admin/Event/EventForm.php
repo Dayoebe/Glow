@@ -57,7 +57,7 @@ class EventForm extends Component
             'excerpt' => 'required|min:20|max:500',
             'content' => 'required|min:50',
             'featured_image' => 'nullable|image|max:2048',
-            'featured_image_url' => 'nullable|url',
+            'featured_image_url' => 'nullable|url|max:2048',
             'category_id' => 'required|exists:event_categories,id',
             'is_published' => 'boolean',
             'is_featured' => 'boolean',
