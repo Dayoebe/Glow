@@ -61,6 +61,23 @@ composer run dev
 
 By default, the app loads environment values from `.env` (copied from `.env.example` by `composer run setup` if missing).
 
+## Installable Web App (PWA)
+The project includes PWA files so users can install Glow FM from the browser:
+- `public/manifest.webmanifest`
+- `public/sw.js`
+- `public/offline.html`
+- `public/icons/*`
+
+Deployment checklist:
+1. Set `APP_URL=https://glowfmradio.com` in production `.env`.
+2. Serve the app over HTTPS (required for service worker + install prompt).
+3. Build frontend assets:
+   ```bash
+   npm run build
+   ```
+4. Deploy `public/build` plus all PWA files under `public/`.
+5. Hard-refresh once after deployment (or clear site data) to load the latest service worker.
+
 ## Manual Setup (Alternative)
 ```bash
 composer install

@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#047857">
     <title>{{ $title ?? 'Glow FM 99.1 - Your Station, Your Voice' }}</title>
     <meta name="google-adsense-account" content="ca-pub-3970534274644088">
     <!-- Google tag (gtag.js) -->
@@ -87,9 +88,16 @@
     @if (!empty($twitterSite))
         <meta name="twitter:site" content="{{ $twitterSite }}">
     @endif
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="{{ $stationName }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192x192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('icons/icon-512x512.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
     @if (!empty($stationLogoUrl))
         <link rel="icon" href="{{ $stationLogoUrl }}">
-        <link rel="apple-touch-icon" href="{{ $stationLogoUrl }}">
     @endif
     <script type="application/ld+json">
         @json($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
@@ -121,6 +129,10 @@
     audioPlaying: false,
     consentBannerOpen: false,
     consentChoice: null,
+    installPromptEvent: null,
+    canInstallApp: false,
+    installInProgress: false,
+    appInstalled: false,
     init() {
         try {
             const storedConsent = localStorage.getItem('cmp_consent');
@@ -135,6 +147,42 @@
         window.addEventListener('scroll', () => {
             this.scrolled = window.pageYOffset > 20;
         });
+        this.initInstallApp();
+    },
+    initInstallApp() {
+        this.appInstalled = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+            || window.navigator.standalone === true;
+        this.canInstallApp = false;
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            this.installPromptEvent = event;
+            this.canInstallApp = !this.appInstalled;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            this.appInstalled = true;
+            this.canInstallApp = false;
+            this.installPromptEvent = null;
+            this.mobileMenuOpen = false;
+        });
+    },
+    async installApp() {
+        if (!this.installPromptEvent || this.installInProgress) {
+            return;
+        }
+
+        this.installInProgress = true;
+        try {
+            this.installPromptEvent.prompt();
+            await this.installPromptEvent.userChoice;
+        } catch (error) {
+            console.error('Install prompt failed:', error);
+        } finally {
+            this.installInProgress = false;
+            this.installPromptEvent = null;
+            this.canInstallApp = false;
+        }
     },
     toggleLive() {
         const audio = this.$refs.liveAudio;
@@ -381,6 +429,14 @@
                         <i class="fas fa-search"></i>
                     </button>
 
+                    <!-- Install App Button -->
+                    <button type="button" x-cloak x-show="canInstallApp" @click="installApp"
+                        :disabled="installInProgress"
+                        class="hidden md:flex items-center space-x-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-semibold rounded-full transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                        <i class="fas fa-download text-sm"></i>
+                        <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
+                    </button>
+
                     <!-- Authentication Links -->
                     @auth
                         <!-- User Dropdown -->
@@ -545,6 +601,12 @@
                     <button @click="searchOpen = !searchOpen"
                         class="w-full px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors text-left">
                         <i class="fas fa-search mr-2"></i> Search
+                    </button>
+                    <button type="button" x-cloak x-show="canInstallApp" @click="installApp"
+                        :disabled="installInProgress"
+                        class="w-full mt-2 px-4 py-3 border border-emerald-200 text-emerald-700 font-semibold hover:bg-emerald-50 rounded-lg transition-colors text-left disabled:opacity-70 disabled:cursor-not-allowed">
+                        <i class="fas fa-download mr-2"></i>
+                        <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
                     </button>
                 </div>
                 @auth
