@@ -3,14 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blog\Post as BlogPost;
-use App\Models\Blog\Category as BlogCategory;
+use App\Models\Career\CareerPosition;
 use App\Models\Event\Event;
-use App\Models\Event\EventCategory;
 use App\Models\News\News;
-use App\Models\News\NewsCategory;
 use App\Models\Podcast\Episode as PodcastEpisode;
 use App\Models\Podcast\Show as PodcastShow;
-use App\Models\Show\Category as ShowCategory;
 use App\Models\Show\OAP;
 use App\Models\Show\Show as RadioShow;
 use App\Models\Staff\StaffMember;
@@ -36,6 +33,7 @@ class SitemapController extends Controller
                 ['loc' => url('/news'), 'changefreq' => 'daily', 'priority' => '0.8'],
                 ['loc' => url('/events'), 'changefreq' => 'weekly', 'priority' => '0.7'],
                 ['loc' => url('/podcasts'), 'changefreq' => 'weekly', 'priority' => '0.7'],
+                ['loc' => url('/careers'), 'changefreq' => 'daily', 'priority' => '0.7'],
             ];
 
             $radioShowUrls = RadioShow::active()
@@ -46,20 +44,6 @@ class SitemapController extends Controller
                         'lastmod' => $show->updated_at?->toAtomString(),
                         'changefreq' => 'weekly',
                         'priority' => '0.6',
-                    ];
-                });
-
-            $showCategoryUrls = ShowCategory::active()
-                ->whereHas('shows', function ($query) {
-                    $query->where('is_active', true);
-                })
-                ->get(['slug', 'updated_at'])
-                ->map(function ($category) {
-                    return [
-                        'loc' => route('shows.index', ['selectedCategory' => $category->slug]),
-                        'lastmod' => $category->updated_at?->toAtomString(),
-                        'changefreq' => 'weekly',
-                        'priority' => '0.5',
                     ];
                 });
 
@@ -96,20 +80,6 @@ class SitemapController extends Controller
                     ];
                 });
 
-            $newsCategoryUrls = NewsCategory::active()
-                ->whereHas('news', function ($query) {
-                    $query->published();
-                })
-                ->get(['slug', 'updated_at'])
-                ->map(function ($category) {
-                    return [
-                        'loc' => route('news', ['selectedCategory' => $category->slug]),
-                        'lastmod' => $category->updated_at?->toAtomString(),
-                        'changefreq' => 'weekly',
-                        'priority' => '0.5',
-                    ];
-                });
-
             $eventUrls = Event::published()
                 ->get(['slug', 'published_at', 'updated_at'])
                 ->map(function ($event) {
@@ -118,20 +88,6 @@ class SitemapController extends Controller
                         'lastmod' => ($event->published_at ?? $event->updated_at)?->toAtomString(),
                         'changefreq' => 'weekly',
                         'priority' => '0.6',
-                    ];
-                });
-
-            $eventCategoryUrls = EventCategory::active()
-                ->whereHas('events', function ($query) {
-                    $query->published();
-                })
-                ->get(['slug', 'updated_at'])
-                ->map(function ($category) {
-                    return [
-                        'loc' => route('events.index', ['selectedCategory' => $category->slug]),
-                        'lastmod' => $category->updated_at?->toAtomString(),
-                        'changefreq' => 'weekly',
-                        'priority' => '0.5',
                     ];
                 });
 
@@ -146,17 +102,14 @@ class SitemapController extends Controller
                     ];
                 });
 
-            $blogCategoryUrls = BlogCategory::active()
-                ->whereHas('posts', function ($query) {
-                    $query->published();
-                })
-                ->get(['slug', 'updated_at'])
-                ->map(function ($category) {
+            $careerUrls = CareerPosition::published()
+                ->get(['slug', 'published_at', 'updated_at'])
+                ->map(function ($position) {
                     return [
-                        'loc' => route('blog.index', ['selectedCategory' => $category->slug]),
-                        'lastmod' => $category->updated_at?->toAtomString(),
+                        'loc' => route('careers.show', $position->slug),
+                        'lastmod' => ($position->published_at ?? $position->updated_at)?->toAtomString(),
                         'changefreq' => 'weekly',
-                        'priority' => '0.5',
+                        'priority' => '0.6',
                     ];
                 });
 
@@ -168,20 +121,6 @@ class SitemapController extends Controller
                         'lastmod' => $show->updated_at?->toAtomString(),
                         'changefreq' => 'weekly',
                         'priority' => '0.6',
-                    ];
-                });
-
-            $podcastCategoryUrls = PodcastShow::active()
-                ->whereNotNull('category')
-                ->where('category', '!=', '')
-                ->select('category')
-                ->distinct()
-                ->get()
-                ->map(function ($row) {
-                    return [
-                        'loc' => route('podcasts.index', ['selectedCategory' => $row->category]),
-                        'changefreq' => 'weekly',
-                        'priority' => '0.5',
                     ];
                 });
 
@@ -210,17 +149,13 @@ class SitemapController extends Controller
 
             $urls = collect($staticUrls)
                 ->concat($radioShowUrls)
-                ->concat($showCategoryUrls)
                 ->concat($oapUrls)
                 ->concat($staffUrls)
                 ->concat($newsUrls)
-                ->concat($newsCategoryUrls)
                 ->concat($eventUrls)
-                ->concat($eventCategoryUrls)
                 ->concat($blogUrls)
-                ->concat($blogCategoryUrls)
+                ->concat($careerUrls)
                 ->concat($podcastShowUrls)
-                ->concat($podcastCategoryUrls)
                 ->concat($podcastEpisodeUrls)
                 ->values();
 

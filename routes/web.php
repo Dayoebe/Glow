@@ -80,7 +80,8 @@ use App\Livewire\Admin\Show\OapForm as AdminShowOapForm;
 use App\Livewire\Admin\Show\Reviews as AdminShowReviews;
 
 // Public Routes
-Route::get('/sitemap', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/sitemap', [SitemapController::class, 'index'])->name('sitemap.legacy');
 Route::get('/ads.txt', function () {
     return response()->file(public_path('ads.txt'), [
         'Content-Type' => 'text/plain; charset=UTF-8',

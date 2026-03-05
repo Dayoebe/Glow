@@ -194,6 +194,6 @@ Before local mobile testing, update API URL in:
 - `php artisan staff:send-birthday-emails --date=2026-03-02`
 
 ## Notes
-- `sitemap` is available at `/sitemap`
+- `sitemap` is available at `/sitemap.xml` (legacy alias: `/sitemap`)
 - `ads.txt` is served at `/ads.txt`
 - File uploads use Cloudinary when configured, otherwise local/public storage
