@@ -458,6 +458,14 @@
 
                 <!-- Right Side Actions -->
                 <div class="flex items-center space-x-4">
+                    <!-- Install App Button -->
+                    <button type="button" x-cloak x-show="canInstallApp && !appInstalled" @click="installApp"
+                        :disabled="installInProgress"
+                        class="hidden md:flex items-center space-x-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 font-semibold rounded-full shadow-sm hover:bg-emerald-50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
+                        <i class="fas fa-download text-xs"></i>
+                        <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
+                    </button>
+
                     <!-- Search Button -->
                     <button @click="searchOpen = !searchOpen"
                         class="hidden md:flex items-center justify-center w-10 h-10 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200">
@@ -904,19 +912,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- Floating Install App Button -->
-    <div x-cloak x-show="canInstallApp && !appInstalled" x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 translate-y-2"
-        class="fixed left-4 bottom-4 sm:left-6 sm:bottom-6 z-40">
-        <button type="button" @click="installApp" :disabled="installInProgress"
-            class="inline-flex items-center space-x-2 px-4 py-2.5 bg-white border border-emerald-200 text-emerald-700 text-sm font-semibold rounded-full shadow-lg hover:bg-emerald-50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
-            <i class="fas fa-download text-xs"></i>
-            <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
-        </button>
-    </div>
 
     <!-- Floating Listen Live Player -->
     <div x-show="playerOpen" x-transition:enter="transition ease-out duration-300"
