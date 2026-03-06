@@ -124,7 +124,7 @@
                             </div>
 
                             <div class="mt-6 flex items-center justify-between">
-                                <p class="text-xs text-gray-500">{{ $position->applications_count }} application(s)</p>
+                                {{-- <p class="text-xs text-gray-500">{{ $position->applications_count }} application(s)</p> --}}
                                 <a href="{{ route('careers.show', $position->slug) }}"
                                     class="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors">
                                     {{ $position->isAcceptingApplications() ? 'Apply Now' : 'View Details' }}
