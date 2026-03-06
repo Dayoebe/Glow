@@ -162,6 +162,30 @@ return [
                     ],
                 ]
             ],
+            [
+                'title' => 'Vettas',
+                'icon' => 'fas fa-images',
+                'route' => 'admin.vettas.index',
+                'active' => 'admin.vettas*',
+                'roles' => ['admin'],
+                'children' => [
+                    [
+                        'title' => 'All Photos',
+                        'route' => 'admin.vettas.index',
+                        'active' => 'admin.vettas.index'
+                    ],
+                    [
+                        'title' => 'Add Photo',
+                        'route' => 'admin.vettas.create',
+                        'active' => 'admin.vettas.create'
+                    ],
+                    [
+                        'title' => 'Categories',
+                        'route' => 'admin.vettas.categories',
+                        'active' => 'admin.vettas.categories'
+                    ],
+                ]
+            ],
         ]
     ],
     [

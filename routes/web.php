@@ -43,6 +43,7 @@ use App\Livewire\Page\EventPage;
 use App\Livewire\Page\EventDetail;
 use App\Livewire\Page\CareerPage;
 use App\Livewire\Page\CareerDetail;
+use App\Livewire\Page\VettasPage;
 use App\Livewire\Admin\Event\EventIndex as AdminEventIndex;
 use App\Livewire\Admin\Event\EventForm as AdminEventForm;
 use App\Livewire\Admin\Event\EventCategories as AdminEventCategories;
@@ -50,6 +51,10 @@ use App\Livewire\Admin\Event\EventCategoryForm as AdminEventCategoryForm;
 use App\Livewire\Admin\Career\CareerIndex as AdminCareerIndex;
 use App\Livewire\Admin\Career\CareerForm as AdminCareerForm;
 use App\Livewire\Admin\Career\CareerApplications as AdminCareerApplications;
+use App\Livewire\Admin\Vettas\Index as AdminVettasIndex;
+use App\Livewire\Admin\Vettas\PhotoForm as AdminVettasPhotoForm;
+use App\Livewire\Admin\Vettas\Categories as AdminVettasCategories;
+use App\Livewire\Admin\Vettas\CategoryForm as AdminVettasCategoryForm;
 use App\Models\Career\CareerApplication;
 use App\Livewire\Admin\Settings\StationSettings as AdminStationSettings;
 use App\Livewire\Admin\Settings\WebsiteSettings as AdminWebsiteSettings;
@@ -120,6 +125,7 @@ Route::get('/events/{slug}', EventDetail::class)->name('events.show');
 // Public Career Routes
 Route::get('/careers', CareerPage::class)->name('careers.index');
 Route::get('/careers/{slug}', CareerDetail::class)->name('careers.show');
+Route::get('/vettas', VettasPage::class)->name('vettas.index');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/download-database', function () {
@@ -328,6 +334,15 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
                 abort(404);
             })->name('applications.resume');
             Route::get('/{id}/edit', AdminCareerForm::class)->name('edit');
+        });
+
+        Route::prefix('admin/vettas')->name('admin.vettas.')->group(function () {
+            Route::get('/', AdminVettasIndex::class)->name('index');
+            Route::get('/create', AdminVettasPhotoForm::class)->name('create');
+            Route::get('/categories', AdminVettasCategories::class)->name('categories');
+            Route::get('/categories/create', AdminVettasCategoryForm::class)->name('categories.create');
+            Route::get('/categories/{categoryId}/edit', AdminVettasCategoryForm::class)->name('categories.edit');
+            Route::get('/{id}/edit', AdminVettasPhotoForm::class)->name('edit');
         });
 
         Route::prefix('admin/shows')->name('admin.shows.')->group(function () {

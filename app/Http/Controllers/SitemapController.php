@@ -34,6 +34,7 @@ class SitemapController extends Controller
                 ['loc' => url('/events'), 'changefreq' => 'weekly', 'priority' => '0.7'],
                 ['loc' => url('/podcasts'), 'changefreq' => 'weekly', 'priority' => '0.7'],
                 ['loc' => url('/careers'), 'changefreq' => 'daily', 'priority' => '0.7'],
+                ['loc' => url('/vettas'), 'changefreq' => 'weekly', 'priority' => '0.7'],
             ];
 
             $radioShowUrls = RadioShow::active()
