@@ -4,10 +4,10 @@
         <div class="container mx-auto px-4 relative z-10">
             <div class="grid grid-cols-1 xl:grid-cols-[1.1fr_.9fr] gap-10 items-center">
                 <div class="max-w-3xl">
-                    <p class="text-xs uppercase tracking-[0.38em] text-emerald-300 font-semibold">Glow FM Visual Archive</p>
-                    <h1 class="mt-4 text-4xl md:text-6xl font-black leading-tight">Vettas</h1>
+                    <p class="text-xs uppercase tracking-[0.38em] text-emerald-300 font-semibold">Luxury. Comfort. Privacy.</p>
+                    <h1 class="mt-4 text-4xl md:text-6xl font-black leading-tight">Vettas Apartment</h1>
                     <p class="mt-5 text-lg md:text-xl text-slate-200 leading-relaxed">
-                        A curated gallery of standout moments, personalities, backstage energy, and visual stories from the station.
+                        Stay in style at our fully furnished apartments — where every moment feels like home.
                     </p>
 
                     <div class="mt-8 flex flex-wrap items-center gap-3 text-sm">

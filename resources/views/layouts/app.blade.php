@@ -412,9 +412,13 @@
                         class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('schedule') ? 'text-emerald-600' : '' }}">
                         Schedule
                     </a>
+                    <a href="/vettas"
+                        class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('vettas*') ? 'text-emerald-600' : '' }}">
+                        Vettas
+                    </a>
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" @click.away="open = false"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 flex items-center {{ request()->is('podcasts*') || request()->is('blog*') || request()->is('oaps*') || request()->is('team*') || request()->is('events*') || request()->is('contact*') || request()->is('careers*') || request()->is('vettas*') ? 'text-emerald-600' : '' }}">
+                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 flex items-center {{ request()->is('podcasts*') || request()->is('blog*') || request()->is('oaps*') || request()->is('team*') || request()->is('events*') || request()->is('contact*') || request()->is('careers*') ? 'text-emerald-600' : '' }}">
                             More
                             <i class="fas fa-chevron-down text-xs ml-2"></i>
                         </button>
@@ -446,10 +450,6 @@
                             <a href="/contact"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
                                 Contact
-                            </a>
-                            <a href="/vettas"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                Vettas
                             </a>
                             <div class="border-t border-gray-100 my-1"></div>
                             <a href="/careers"
@@ -599,6 +599,10 @@
                     class="block px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
                     Schedule
                 </a>
+                <a href="/vettas"
+                    class="block px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
+                    Vettas
+                </a>
                 <div x-data="{ open: false }" class="rounded-lg border border-gray-200">
                     <button @click="open = !open"
                         class="w-full flex items-center justify-between px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors">
@@ -629,10 +633,6 @@
                         <a href="/contact"
                             class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
                             Contact
-                        </a>
-                        <a href="/vettas"
-                            class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                            Vettas
                         </a>
                         <a href="/careers"
                             class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
