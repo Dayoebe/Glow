@@ -94,6 +94,55 @@
                     </button>
                 @endforeach
             </div>
+
+            <div class="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_16rem]">
+                <div class="relative">
+                    <label class="sr-only" for="vettas-search">Search gallery</label>
+                    <input id="vettas-search" type="text" wire:model.live.debounce.300ms="search"
+                        placeholder="Search by title, caption, location, credit, or category..."
+                        class="w-full rounded-2xl border border-gray-300 bg-white px-4 py-3 pl-11 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+
+                <div>
+                    <label class="sr-only" for="vettas-sort">Sort gallery</label>
+                    <select id="vettas-sort" wire:model.live="sortBy"
+                        class="w-full rounded-2xl border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                        <option value="latest">Sort: Latest</option>
+                        <option value="oldest">Sort: Oldest</option>
+                        <option value="category">Sort: Category</option>
+                        <option value="featured">Sort: Featured First</option>
+                    </select>
+                </div>
+            </div>
+
+            @if($category !== '' || $search !== '' || $sortBy !== 'latest')
+                <div class="mt-4 flex flex-wrap items-center gap-3 text-sm">
+                    @if($search !== '')
+                        <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-700">
+                            Search: {{ $search }}
+                        </span>
+                    @endif
+
+                    @if($category !== '' && $activeCategory)
+                        <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-700">
+                            Category: {{ $activeCategory->name }}
+                        </span>
+                    @endif
+
+                    @if($sortBy !== 'latest')
+                        <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-700">
+                            Sort: {{ \Illuminate\Support\Str::of($sortBy)->replace('-', ' ')->title() }}
+                        </span>
+                    @endif
+
+                    <button type="button" wire:click="resetFilters"
+                        class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors">
+                        <i class="fas fa-rotate-left mr-2 text-xs"></i>
+                        Clear Filters
+                    </button>
+                </div>
+            @endif
         </div>
     </section>
 
@@ -183,7 +232,7 @@
                 <div class="rounded-3xl border border-dashed border-gray-300 bg-white px-8 py-16 text-center">
                     <i class="fas fa-camera-retro text-4xl text-gray-300"></i>
                     <h3 class="mt-5 text-2xl font-bold text-gray-900">No photos match this view yet</h3>
-                    <p class="mt-2 text-gray-600">Try another category or publish a few photos from the dashboard.</p>
+                    <p class="mt-2 text-gray-600">Try another search term, category, or sort option.</p>
                 </div>
             @endif
         </div>

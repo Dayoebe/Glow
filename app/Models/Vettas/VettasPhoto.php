@@ -93,6 +93,7 @@ class VettasPhoto extends Model
             $inner->where('title', 'like', "%{$searchTerm}%")
                 ->orWhere('caption', 'like', "%{$searchTerm}%")
                 ->orWhere('description', 'like', "%{$searchTerm}%")
+                ->orWhere('alt_text', 'like', "%{$searchTerm}%")
                 ->orWhere('photographer_name', 'like', "%{$searchTerm}%")
                 ->orWhere('location', 'like', "%{$searchTerm}%");
         });
