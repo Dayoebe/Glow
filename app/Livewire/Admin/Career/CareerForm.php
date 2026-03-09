@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Career;
 
 use App\Models\Career\CareerPosition;
+use App\Models\Team\Department;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -212,9 +213,25 @@ class CareerForm extends Component
         ];
     }
 
+    public function getDepartmentOptionsProperty()
+    {
+        $departments = Department::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->pluck('name');
+
+        if ($this->department !== '' && !$departments->contains($this->department)) {
+            $departments = $departments->prepend($this->department);
+        }
+
+        return $departments->unique()->values();
+    }
+
     public function render()
     {
-        return view('livewire.admin.career.' . ($this->isEditing ? 'edit' : 'create'))
+        return view('livewire.admin.career.' . ($this->isEditing ? 'edit' : 'create'), [
+            'departmentOptions' => $this->departmentOptions,
+        ])
             ->layout('layouts.admin', [
                 'header' => $this->isEditing ? 'Edit Career Position' : 'Create Career Position',
             ]);

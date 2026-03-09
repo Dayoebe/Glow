@@ -129,9 +129,18 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
-                        <input type="text" wire:model="department"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
-                            placeholder="Programming, Marketing, Operations">
+                        <select wire:model="department"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500">
+                            <option value="">Select department</option>
+                            @foreach($departmentOptions as $departmentOption)
+                                <option value="{{ $departmentOption }}">{{ $departmentOption }}</option>
+                            @endforeach
+                        </select>
+                        @if($departmentOptions->isEmpty())
+                            <p class="mt-2 text-xs text-amber-600">No active departments found in the database yet.</p>
+                        @else
+                            <p class="mt-2 text-xs text-gray-500">Department options are loaded from the Team Departments records.</p>
+                        @endif
                         @error('department') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
