@@ -14,7 +14,7 @@ class CloudinaryUploader
             return '';
         }
 
-        if (!self::hasCloudinaryConfig()) {
+        if (!self::syncCloudinaryConfig()) {
             return self::storeLocally($file, $folder);
         }
 
@@ -30,16 +30,49 @@ class CloudinaryUploader
 
             return $path;
         } catch (Throwable $exception) {
+            report($exception);
             return self::storeLocally($file, $folder);
         }
     }
 
-    private static function hasCloudinaryConfig(): bool
+    private static function syncCloudinaryConfig(): bool
     {
-        return (bool) config('services.cloudinary.url')
-            || (config('services.cloudinary.cloud_name')
-                && config('services.cloudinary.key')
-                && config('services.cloudinary.secret'));
+        $cloudUrl = self::resolveCloudinaryUrl();
+
+        if (!$cloudUrl) {
+            return false;
+        }
+
+        if (!config('cloudinary.cloud_url')) {
+            config([
+                'cloudinary.cloud_url' => $cloudUrl,
+                'cloudinary.upload_preset' => config('cloudinary.upload_preset'),
+                'cloudinary.upload_route' => config('cloudinary.upload_route'),
+                'cloudinary.upload_action' => config('cloudinary.upload_action'),
+                'cloudinary.notification_url' => config('cloudinary.notification_url'),
+            ]);
+        }
+
+        return true;
+    }
+
+    private static function resolveCloudinaryUrl(): ?string
+    {
+        $cloudUrl = config('cloudinary.cloud_url') ?: config('services.cloudinary.url');
+
+        if (!empty($cloudUrl)) {
+            return $cloudUrl;
+        }
+
+        $cloudName = config('services.cloudinary.cloud_name');
+        $key = config('services.cloudinary.key');
+        $secret = config('services.cloudinary.secret');
+
+        if ($cloudName && $key && $secret) {
+            return sprintf('cloudinary://%s:%s@%s', $key, $secret, $cloudName);
+        }
+
+        return null;
     }
 
     private static function storeLocally($file, string $folder): string

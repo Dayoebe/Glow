@@ -1,4 +1,15 @@
-<div>
+<div x-data="{
+    lightboxOpen: false,
+    activePhoto: null,
+    openLightbox(photo) {
+        this.activePhoto = photo;
+        this.lightboxOpen = true;
+    },
+    closeLightbox() {
+        this.lightboxOpen = false;
+        this.activePhoto = null;
+    }
+}" @keydown.escape.window="closeLightbox()">
     <section class="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-900 py-20 text-white">
         <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(circle at 15% 20%, rgba(16,185,129,.35), transparent 32%), radial-gradient(circle at 82% 12%, rgba(255,255,255,.18), transparent 26%), linear-gradient(120deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,0) 38%);"></div>
         <div class="container mx-auto px-4 relative z-10">
@@ -27,8 +38,23 @@
                 @if($featuredPhotos->isNotEmpty())
                     <div class="grid grid-cols-2 gap-4">
                         @foreach($featuredPhotos as $index => $featuredPhoto)
+                            @php
+                                $featuredLightbox = [
+                                    'image_path' => $featuredPhoto->image_path,
+                                    'alt_text' => $featuredPhoto->alt_text ?: $featuredPhoto->title,
+                                    'title' => $featuredPhoto->title,
+                                    'caption' => $featuredPhoto->caption,
+                                    'description' => $featuredPhoto->description,
+                                    'category' => $featuredPhoto->category?->name,
+                                    'location' => $featuredPhoto->location,
+                                    'credit' => $featuredPhoto->photographer_name ?: 'Glow FM Media Team',
+                                    'display_date' => $featuredPhoto->display_date,
+                                ];
+                            @endphp
                             <article class="group overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm {{ $index === 0 ? 'col-span-2' : '' }}">
-                                <div class="relative {{ $index === 0 ? 'aspect-[16/10]' : 'aspect-[4/5]' }}">
+                                <button type="button"
+                                    @click='openLightbox(@json($featuredLightbox))'
+                                    class="relative block w-full text-left cursor-zoom-in {{ $index === 0 ? 'aspect-[16/10]' : 'aspect-[4/5]' }}">
                                     <img src="{{ $featuredPhoto->image_path }}"
                                         alt="{{ $featuredPhoto->alt_text ?: $featuredPhoto->title }}"
                                         class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
@@ -42,7 +68,7 @@
                                             <p class="mt-2 text-sm text-slate-200/90 line-clamp-2">{{ $featuredPhoto->caption }}</p>
                                         @endif
                                     </div>
-                                </div>
+                                </button>
                             </article>
                         @endforeach
                     </div>
@@ -88,8 +114,23 @@
             @if($photos->count() > 0)
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                     @foreach($photos as $photo)
+                        @php
+                            $photoLightbox = [
+                                'image_path' => $photo->image_path,
+                                'alt_text' => $photo->alt_text ?: $photo->title,
+                                'title' => $photo->title,
+                                'caption' => $photo->caption,
+                                'description' => $photo->description,
+                                'category' => $photo->category?->name,
+                                'location' => $photo->location,
+                                'credit' => $photo->photographer_name ?: 'Glow FM Media Team',
+                                'display_date' => $photo->display_date,
+                            ];
+                        @endphp
                         <article class="group overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
-                            <div class="relative aspect-[4/5] overflow-hidden">
+                            <button type="button"
+                                @click='openLightbox(@json($photoLightbox))'
+                                class="relative block w-full aspect-[4/5] overflow-hidden text-left cursor-zoom-in">
                                 <img src="{{ $photo->image_path }}"
                                     alt="{{ $photo->alt_text ?: $photo->title }}"
                                     loading="lazy"
@@ -105,7 +146,7 @@
                                     @endif
                                 </div>
                                 <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/90 to-transparent"></div>
-                            </div>
+                            </button>
 
                             <div class="p-6">
                                 <div class="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-gray-500">
@@ -147,4 +188,63 @@
             @endif
         </div>
     </section>
+
+    <div x-cloak x-show="lightboxOpen" x-transition.opacity class="fixed inset-0 z-[80]">
+        <div class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm" @click="closeLightbox()"></div>
+
+        <div class="relative flex min-h-screen items-center justify-center p-4 md:p-8">
+            <div class="relative w-full max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+                <button type="button" @click="closeLightbox()"
+                    class="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-900/80 text-white transition hover:bg-slate-900">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="grid grid-cols-1 lg:grid-cols-[1.3fr_.7fr]">
+                    <div class="bg-slate-950">
+                        <img :src="activePhoto ? activePhoto.image_path : ''"
+                            :alt="activePhoto ? activePhoto.alt_text : ''"
+                            class="h-full max-h-[82vh] w-full object-contain">
+                    </div>
+
+                    <div class="flex flex-col p-6 md:p-8">
+                        <div class="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-600">
+                            <template x-if="activePhoto && activePhoto.category">
+                                <span x-text="activePhoto.category"></span>
+                            </template>
+                            <template x-if="activePhoto && activePhoto.display_date">
+                                <span x-text="activePhoto.display_date"></span>
+                            </template>
+                        </div>
+
+                        <h3 class="mt-4 text-3xl font-black text-gray-900" x-text="activePhoto ? activePhoto.title : ''"></h3>
+
+                        <template x-if="activePhoto && activePhoto.caption">
+                            <p class="mt-4 text-base leading-relaxed text-gray-600" x-text="activePhoto.caption"></p>
+                        </template>
+
+                        <div class="mt-6 grid grid-cols-1 gap-4 rounded-2xl bg-gray-50 p-5 text-sm">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Credit</p>
+                                <p class="mt-1 font-semibold text-gray-900" x-text="activePhoto ? activePhoto.credit : ''"></p>
+                            </div>
+
+                            <template x-if="activePhoto && activePhoto.location">
+                                <div>
+                                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Location</p>
+                                    <p class="mt-1 font-semibold text-gray-900" x-text="activePhoto.location"></p>
+                                </div>
+                            </template>
+                        </div>
+
+                        <template x-if="activePhoto && activePhoto.description">
+                            <div class="mt-6">
+                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">About This Photo</p>
+                                <p class="mt-2 text-sm leading-relaxed text-gray-600" x-text="activePhoto.description"></p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
