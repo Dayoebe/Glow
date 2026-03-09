@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Page;
 
+use App\Models\Setting;
 use App\Models\Vettas\VettasCategory;
 use App\Models\Vettas\VettasPhoto;
+use App\Support\VettasPageSettings;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -14,12 +17,21 @@ class VettasPage extends Component
     public string $category = '';
     public string $search = '';
     public string $sortBy = 'latest';
+    public array $pageContent = [];
 
     protected $queryString = [
         'category' => ['except' => ''],
         'search' => ['except' => ''],
         'sortBy' => ['except' => 'latest'],
     ];
+
+    public function mount(): void
+    {
+        $this->pageContent = array_replace_recursive(
+            VettasPageSettings::defaults(),
+            Setting::get('vettas', [])
+        );
+    }
 
     public function updatingCategory(): void
     {
@@ -73,6 +85,86 @@ class VettasPage extends Component
             ->ordered()
             ->take(4)
             ->get();
+    }
+
+    public function getAboutContentProperty(): array
+    {
+        return $this->pageContent['about'] ?? [];
+    }
+
+    public function getContactContentProperty(): array
+    {
+        return $this->pageContent['contact'] ?? [];
+    }
+
+    public function getContactMethodsProperty(): array
+    {
+        $contact = $this->contactContent;
+
+        return collect([
+            [
+                'label' => 'Phone',
+                'value' => trim((string) ($contact['phone'] ?? '')),
+                'icon' => 'fas fa-phone-alt',
+                'href' => $this->phoneUrl($contact['phone'] ?? ''),
+                'accent' => 'emerald',
+            ],
+            [
+                'label' => 'WhatsApp',
+                'value' => trim((string) ($contact['whatsapp'] ?? '')),
+                'icon' => 'fab fa-whatsapp',
+                'href' => $this->whatsappUrl($contact['whatsapp'] ?? ''),
+                'accent' => 'green',
+            ],
+            [
+                'label' => 'Email',
+                'value' => trim((string) ($contact['email'] ?? '')),
+                'icon' => 'fas fa-envelope',
+                'href' => $this->emailUrl($contact['email'] ?? ''),
+                'accent' => 'slate',
+            ],
+        ])
+            ->filter(fn (array $item) => filled($item['value']) && filled($item['href']))
+            ->values()
+            ->all();
+    }
+
+    public function getHasContactDetailsProperty(): bool
+    {
+        return count($this->contactMethods) > 0
+            || filled($this->contactContent['address'] ?? '')
+            || filled($this->contactContent['hours'] ?? '')
+            || filled($this->contactContent['booking_note'] ?? '')
+            || filled($this->contactContent['instagram'] ?? '')
+            || filled($this->contactContent['website'] ?? '');
+    }
+
+    public function getInstagramLinkProperty(): ?string
+    {
+        $instagram = trim((string) ($this->contactContent['instagram'] ?? ''));
+
+        if ($instagram === '') {
+            return null;
+        }
+
+        if (Str::startsWith($instagram, ['http://', 'https://'])) {
+            return $instagram;
+        }
+
+        return 'https://instagram.com/' . ltrim($instagram, '@/');
+    }
+
+    public function getWebsiteLinkProperty(): ?string
+    {
+        $website = trim((string) ($this->contactContent['website'] ?? ''));
+
+        if ($website === '') {
+            return null;
+        }
+
+        return Str::startsWith($website, ['http://', 'https://'])
+            ? $website
+            : 'https://' . ltrim($website, '/');
     }
 
     public function getPhotosProperty()
@@ -151,17 +243,64 @@ class VettasPage extends Component
     public function render()
     {
         $activeCategory = $this->categories->firstWhere('slug', $this->category);
+        $metaDescription = $this->aboutContent['summary']
+            ?? 'Explore the Vettas gallery on Glow FM with curated photos organized by category.';
 
         return view('livewire.page.vettas-page', [
             'photos' => $this->photos,
             'categories' => $this->categories,
             'featuredPhotos' => $this->featuredPhotos,
             'activeCategory' => $activeCategory,
+            'aboutContent' => $this->aboutContent,
+            'contactContent' => $this->contactContent,
+            'contactMethods' => $this->contactMethods,
+            'hasContactDetails' => $this->hasContactDetails,
+            'instagramLink' => $this->instagramLink,
+            'websiteLink' => $this->websiteLink,
         ])->layout('layouts.app', [
             'title' => 'Vettas - Glow FM',
             'meta_title' => 'Vettas - Glow FM',
-            'meta_description' => 'Explore the Vettas gallery on Glow FM with curated photos organized by category.',
+            'meta_description' => $metaDescription,
             'meta_image' => $this->featuredPhotos->first()?->image_path,
         ]);
+    }
+
+    private function phoneUrl(string $phone): ?string
+    {
+        $trimmed = trim($phone);
+
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $normalized = preg_replace('/[^0-9+]/', '', $trimmed);
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        return 'tel:' . $normalized;
+    }
+
+    private function whatsappUrl(string $phone): ?string
+    {
+        $digits = preg_replace('/\D+/', '', $phone);
+
+        if ($digits === '') {
+            return null;
+        }
+
+        return 'https://wa.me/' . $digits;
+    }
+
+    private function emailUrl(string $email): ?string
+    {
+        $trimmed = trim($email);
+
+        if ($trimmed === '') {
+            return null;
+        }
+
+        return 'mailto:' . $trimmed;
     }
 }

@@ -77,6 +77,120 @@
         </div>
     </section>
 
+    <section class="bg-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-[1.05fr_.95fr]">
+                <article class="rounded-[2rem] border border-gray-200 bg-white p-8 shadow-sm">
+                    <p class="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">
+                        {{ $aboutContent['eyebrow'] ?? 'About Vettas' }}
+                    </p>
+                    <h2 class="mt-3 text-3xl font-black text-gray-900">
+                        {{ $aboutContent['title'] ?? 'A private stay built around comfort and ease' }}
+                    </h2>
+                    <p class="mt-5 max-w-3xl text-base leading-8 text-gray-600">
+                        {{ $aboutContent['summary'] ?? '' }}
+                    </p>
+
+                    @if(!empty($aboutContent['highlights']))
+                        <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+                            @foreach($aboutContent['highlights'] as $highlight)
+                                <div class="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-5 py-4">
+                                    <div class="flex items-start gap-3">
+                                        <span class="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white">
+                                            <i class="fas fa-check text-xs"></i>
+                                        </span>
+                                        <p class="text-sm font-semibold leading-6 text-gray-800">{{ $highlight }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </article>
+
+                <aside class="overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-sm">
+                    <div class="h-full bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,.28),transparent_34%),linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,0))] p-8">
+                        <p class="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Contact</p>
+                        <h2 class="mt-3 text-3xl font-black">
+                            {{ $contactContent['title'] ?? 'Book or Make an Enquiry' }}
+                        </h2>
+                        <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+                            {{ $contactContent['intro'] ?? '' }}
+                        </p>
+
+                        @if($hasContactDetails)
+                            @if(!empty($contactMethods))
+                                <div class="mt-8 grid grid-cols-1 gap-3">
+                                    @foreach($contactMethods as $method)
+                                        <a href="{{ $method['href'] }}"
+                                            @if(str_starts_with($method['href'], 'http')) target="_blank" rel="noopener" @endif
+                                            class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-5 py-4 transition hover:bg-white/10">
+                                            <div class="flex items-center gap-4">
+                                                <span class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
+                                                    <i class="{{ $method['icon'] }}"></i>
+                                                </span>
+                                                <div>
+                                                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">{{ $method['label'] }}</p>
+                                                    <p class="mt-1 font-semibold text-white">{{ $method['value'] }}</p>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-arrow-right text-slate-500"></i>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                @if(!empty($contactContent['address']))
+                                    <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Address</p>
+                                        <p class="mt-2 text-sm leading-6 text-white/90">{{ $contactContent['address'] }}</p>
+                                    </div>
+                                @endif
+
+                                @if(!empty($contactContent['hours']))
+                                    <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Availability</p>
+                                        <p class="mt-2 text-sm leading-6 text-white/90">{{ $contactContent['hours'] }}</p>
+                                    </div>
+                                @endif
+                            </div>
+
+                            @if(!empty($contactContent['booking_note']))
+                                <div class="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-5 py-4 text-sm leading-7 text-emerald-100">
+                                    {{ $contactContent['booking_note'] }}
+                                </div>
+                            @endif
+
+                            @if($websiteLink || $instagramLink)
+                                <div class="mt-6 flex flex-wrap gap-3">
+                                    @if($websiteLink)
+                                        <a href="{{ $websiteLink }}" target="_blank" rel="noopener"
+                                            class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
+                                            <i class="fas fa-globe mr-2 text-emerald-300"></i>
+                                            Website
+                                        </a>
+                                    @endif
+
+                                    @if($instagramLink)
+                                        <a href="{{ $instagramLink }}" target="_blank" rel="noopener"
+                                            class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
+                                            <i class="fab fa-instagram mr-2 text-emerald-300"></i>
+                                            Instagram
+                                        </a>
+                                    @endif
+                                </div>
+                            @endif
+                        @else
+                            <div class="mt-8 rounded-2xl border border-dashed border-white/15 bg-white/5 px-5 py-6 text-sm leading-7 text-slate-300">
+                                Add your phone number, WhatsApp, email, and other booking details from the Vettas settings page in the dashboard.
+                            </div>
+                        @endif
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
     <section class="border-b border-gray-200 bg-white">
         <div class="container mx-auto px-4 py-5">
             <div class="flex flex-wrap items-center gap-3">

@@ -184,6 +184,11 @@ return [
                         'route' => 'admin.vettas.categories',
                         'active' => 'admin.vettas.categories'
                     ],
+                    [
+                        'title' => 'Page Settings',
+                        'route' => 'admin.vettas.settings',
+                        'active' => 'admin.vettas.settings'
+                    ],
                 ]
             ],
         ]

@@ -77,6 +77,11 @@
             </div>
 
             <div class="flex flex-wrap gap-3">
+                <a href="{{ route('admin.vettas.settings') }}"
+                    class="inline-flex items-center justify-center px-5 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-sliders mr-2"></i>
+                    Page Settings
+                </a>
                 <a href="{{ route('admin.vettas.categories') }}"
                     class="inline-flex items-center justify-center px-5 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50">
                     <i class="fas fa-folder-open mr-2"></i>

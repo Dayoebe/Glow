@@ -55,6 +55,7 @@ use App\Livewire\Admin\Vettas\Index as AdminVettasIndex;
 use App\Livewire\Admin\Vettas\PhotoForm as AdminVettasPhotoForm;
 use App\Livewire\Admin\Vettas\Categories as AdminVettasCategories;
 use App\Livewire\Admin\Vettas\CategoryForm as AdminVettasCategoryForm;
+use App\Livewire\Admin\Vettas\Settings as AdminVettasSettings;
 use App\Models\Career\CareerApplication;
 use App\Livewire\Admin\Settings\StationSettings as AdminStationSettings;
 use App\Livewire\Admin\Settings\WebsiteSettings as AdminWebsiteSettings;
@@ -340,6 +341,7 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::get('/', AdminVettasIndex::class)->name('index');
             Route::get('/create', AdminVettasPhotoForm::class)->name('create');
             Route::get('/categories', AdminVettasCategories::class)->name('categories');
+            Route::get('/settings', AdminVettasSettings::class)->name('settings');
             Route::get('/categories/create', AdminVettasCategoryForm::class)->name('categories.create');
             Route::get('/categories/{categoryId}/edit', AdminVettasCategoryForm::class)->name('categories.edit');
             Route::get('/{id}/edit', AdminVettasPhotoForm::class)->name('edit');
