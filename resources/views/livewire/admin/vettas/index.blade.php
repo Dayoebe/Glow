@@ -1,5 +1,5 @@
 <div>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2 xl:grid-cols-5">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -47,6 +47,18 @@
                 </div>
             </div>
         </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Reservations</p>
+                    <p class="text-2xl font-bold text-purple-600">{{ $stats['reservations'] }}</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
@@ -86,6 +98,11 @@
                     class="inline-flex items-center justify-center px-5 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50">
                     <i class="fas fa-folder-open mr-2"></i>
                     Categories
+                </a>
+                <a href="{{ route('admin.vettas.reservations') }}"
+                    class="inline-flex items-center justify-center px-5 py-2.5 border border-purple-200 bg-purple-50 text-purple-700 font-semibold rounded-lg hover:bg-purple-100">
+                    <i class="fas fa-calendar-check mr-2"></i>
+                    Reservations
                 </a>
                 <a href="{{ route('admin.vettas.create') }}"
                     class="inline-flex items-center justify-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors">

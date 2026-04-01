@@ -5,6 +5,7 @@ namespace App\Livewire\Page;
 use App\Models\Setting;
 use App\Models\Vettas\VettasCategory;
 use App\Models\Vettas\VettasPhoto;
+use App\Models\Vettas\VettasReservation;
 use App\Support\VettasPageSettings;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -18,6 +19,13 @@ class VettasPage extends Component
     public string $search = '';
     public string $sortBy = 'latest';
     public array $pageContent = [];
+    public string $full_name = '';
+    public string $email = '';
+    public string $phone = '';
+    public string $check_in_date = '';
+    public string $check_out_date = '';
+    public string $guest_count = '1';
+    public string $special_requests = '';
 
     protected $queryString = [
         'category' => ['except' => ''],
@@ -31,6 +39,11 @@ class VettasPage extends Component
             VettasPageSettings::defaults(),
             Setting::get('vettas', [])
         );
+
+        if (auth()->check()) {
+            $this->full_name = (string) auth()->user()->name;
+            $this->email = (string) auth()->user()->email;
+        }
     }
 
     public function updatingCategory(): void
@@ -59,6 +72,54 @@ class VettasPage extends Component
         $this->reset(['category', 'search', 'sortBy']);
         $this->sortBy = 'latest';
         $this->resetPage();
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'full_name' => 'required|string|min:3|max:120',
+            'email' => 'required|email|max:150',
+            'phone' => 'required|string|min:7|max:40',
+            'check_in_date' => 'required|date|after_or_equal:today',
+            'check_out_date' => 'required|date|after:check_in_date',
+            'guest_count' => 'required|integer|min:1|max:12',
+            'special_requests' => 'nullable|string|max:2000',
+        ];
+    }
+
+    public function submitReservation(): void
+    {
+        $validated = $this->validate();
+
+        VettasReservation::create([
+            'user_id' => auth()->id(),
+            'full_name' => trim($validated['full_name']),
+            'email' => trim($validated['email']),
+            'phone' => trim($validated['phone']),
+            'check_in_date' => $validated['check_in_date'],
+            'check_out_date' => $validated['check_out_date'],
+            'guest_count' => (int) $validated['guest_count'],
+            'status' => 'new',
+            'special_requests' => $this->normalizeOptionalString($validated['special_requests'] ?? ''),
+            'source' => 'website',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        $this->reset([
+            'phone',
+            'check_in_date',
+            'check_out_date',
+            'special_requests',
+        ]);
+
+        $this->guest_count = '1';
+
+        if (!auth()->check()) {
+            $this->reset(['full_name', 'email']);
+        }
+
+        session()->flash('vettas_reservation_success', 'Your reservation request has been received. We will confirm availability with you shortly.');
     }
 
     public function getCategoriesProperty()
@@ -302,5 +363,12 @@ class VettasPage extends Component
         }
 
         return 'mailto:' . $trimmed;
+    }
+
+    private function normalizeOptionalString(mixed $value): ?string
+    {
+        $normalized = trim((string) $value);
+
+        return $normalized === '' ? null : $normalized;
     }
 }

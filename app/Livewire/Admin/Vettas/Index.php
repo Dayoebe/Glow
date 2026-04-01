@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Vettas;
 
 use App\Models\Vettas\VettasCategory;
 use App\Models\Vettas\VettasPhoto;
+use App\Models\Vettas\VettasReservation;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -121,6 +122,7 @@ class Index extends Component
             'published' => VettasPhoto::where('is_published', true)->count(),
             'featured' => VettasPhoto::where('is_featured', true)->count(),
             'categories' => VettasCategory::count(),
+            'reservations' => VettasReservation::count(),
         ];
     }
 

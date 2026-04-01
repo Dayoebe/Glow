@@ -191,6 +191,139 @@
         </div>
     </section>
 
+    <section class="bg-slate-50 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+                <article class="overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-sm">
+                    <div class="h-full bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,.24),transparent_38%),linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,0))] p-8">
+                        <p class="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Reservations</p>
+                        <h2 class="mt-3 text-3xl font-black">Reserve your stay at Vettas Apartment</h2>
+                        <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+                            Share your preferred dates and guest details. Our team will review your request, confirm availability, and reach out with the next steps.
+                        </p>
+
+                        <div class="mt-8 space-y-3">
+                            <div class="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
+                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
+                                    <i class="fas fa-calendar-check"></i>
+                                </span>
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Flexible date requests</p>
+                                    <p class="mt-1 text-sm leading-6 text-slate-300">Choose your planned check-in and check-out dates so we can confirm what is available.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
+                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
+                                    <i class="fas fa-user-group"></i>
+                                </span>
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Guest planning</p>
+                                    <p class="mt-1 text-sm leading-6 text-slate-300">Let us know how many guests to expect so we can prepare the best stay option for you.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
+                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
+                                    <i class="fas fa-headset"></i>
+                                </span>
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Fast follow-up</p>
+                                    <p class="mt-1 text-sm leading-6 text-slate-300">Every reservation request lands in the dashboard so the team can respond quickly.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-5 py-4 text-sm leading-7 text-emerald-100">
+                            Reservations are requests first. We will contact you to confirm availability, pricing, and final booking details.
+                        </div>
+                    </div>
+                </article>
+
+                <article class="rounded-[2rem] border border-gray-200 bg-white p-8 shadow-sm">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <p class="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Booking Form</p>
+                            <h2 class="mt-2 text-3xl font-black text-gray-900">Send a reservation request</h2>
+                        </div>
+                        <p class="text-sm text-gray-500">Fields marked with <span class="text-red-500">*</span> are required.</p>
+                    </div>
+
+                    @if(session()->has('vettas_reservation_success'))
+                        <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
+                            {{ session('vettas_reservation_success') }}
+                        </div>
+                    @endif
+
+                    <form wire:submit.prevent="submitReservation" class="mt-6 space-y-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Full Name <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model="full_name"
+                                    class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                @error('full_name') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Email Address <span class="text-red-500">*</span></label>
+                                <input type="email" wire:model="email"
+                                    class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                @error('email') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_11rem]">
+                            <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model="phone"
+                                    class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                @error('phone') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Guests <span class="text-red-500">*</span></label>
+                                <input type="number" min="1" max="12" wire:model="guest_count"
+                                    class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                @error('guest_count') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Check-In Date <span class="text-red-500">*</span></label>
+                                <input type="date" wire:model="check_in_date"
+                                    class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                @error('check_in_date') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Check-Out Date <span class="text-red-500">*</span></label>
+                                <input type="date" wire:model="check_out_date"
+                                    class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                @error('check_out_date') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-gray-700">Special Requests</label>
+                            <textarea rows="5" wire:model="special_requests"
+                                placeholder="Tell us about arrival time, special needs, or anything else we should know."
+                                class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></textarea>
+                            @error('special_requests') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <button type="submit"
+                            class="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                            <span wire:loading.remove wire:target="submitReservation">
+                                <i class="fas fa-paper-plane mr-2 text-xs"></i>
+                                Submit Reservation
+                            </span>
+                            <span wire:loading wire:target="submitReservation">Submitting...</span>
+                        </button>
+                    </form>
+                </article>
+            </div>
+        </div>
+    </section>
+
     <section class="border-b border-gray-200 bg-white">
         <div class="container mx-auto px-4 py-5">
             <div class="flex flex-wrap items-center gap-3">

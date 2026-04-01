@@ -162,17 +162,27 @@ return [
                     ],
                 ]
             ],
+        ]
+    ],
+    [
+        'group' => 'Vettas',
+        'roles' => ['admin'],
+        'items' => [
             [
                 'title' => 'Vettas',
-                'icon' => 'fas fa-images',
+                'icon' => 'fas fa-building',
                 'route' => 'admin.vettas.index',
                 'active' => 'admin.vettas*',
-                'roles' => ['admin'],
                 'children' => [
                     [
                         'title' => 'All Photos',
                         'route' => 'admin.vettas.index',
                         'active' => 'admin.vettas.index'
+                    ],
+                    [
+                        'title' => 'Reservations',
+                        'route' => 'admin.vettas.reservations',
+                        'active' => 'admin.vettas.reservations'
                     ],
                     [
                         'title' => 'Add Photo',
