@@ -8,20 +8,37 @@
             background: white;
         }
         trix-editor {
-            min-height: 400px;
+            min-height: 320px;
             max-height: 600px;
             overflow-y: auto;
         }
+        @media (max-width: 1023px) {
+            trix-editor {
+                min-height: 260px;
+                max-height: 420px;
+            }
+        }
     </style>
 
-    <form wire:submit.prevent="saveAsDraft">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <form wire:submit.prevent="saveAsDraft" class="pb-32 lg:pb-0">
+        <div class="mb-4 lg:hidden">
+            <div class="mobile-app-surface mobile-editor-shell rounded-[1.75rem] border border-white/70 p-4 shadow-xl">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">New Article</p>
+                <h3 class="mt-2 text-lg font-semibold text-slate-900">{{ $title ?: 'Draft in progress' }}</h3>
+                <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                    <span class="rounded-full bg-amber-50 px-3 py-1 font-semibold text-amber-700">{{ $is_published ? 'Scheduled to publish' : 'Draft mode' }}</span>
+                    <span class="rounded-full bg-slate-900/5 px-3 py-1 font-medium text-slate-600">Autoslug enabled</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
             
             <!-- Main Content -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="space-y-4 lg:col-span-2 lg:space-y-6">
                 
                 <!-- Title & Slug Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="mobile-app-surface mobile-editor-shell rounded-[1.5rem] border border-white/70 p-5 shadow-xl lg:rounded-xl lg:border-gray-200 lg:bg-white lg:p-6 lg:shadow-sm">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Article Details</h3>
                     
                     <!-- Title -->
@@ -64,7 +81,7 @@
                 </div>
 
                 <!-- Content Card with Trix Editor -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="mobile-app-surface mobile-editor-shell rounded-[1.5rem] border border-white/70 p-5 shadow-xl lg:rounded-xl lg:border-gray-200 lg:bg-white lg:p-6 lg:shadow-sm">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Article Content</h3>
                     
                     <div wire:ignore>
@@ -78,7 +95,7 @@
                 </div>
 
                 <!-- SEO Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="mobile-app-surface mobile-editor-shell rounded-[1.5rem] border border-white/70 p-5 shadow-xl lg:rounded-xl lg:border-gray-200 lg:bg-white lg:p-6 lg:shadow-sm">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">SEO Settings</h3>
                     
                     <!-- Meta Description -->
@@ -123,14 +140,14 @@
             </div>
 
             <!-- Sidebar -->
-            <div class="space-y-6">
+            <div class="space-y-4 lg:space-y-6">
                 
                 <!-- Actions Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="mobile-app-surface mobile-editor-shell rounded-[1.5rem] border border-white/70 p-5 shadow-xl lg:sticky lg:top-24 lg:rounded-xl lg:border-gray-200 lg:bg-white lg:p-6 lg:shadow-sm">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Publish</h3>
                     
                     <!-- Status -->
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="mb-4 rounded-2xl bg-slate-900/5 p-3 lg:rounded-lg lg:bg-gray-50">
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-600">Status:</span>
                             <span class="font-semibold {{ $is_published ? 'text-green-600' : 'text-amber-600' }}">
@@ -177,7 +194,7 @@
                 </div>
 
                 <!-- Category Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="mobile-app-surface mobile-editor-shell rounded-[1.5rem] border border-white/70 p-5 shadow-xl lg:rounded-xl lg:border-gray-200 lg:bg-white lg:p-6 lg:shadow-sm">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Category</h3>
                     
                     <div
@@ -227,7 +244,7 @@
                 </div>
 
                 <!-- Featured Image Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="mobile-app-surface mobile-editor-shell rounded-[1.5rem] border border-white/70 p-5 shadow-xl lg:rounded-xl lg:border-gray-200 lg:bg-white lg:p-6 lg:shadow-sm">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Featured Image</h3>
                     
                     <!-- Upload Option -->
@@ -314,7 +331,7 @@
                 </div>
 
                 <!-- Settings Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="mobile-app-surface mobile-editor-shell rounded-[1.5rem] border border-white/70 p-5 shadow-xl lg:rounded-xl lg:border-gray-200 lg:bg-white lg:p-6 lg:shadow-sm">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Settings</h3>
                     @php
                         $canFeature = $this->canFeature();
@@ -322,7 +339,7 @@
                     
                     @if($canFeature)
                         <!-- Featured Toggle -->
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-3">
+                        <div class="mb-3 flex items-center justify-between rounded-2xl bg-slate-900/5 p-3 lg:rounded-lg lg:bg-gray-50">
                             <div>
                                 <p class="font-medium text-gray-900">Featured Article</p>
                                 <p class="text-sm text-gray-600">Show on homepage</p>
@@ -375,6 +392,27 @@
                     @endif
                 </div>
 
+            </div>
+        </div>
+
+        <div class="lg:hidden">
+            <div class="mobile-app-surface mobile-dock-shadow fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+6.25rem)] z-30 rounded-[1.75rem] border border-white/70 px-4 py-3">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-700">{{ $is_published ? 'Ready to publish' : 'Draft mode' }}</p>
+                        <p class="truncate text-sm font-semibold text-slate-900">{{ \Illuminate\Support\Str::limit($title ?: 'Draft in progress', 28) }}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="submit"
+                            class="inline-flex h-11 items-center justify-center rounded-2xl bg-slate-700 px-4 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800">
+                            Draft
+                        </button>
+                        <button type="button" wire:click="publishNow"
+                            class="inline-flex h-11 items-center justify-center rounded-2xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-700">
+                            Publish
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </form>

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#0f766e">
     @php
         $stationSettings = \App\Models\Setting::get('station', []);
         $stationName = data_get($stationSettings, 'name', 'Glow FM');
@@ -15,6 +16,33 @@
         if (!empty($stationLogoUrl) && !\Illuminate\Support\Str::startsWith($stationLogoUrl, ['http://', 'https://'])) {
             $stationLogoUrl = url($stationLogoUrl);
         }
+        $user = auth()->user();
+        $adminMobileNav = [
+            [
+                'label' => 'Home',
+                'icon' => 'fas fa-house',
+                'href' => route('dashboard'),
+                'active' => request()->routeIs('dashboard'),
+            ],
+            [
+                'label' => 'News',
+                'icon' => 'fas fa-newspaper',
+                'href' => route('admin.news.index'),
+                'active' => request()->routeIs('admin.news.*'),
+            ],
+            [
+                'label' => 'Inbox',
+                'icon' => 'fas fa-inbox',
+                'href' => route('admin.messages.inbox'),
+                'active' => request()->routeIs('admin.messages.*'),
+            ],
+            [
+                'label' => 'Profile',
+                'icon' => 'fas fa-user-circle',
+                'href' => route('admin.profile'),
+                'active' => request()->routeIs('admin.profile'),
+            ],
+        ];
     @endphp
     <title>{{ $title ?? ($stationName . ' - Admin Dashboard') }}</title>
     @if (!empty($stationLogoUrl))
@@ -39,16 +67,16 @@
     </style>
     @livewireStyles
 </head>
-<body class="bg-gray-50 font-sans antialiased" x-data="{ sidebarOpen: false }">
-    <div class="min-h-screen bg-gray-50">
+<body class="mobile-app-shell mobile-admin-shell overflow-x-hidden bg-slate-950 font-sans antialiased text-slate-900" x-data="{ sidebarOpen: false }">
+    <div class="min-h-screen bg-transparent lg:bg-gray-50">
         <!-- Sidebar -->
         <aside 
-            class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out flex flex-col lg:translate-x-0"
+            class="mobile-app-surface fixed left-3 top-[calc(env(safe-area-inset-top)+0.75rem)] bottom-[calc(env(safe-area-inset-bottom)+6.25rem)] z-50 flex w-[min(88vw,22rem)] flex-col overflow-hidden rounded-[2rem] border border-white/70 shadow-2xl transform transition-transform duration-300 ease-in-out lg:inset-y-0 lg:left-0 lg:top-0 lg:bottom-0 lg:w-72 lg:rounded-none lg:border-r lg:border-gray-200 lg:bg-white lg:shadow-none lg:backdrop-blur-none lg:translate-x-0"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             aria-label="Admin sidebar"
         >
             <!-- Brand -->
-            <div class="flex items-center justify-between h-16 px-5 border-b border-gray-200 bg-emerald-600">
+            <div class="flex items-center justify-between border-b border-white/70 bg-emerald-600 px-5 py-5 lg:h-16 lg:px-5 lg:py-0 lg:border-gray-200">
                 <div class="flex items-center space-x-3">
                     @if (!empty($stationLogoUrl))
                         <img src="{{ $stationLogoUrl }}" alt="{{ $stationName }} logo"
@@ -170,27 +198,30 @@
         <div class="flex flex-col min-h-screen lg:pl-72">
             
             <!-- Top Navigation Bar -->
-            <header class="flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200 shadow-sm">
-                <div class="flex items-center space-x-4">
-                    <!-- Mobile menu button -->
-                    <button 
-                        @click="sidebarOpen = true" 
-                        class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none"
-                    >
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    
-                    <!-- Page Title -->
-                    <div>
-                        <h2 class="text-xl font-semibold text-gray-800">{{ $header ?? 'Dashboard' }}</h2>
+            <header class="sticky top-0 z-30 px-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] lg:px-6 lg:pt-0">
+                <div class="mobile-app-surface flex min-h-16 items-center justify-between rounded-[1.75rem] border border-white/70 px-4 py-3 shadow-xl lg:h-16 lg:rounded-none lg:border-b lg:border-x-0 lg:border-t-0 lg:border-gray-200 lg:bg-white lg:px-6 lg:py-0 lg:shadow-sm lg:backdrop-blur-none">
+                    <div class="flex items-center space-x-3 lg:space-x-4">
+                        <!-- Mobile menu button -->
+                        <button 
+                            @click="sidebarOpen = true" 
+                            class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900/5 text-gray-600 transition hover:bg-emerald-50 hover:text-emerald-700 focus:outline-none lg:hidden"
+                        >
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        
+                        <!-- Page Title -->
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-700 lg:hidden">Admin Workspace</p>
+                            <h2 class="text-lg font-semibold text-gray-900 lg:text-xl">{{ $header ?? 'Dashboard' }}</h2>
+                            <p class="hidden text-xs text-gray-500 lg:block">{{ $stationName }} {{ $stationFrequency }}</p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Right Side: Search, Notifications, Profile -->
-                <div class="flex items-center space-x-4">
-                    
-                    <!-- Search -->
-                    <div class="hidden md:block relative">
+                    <!-- Right Side: Search, Notifications, Profile -->
+                    <div class="flex items-center space-x-2 lg:space-x-4">
+                        
+                        <!-- Search -->
+                        <div class="hidden md:block relative">
                         <input 
                             type="text" 
                             placeholder="Search..." 
@@ -203,7 +234,7 @@
                     <div x-data="{ open: false }" class="relative">
                         <button 
                             @click="open = !open"
-                            class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-150"
+                            class="relative flex h-11 w-11 items-center justify-center rounded-2xl text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
                         >
                             <i class="fas fa-bell text-xl"></i>
                             <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -267,7 +298,7 @@
                     <div x-data="{ open: false }" class="relative">
                         <button 
                             @click="open = !open"
-                            class="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors duration-150"
+                            class="flex items-center space-x-3 rounded-2xl p-2 transition-colors duration-150 hover:bg-gray-100"
                         >
                             <img 
                                 src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin User') }}&background=10b981&color=fff" 
@@ -322,22 +353,41 @@
             </header>
 
             <!-- Main Content -->
-            <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
-                @if (session()->has('error'))
-                    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flash-auto-dismiss">
-                        {{ session('error') }}
-                    </div>
-                @endif
-                @if ($errors->any())
-                    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        <p class="font-semibold">Please fix the errors below.</p>
-                        <p class="mt-1">{{ $errors->first() }}</p>
-                    </div>
-                @endif
-                {{ $slot }}
+            <main class="flex-1 overflow-y-auto px-3 pb-32 pt-4 lg:bg-gray-50 lg:p-6">
+                <div class="mx-auto max-w-7xl">
+                    @if (session()->has('error'))
+                        <div class="mobile-app-surface mb-4 rounded-2xl border border-red-200/80 bg-red-50/95 px-4 py-3 text-sm text-red-700 flash-auto-dismiss">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+                    @if ($errors->any())
+                        <div class="mobile-app-surface mb-4 rounded-2xl border border-red-200/80 bg-red-50/95 px-4 py-3 text-sm text-red-700">
+                            <p class="font-semibold">Please fix the errors below.</p>
+                            <p class="mt-1">{{ $errors->first() }}</p>
+                        </div>
+                    @endif
+                    {{ $slot }}
+                </div>
             </main>
         </div>
     </div>
+
+    <nav class="mobile-app-surface mobile-dock-shadow fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-40 rounded-[2rem] border border-white/70 px-3 py-2 lg:hidden">
+        <div class="grid grid-cols-5 gap-1">
+            @foreach ($adminMobileNav as $navItem)
+                <a href="{{ $navItem['href'] }}"
+                    class="flex flex-col items-center justify-center rounded-[1.35rem] px-2 py-2 text-[11px] font-medium transition {{ $navItem['active'] ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-900/5 hover:text-emerald-700' }}">
+                    <i class="{{ $navItem['icon'] }} mb-1 text-sm"></i>
+                    <span>{{ $navItem['label'] }}</span>
+                </a>
+            @endforeach
+            <button type="button" @click="sidebarOpen = true"
+                class="flex flex-col items-center justify-center rounded-[1.35rem] px-2 py-2 text-[11px] font-medium text-slate-600 transition hover:bg-slate-900/5 hover:text-emerald-700">
+                <i class="fas fa-layer-group mb-1 text-sm"></i>
+                <span>Menu</span>
+            </button>
+        </div>
+    </nav>
 
     <!-- Mobile Sidebar Overlay -->
     <div 
@@ -349,7 +399,7 @@
         x-transition:leave="transition-opacity ease-linear duration-300"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        class="fixed inset-0 z-40 bg-gray-900 bg-opacity-50 lg:hidden"
+        class="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-sm lg:hidden"
         @click="sidebarOpen = false"
         aria-hidden="true"
     ></div>
