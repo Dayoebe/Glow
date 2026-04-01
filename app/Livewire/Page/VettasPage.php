@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Page;
 
+use App\Mail\VettasReservationSubmittedMail;
 use App\Models\Setting;
 use App\Models\Vettas\VettasCategory;
 use App\Models\Vettas\VettasPhoto;
 use App\Models\Vettas\VettasReservation;
 use App\Support\VettasPageSettings;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -91,7 +93,7 @@ class VettasPage extends Component
     {
         $validated = $this->validate();
 
-        VettasReservation::create([
+        $reservation = VettasReservation::create([
             'user_id' => auth()->id(),
             'full_name' => trim($validated['full_name']),
             'email' => trim($validated['email']),
@@ -105,6 +107,13 @@ class VettasPage extends Component
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
+
+        try {
+            Mail::to(config('mail.vettas_reservations_to', 'chairman@glowfmradio.com'))
+                ->send(new VettasReservationSubmittedMail($reservation));
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
 
         $this->reset([
             'phone',
