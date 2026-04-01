@@ -23,6 +23,7 @@ class VettasPageSettings
                 'phone' => '',
                 'whatsapp' => '',
                 'email' => '',
+                'reservation_notification_email' => 'chairman@glowfmradio.com',
                 'address' => '',
                 'hours' => '',
                 'booking_note' => 'Use the contact details below for reservations, availability checks, and general enquiries.',

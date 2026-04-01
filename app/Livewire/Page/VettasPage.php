@@ -109,7 +109,9 @@ class VettasPage extends Component
         ]);
 
         try {
-            Mail::to(config('mail.vettas_reservations_to', 'chairman@glowfmradio.com'))
+            $notificationEmail = trim((string) ($this->contactContent['reservation_notification_email'] ?? ''));
+
+            Mail::to($notificationEmail !== '' ? $notificationEmail : config('mail.vettas_reservations_to', 'chairman@glowfmradio.com'))
                 ->send(new VettasReservationSubmittedMail($reservation));
         } catch (\Throwable $exception) {
             report($exception);
