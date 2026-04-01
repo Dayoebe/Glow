@@ -125,9 +125,8 @@
     mobileMenuOpen: false, 
     searchOpen: false,
     mobileNavCollapsed: false,
+    mobileLivePanelOpen: true,
     scrolled: false,
-    playerOpen: true,
-    audioPlaying: false,
     consentBannerOpen: false,
     consentChoice: null,
     installPromptEvent: null,
@@ -221,22 +220,10 @@
         }
     },
     toggleLive() {
-        const audio = this.$refs.liveAudio;
-        if (!audio || !audio.src) return;
-        if (audio.paused) {
-            audio.play();
-            this.audioPlaying = true;
-        } else {
-            audio.pause();
-            this.audioPlaying = false;
-        }
+        this.$store.radio.toggle();
     },
     startLive() {
-        const audio = this.$refs.liveAudio;
-        if (!audio || !audio.src) return;
-        audio.play();
-        this.audioPlaying = true;
-        this.playerOpen = true;
+        this.$store.radio.start();
     },
     closeMobileChrome() {
         this.mobileMenuOpen = false;
@@ -309,30 +296,38 @@
                 'icon' => 'fas fa-house',
                 'href' => route('home'),
                 'active' => request()->routeIs('home'),
+                'active_classes' => 'bg-sky-600 text-white shadow-lg',
+                'inactive_classes' => 'bg-sky-50/80 text-sky-700 hover:bg-sky-100',
             ],
             [
                 'label' => 'News',
                 'icon' => 'fas fa-newspaper',
                 'href' => route('news'),
                 'active' => request()->routeIs('news', 'news.show'),
+                'active_classes' => 'bg-orange-500 text-white shadow-lg',
+                'inactive_classes' => 'bg-orange-50/80 text-orange-700 hover:bg-orange-100',
+            ],
+            [
+                'label' => 'Podcast',
+                'icon' => 'fas fa-podcast',
+                'href' => route('podcasts.index'),
+                'active' => request()->routeIs('podcasts.*'),
+                'active_classes' => 'bg-indigo-600 text-white shadow-lg',
+                'inactive_classes' => 'bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100',
             ],
             [
                 'label' => 'Shows',
                 'icon' => 'fas fa-microphone-lines',
                 'href' => route('shows.index'),
                 'active' => request()->routeIs('shows.*'),
-            ],
-            [
-                'label' => 'Account',
-                'icon' => auth()->check() ? 'fas fa-user' : 'fas fa-right-to-bracket',
-                'href' => auth()->check() ? url('/profile') : route('login'),
-                'active' => request()->is('profile') || request()->is('settings') || request()->routeIs('login', 'register'),
+                'active_classes' => 'bg-emerald-600 text-white shadow-lg',
+                'inactive_classes' => 'bg-emerald-50/80 text-emerald-700 hover:bg-emerald-100',
             ],
         ];
     @endphp
 
     <!-- Fixed Header -->
-    <header class="fixed inset-x-0 top-0 z-[70] transition-all duration-300">
+    <header class="fixed inset-x-0 top-0 z-[80] transition-all duration-300">
         <!-- Top Bar -->
         <div class="hidden lg:block bg-slate-600 text-white">
             <div class="container mx-auto px-4">
@@ -353,11 +348,11 @@
                         <span class="hidden sm:flex items-center space-x-2 text-xs">
                             <span class="relative flex h-2 w-2">
                                 <span class="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"
-                                    :class="audioPlaying ? 'animate-ping' : ''"></span>
+                                    :class="$store.radio.audioPlaying ? 'animate-ping' : ''"></span>
                                 <span class="relative inline-flex h-2 w-2 rounded-full"
-                                    :class="audioPlaying ? 'bg-emerald-400' : 'bg-red-500'"></span>
+                                    :class="$store.radio.audioPlaying ? 'bg-emerald-400' : 'bg-red-500'"></span>
                             </span>
-                            <span class="font-medium" x-text="audioPlaying ? 'LIVE STREAMING' : '{{ $streamIsLive ? 'LIVE NOW' : 'OFFLINE' }}'"></span>
+                            <span class="font-medium" x-text="$store.radio.audioPlaying ? 'LIVE STREAMING' : '{{ $streamIsLive ? 'LIVE NOW' : 'OFFLINE' }}'"></span>
                             <span class="text-emerald-200">•</span>
                             <span class="font-medium">{{ $currentProgramTitle }}</span>
                             <span class="text-emerald-200">•</span>
@@ -403,10 +398,10 @@
         </div>
 
         <!-- Main Navigation -->
-        <div class="mx-auto w-full max-w-screen-2xl px-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] lg:px-4 lg:pt-0">
-            <div class="mobile-app-surface overflow-hidden rounded-[2rem] border border-white/70 shadow-2xl lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none"
+        <div class="w-full pt-[calc(env(safe-area-inset-top)+0.75rem)] lg:pt-0">
+            <div class="mobile-app-surface relative overflow-hidden border-y border-white/70 shadow-2xl lg:overflow-visible lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none"
                 :class="scrolled ? 'lg:bg-white lg:shadow-lg' : 'lg:bg-white/95 lg:shadow-none lg:backdrop-blur-sm'">
-                <nav class="flex items-center justify-between px-4 py-3 lg:h-20 lg:px-0 lg:py-0">
+                <nav class="relative z-[85] mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-3 lg:h-20 lg:px-4 lg:py-0">
 
                     <!-- Logo -->
                     <a href="/" class="flex items-center space-x-3 group">
@@ -467,7 +462,7 @@
                                 x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
                                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
                                 x-transition:leave-end="opacity-0 translate-y-2"
-                                class="absolute left-0 z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
+                                class="absolute left-0 z-[95] mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
                                 <a href="/podcasts"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
                                     Podcasts
@@ -540,7 +535,7 @@
                                     x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                                     x-transition:leave="transition ease-in duration-150"
                                     x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                                    class="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
+                                    class="absolute right-0 z-[95] mt-2 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
 
                                     @if(auth()->user()->is_admin)
                                         <a href="/dashboard"
@@ -600,36 +595,57 @@
 
                 <div class="border-t border-slate-200/70 px-4 pb-4 pt-2 lg:hidden">
                     <div class="mobile-app-surface-dark rounded-[1.6rem] px-4 py-3 text-white">
-                        <div class="flex items-start justify-between gap-3">
+                        <button type="button" @click="mobileLivePanelOpen = !mobileLivePanelOpen"
+                            class="flex w-full items-start justify-between gap-3 text-left">
                             <div class="min-w-0">
                                 <p class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
                                     <span class="relative flex h-2.5 w-2.5">
                                         <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"
-                                            :class="audioPlaying ? 'animate-ping' : ''"></span>
+                                            :class="$store.radio.audioPlaying ? 'animate-ping' : ''"></span>
                                         <span class="relative inline-flex h-2.5 w-2.5 rounded-full"
-                                            :class="audioPlaying ? 'bg-lime-300' : 'bg-emerald-300'"></span>
+                                            :class="$store.radio.audioPlaying ? 'bg-lime-300' : 'bg-emerald-300'"></span>
                                     </span>
                                     On Air Now
                                 </p>
                                 <p class="mt-2 truncate text-base font-semibold">{{ $currentProgramTitle }}</p>
                                 <p class="mt-1 truncate text-xs text-slate-300">{{ $currentProgramHost }} • {{ $currentProgramTime }} WAT</p>
                             </div>
-                            <button type="button" @click="startLive; closeMobileChrome()"
-                                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-lg">
-                                <i class="fas fa-play text-sm"></i>
-                            </button>
-                        </div>
-                        <div class="mt-3 flex items-center gap-2">
-                            <a href="{{ route('schedule') }}" @click="closeMobileChrome()"
-                                class="inline-flex items-center rounded-full bg-white/10 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/20">
-                                <i class="fas fa-calendar-alt mr-2 text-[11px]"></i>Schedule
-                            </a>
-                            <button type="button" x-cloak x-show="canInstallApp && !appInstalled" @click="installApp"
-                                :disabled="installInProgress"
-                                class="inline-flex items-center rounded-full bg-emerald-500/20 px-3 py-2 text-xs font-medium text-emerald-100 transition hover:bg-emerald-500/30 disabled:opacity-70">
-                                <i class="fas fa-download mr-2 text-[11px]"></i>
-                                <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
-                            </button>
+                            <span class="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-white">
+                                <i class="fas text-xs transition-transform duration-200"
+                                    :class="mobileLivePanelOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            </span>
+                        </button>
+
+                        <div x-cloak x-show="mobileLivePanelOpen"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 -translate-y-2"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 -translate-y-2"
+                            class="mt-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="truncate text-xs text-slate-300">{{ $streamTitle }}</p>
+                                    <p class="mt-1 truncate text-[11px] text-slate-400">{{ $streamArtist }} • {{ $streamStatusMessage }}</p>
+                                </div>
+                                <button type="button" @click="startLive; closeMobileChrome()"
+                                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-lg">
+                                    <i class="fas fa-play text-sm"></i>
+                                </button>
+                            </div>
+                            <div class="mt-3 flex items-center gap-2">
+                                <a href="{{ route('schedule') }}" @click="closeMobileChrome()"
+                                    class="inline-flex items-center rounded-full bg-white/10 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/20">
+                                    <i class="fas fa-calendar-alt mr-2 text-[11px]"></i>Schedule
+                                </a>
+                                <button type="button" x-cloak x-show="canInstallApp && !appInstalled" @click="installApp"
+                                    :disabled="installInProgress"
+                                    class="inline-flex items-center rounded-full bg-emerald-500/20 px-3 py-2 text-xs font-medium text-emerald-100 transition hover:bg-emerald-500/30 disabled:opacity-70">
+                                    <i class="fas fa-download mr-2 text-[11px]"></i>
+                                    <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -641,7 +657,7 @@
             x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-4"
-            class="mobile-app-surface fixed inset-x-3 top-[calc(env(safe-area-inset-top)+7.25rem)] z-[60] rounded-[1.75rem] border border-white/70 shadow-2xl lg:static lg:inset-auto lg:top-auto lg:z-auto lg:rounded-none lg:border-t lg:border-white/0 lg:bg-white lg:shadow-xl"
+            class="mobile-app-surface fixed inset-x-3 top-[calc(env(safe-area-inset-top)+7.25rem)] z-[70] rounded-[1.75rem] border border-white/70 shadow-2xl lg:relative lg:inset-auto lg:top-auto lg:z-[90] lg:rounded-none lg:border-t lg:border-white/0 lg:bg-white lg:shadow-xl"
             @click.away="searchOpen = false">
             <div class="mx-auto max-w-3xl px-4 py-5 lg:px-4 lg:py-6">
                 <div class="relative">
@@ -838,18 +854,25 @@
         x-transition:leave-end="opacity-0 translate-y-4"
         class="mobile-app-surface mobile-dock-shadow fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-40 rounded-[2rem] border border-white/70 px-3 py-2 lg:hidden">
         <div class="grid grid-cols-5 gap-1">
-            @foreach ($publicMobileNav as $navItem)
+            @foreach (collect($publicMobileNav)->take(2) as $navItem)
                 <a href="{{ $navItem['href'] }}" @click="closeMobileChrome()"
-                    class="flex flex-col items-center justify-center rounded-[1.35rem] px-2 py-2 text-[11px] font-medium transition {{ $navItem['active'] ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-900/5 hover:text-emerald-700' }}">
+                    class="flex flex-col items-center justify-center rounded-[1.35rem] px-2 py-2 text-[11px] font-medium transition {{ $navItem['active'] ? $navItem['active_classes'] : $navItem['inactive_classes'] }}">
                     <i class="{{ $navItem['icon'] }} mb-1 text-sm"></i>
                     <span>{{ $navItem['label'] }}</span>
                 </a>
             @endforeach
             <button type="button" @click="startLive; closeMobileChrome()"
-                class="flex flex-col items-center justify-center rounded-[1.35rem] bg-slate-900 px-2 py-2 text-[11px] font-medium text-white shadow-lg transition hover:bg-emerald-700">
+                class="flex flex-col items-center justify-center rounded-[1.35rem] bg-rose-600 px-2 py-2 text-[11px] font-medium text-white shadow-lg transition hover:bg-rose-700">
                 <i class="fas fa-play mb-1 text-sm"></i>
                 <span>Listen</span>
             </button>
+            @foreach (collect($publicMobileNav)->slice(2) as $navItem)
+                <a href="{{ $navItem['href'] }}" @click="closeMobileChrome()"
+                    class="flex flex-col items-center justify-center rounded-[1.35rem] px-2 py-2 text-[11px] font-medium transition {{ $navItem['active'] ? $navItem['active_classes'] : $navItem['inactive_classes'] }}">
+                    <i class="{{ $navItem['icon'] }} mb-1 text-sm"></i>
+                    <span>{{ $navItem['label'] }}</span>
+                </a>
+            @endforeach
         </div>
     </nav>
 
@@ -1064,7 +1087,7 @@
     </footer>
 
     <!-- Floating Listen Live Player -->
-    <div x-show="playerOpen" x-transition:enter="transition ease-out duration-300"
+    <div x-show="$store.radio.playerOpen" x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-full"
@@ -1075,13 +1098,13 @@
                 <div class="flex items-center space-x-2">
                     <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
                         <span class="absolute inline-flex h-full w-full rounded-full bg-white opacity-60"
-                            :class="audioPlaying ? 'animate-ping' : ''"></span>
+                            :class="$store.radio.audioPlaying ? 'animate-ping' : ''"></span>
                         <span class="relative inline-flex h-2.5 w-2.5 rounded-full"
-                            :class="audioPlaying ? 'bg-lime-300' : 'bg-white'"></span>
+                            :class="$store.radio.audioPlaying ? 'bg-lime-300' : 'bg-white'"></span>
                     </span>
-                    <span class="text-xs sm:text-sm font-semibold" x-text="audioPlaying ? 'STREAMING LIVE' : 'LIVE NOW'"></span>
+                    <span class="text-xs sm:text-sm font-semibold" x-text="$store.radio.audioPlaying ? 'STREAMING LIVE' : 'LIVE NOW'"></span>
                 </div>
-                <button @click="playerOpen = false" class="text-white hover:text-gray-200 transition-colors">
+                <button @click="$store.radio.closePlayer()" class="text-white hover:text-gray-200 transition-colors">
                     <i class="fas fa-times text-sm sm:text-base"></i>
                 </button>
             </div>
@@ -1112,7 +1135,7 @@
                             <span class="text-[10px] text-emerald-300 font-semibold">WAT</span>
                         </div>
                     </div>
-                    <div class="flex items-end space-x-1" x-show="audioPlaying">
+                    <div class="flex items-end space-x-1" x-show="$store.radio.audioPlaying">
                         <span class="w-1 h-3 bg-emerald-400 rounded-full animate-pulse"></span>
                         <span class="w-1 h-5 bg-emerald-300 rounded-full animate-pulse"></span>
                         <span class="w-1 h-4 bg-emerald-200 rounded-full animate-pulse"></span>
@@ -1124,7 +1147,7 @@
                     <div class="flex items-center space-x-2">
                         <button type="button" @click="toggleLive"
                             class="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-600 hover:bg-emerald-700 rounded-full flex items-center justify-center transition-colors">
-                            <i class="fas text-white text-sm sm:text-base" :class="audioPlaying ? 'fa-pause' : 'fa-play'"></i>
+                            <i class="fas text-white text-sm sm:text-base" :class="$store.radio.audioPlaying ? 'fa-pause' : 'fa-play'"></i>
                         </button>
                         <button
                             class="w-7 h-7 sm:w-8 sm:h-8 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors">
@@ -1141,7 +1164,9 @@
         </div>
     </div>
 
-    <audio x-ref="liveAudio" src="{{ $stationStreamUrl }}" preload="none"></audio>
+    @persist('live-radio-audio')
+        <audio x-init="$store.radio.bind($el)" src="{{ $stationStreamUrl }}" preload="none"></audio>
+    @endpersist
 
     @if ($errors->any())
         @php

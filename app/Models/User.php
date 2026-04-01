@@ -10,7 +10,10 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles {
+        hasRole as protected spatieHasRole;
+        hasAnyRole as protected spatieHasAnyRole;
+    }
 
     protected $fillable = [
         'name',
@@ -43,12 +46,16 @@ class User extends Authenticatable
     // Role helper methods
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'admin' || $this->spatieHasRole('admin');
     }
 
     public function isStaff(): bool
     {
-        return in_array($this->role, self::STAFF_LIKE_ROLES, true);
+        if (in_array($this->role, self::STAFF_LIKE_ROLES, true)) {
+            return true;
+        }
+
+        return $this->spatieHasAnyRole(self::STAFF_LIKE_ROLES);
     }
 
     public function isDj(): bool
@@ -61,22 +68,22 @@ class User extends Authenticatable
         return $this->role === 'user';
     }
 
-    public function hasRole(string $role): bool
+    public function hasRole($role, ?string $guard = null): bool
     {
-        if ($role === 'staff') {
+        if (is_string($role) && $role === 'staff') {
             return $this->isStaff();
         }
 
-        return $this->role === $role;
-    }
-
-    public function hasAnyRole(array $roles): bool
-    {
-        if (in_array('staff', $roles, true) && $this->isStaff()) {
+        if (is_string($role) && $this->role === $role) {
             return true;
         }
 
-        return in_array($this->role, $roles, true);
+        return $this->spatieHasRole($role, $guard);
+    }
+
+    public function hasAnyRole(...$roles): bool
+    {
+        return $this->hasRole($roles);
     }
 
     public function getRoleLabelAttribute(): string
