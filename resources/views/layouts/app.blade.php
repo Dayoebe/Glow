@@ -259,6 +259,8 @@
         $stationSocials = data_get($stationSettings, 'socials', []);
         $streamSettings = \App\Models\Setting::get('stream', []);
         $systemSettings = \App\Models\Setting::get('system', []);
+        $authUser = auth()->user();
+        $canAccessDashboard = $authUser && ($authUser->isAdmin() || $authUser->isStaff());
         $stationTimezone = 'Africa/Lagos'; // Enforce WAT
         $streamIsLive = data_get($streamSettings, 'is_live', true);
         $streamStatusMessage = data_get($streamSettings, 'status_message', 'Broadcasting live now');
@@ -537,8 +539,8 @@
                                     x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
                                     class="absolute right-0 z-[95] mt-2 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
 
-                                    @if(auth()->user()->is_admin)
-                                        <a href="/dashboard"
+                                    @if($canAccessDashboard)
+                                        <a href="{{ route('dashboard') }}"
                                             class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
                                             <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
                                         </a>
@@ -754,6 +756,12 @@
                 </div>
                 @auth
                     <div class="space-y-2">
+                        @if($canAccessDashboard)
+                            <a href="{{ route('dashboard') }}" @click="closeMobileChrome()"
+                                class="block rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-emerald-700">
+                                <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                            </a>
+                        @endif
                         <a href="/profile" @click="closeMobileChrome()"
                             class="block rounded-xl px-4 py-3 font-medium text-gray-700 transition-colors hover:bg-emerald-50 hover:text-emerald-600">
                             <i class="fas fa-user-circle mr-2"></i> My Profile
