@@ -140,6 +140,11 @@ class NewsForm extends Component
 
     public function save($publishNow = false)
     {
+        if ($publishNow && !$this->canApproveNews()) {
+            session()->flash('error', 'Only selected news approvers can publish articles.');
+            return null;
+        }
+
         if ($publishNow) {
             $this->is_published = true;
             if (empty($this->published_at)) {
@@ -184,10 +189,22 @@ class NewsForm extends Component
 
         $featuredPosition = $this->featured_position ?: 'hero';
         $isFeatured = $this->is_featured;
+        $canApproveNews = $this->canApproveNews();
+        $isPublished = $this->is_published;
+        $publishedAt = $this->is_published && $this->published_at ? $this->published_at : null;
 
-        if (!$this->canFeature()) {
-            $isFeatured = false;
-            $featuredPosition = 'none';
+        if (!$canApproveNews) {
+            if ($this->isEditing && $this->news) {
+                $isFeatured = $this->news->is_featured;
+                $featuredPosition = $this->news->featured_position ?: ($isFeatured ? 'hero' : 'none');
+                $isPublished = $this->news->is_published;
+                $publishedAt = $this->news->published_at;
+            } else {
+                $isFeatured = false;
+                $featuredPosition = 'none';
+                $isPublished = false;
+                $publishedAt = null;
+            }
         }
 
         if (!$isFeatured) {
@@ -203,11 +220,10 @@ class NewsForm extends Component
             'content' => $this->content,
             'featured_image' => $imagePath,
             'category_id' => $this->category_id,
-            'is_published' => $this->is_published,
+            'is_published' => $isPublished,
             'is_featured' => $isFeatured,
             'featured_position' => $featuredPosition,
-            'published_at' => $this->is_published && $this->published_at ? 
-                $this->published_at : null,
+            'published_at' => $publishedAt,
             'meta_description' => $this->meta_description,
             'meta_keywords' => $this->meta_keywords,
             'tags' => $tagsArray,
@@ -231,17 +247,17 @@ class NewsForm extends Component
 
     public function canFeature(): bool
     {
+        return $this->canApproveNews();
+    }
+
+    public function canApproveNews(): bool
+    {
         $user = auth()->user();
         if (!$user) {
             return false;
         }
 
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        $approverIds = \App\Models\Setting::get('content_approvers.ids', []);
-        return $user->staffMember && in_array($user->staffMember->id, $approverIds, true);
+        return $user->canApproveNews();
     }
 
     public function createCategory()
@@ -285,6 +301,11 @@ class NewsForm extends Component
 
     public function publishNow()
     {
+        if (!$this->canApproveNews()) {
+            session()->flash('error', 'Only selected news approvers can publish articles.');
+            return;
+        }
+
         $this->save(true);
     }
 

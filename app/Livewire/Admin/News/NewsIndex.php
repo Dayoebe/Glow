@@ -4,7 +4,6 @@ namespace App\Livewire\Admin\News;
 
 use App\Models\News\News;
 use App\Models\News\NewsCategory;
-use App\Models\Setting;
 use App\Notifications\ContentApprovalUpdated;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -177,12 +176,7 @@ class NewsIndex extends Component
             return false;
         }
 
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        $approverIds = Setting::get('content_approvers.ids', []);
-        return $user->staffMember && in_array($user->staffMember->id, $approverIds, true);
+        return $user->canApproveNews();
     }
 
     public function canManageNews(News $news): bool

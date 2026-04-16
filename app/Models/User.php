@@ -68,6 +68,22 @@ class User extends Authenticatable
         return $this->role === 'user';
     }
 
+    public function canApproveNews(): bool
+    {
+        $staffMember = $this->staffMember;
+
+        if (!$staffMember || !$staffMember->is_active) {
+            return false;
+        }
+
+        $approverIds = collect(Setting::get('content_approvers.ids', []))
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        return in_array((int) $staffMember->id, $approverIds, true);
+    }
+
     public function hasRole($role, ?string $guard = null): bool
     {
         if (is_string($role) && $role === 'staff') {

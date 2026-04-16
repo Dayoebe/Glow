@@ -135,6 +135,9 @@
                 <!-- Actions Card -->
                 <div class="mobile-app-surface mobile-editor-shell rounded-[1.5rem] border border-white/70 p-5 shadow-xl lg:sticky lg:top-24 lg:rounded-xl lg:border-gray-200 lg:bg-white lg:p-6 lg:shadow-sm">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Update</h3>
+                    @php
+                        $canApproveNews = $this->canApproveNews();
+                    @endphp
 
                     <div class="mb-4 rounded-2xl bg-slate-900/5 p-3 lg:rounded-lg lg:bg-gray-50">
                         <div class="flex items-center justify-between text-sm">
@@ -145,37 +148,43 @@
                         </div>
                     </div>
 
-                    <!-- Schedule Publishing -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-calendar-alt mr-1 text-emerald-600"></i>
-                            {{ $is_published ? 'Published' : 'Schedule' }} Date
-                        </label>
-                        <input type="datetime-local" wire:model="published_at"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors">
-                        @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        <p class="mt-1 text-xs text-gray-500">
-                            @if($is_published)
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Article is currently published
-                            @else
-                                <i class="fas fa-clock mr-1"></i>
-                                Set future date to schedule
-                            @endif
-                        </p>
-                    </div>
-
-                    <!-- Publish Toggle -->
-                    <div class="mb-4 flex items-center justify-between rounded-2xl bg-slate-900/5 p-3 lg:rounded-lg lg:bg-gray-50">
-                        <div>
-                            <p class="font-medium text-gray-900">Published</p>
-                            <p class="text-sm text-gray-600">Make article public</p>
+                    @if($canApproveNews)
+                        <!-- Schedule Publishing -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-calendar-alt mr-1 text-emerald-600"></i>
+                                {{ $is_published ? 'Published' : 'Schedule' }} Date
+                            </label>
+                            <input type="datetime-local" wire:model="published_at"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors">
+                            @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            <p class="mt-1 text-xs text-gray-500">
+                                @if($is_published)
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Article is currently published
+                                @else
+                                    <i class="fas fa-clock mr-1"></i>
+                                    Set future date to schedule
+                                @endif
+                            </p>
                         </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" wire:model="is_published" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                        </label>
-                    </div>
+
+                        <!-- Publish Toggle -->
+                        <div class="mb-4 flex items-center justify-between rounded-2xl bg-slate-900/5 p-3 lg:rounded-lg lg:bg-gray-50">
+                            <div>
+                                <p class="font-medium text-gray-900">Published</p>
+                                <p class="text-sm text-gray-600">Make article public</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" wire:model="is_published" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                            </label>
+                        </div>
+                    @else
+                        <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                            Only selected news approvers can change publication status.
+                        </div>
+                    @endif
 
                     <div class="space-y-3">
                         <button type="submit"
