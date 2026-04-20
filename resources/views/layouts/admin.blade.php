@@ -32,55 +32,24 @@
                 'patterns' => ['dashboard'],
             ],
             [
-                'label' => 'Content',
+                'label' => 'News',
                 'icon' => 'fas fa-newspaper',
                 'href' => route('admin.news.index'),
-                'patterns' => [
-                    'admin.news.*',
-                    'admin.blog.*',
-                    'admin.events.*',
-                    'admin.careers.*',
-                    'admin.vettas.*',
-                    'admin.podcasts.*',
-                ],
+                'patterns' => ['admin.news.*'],
             ],
             [
-                'label' => 'Community',
-                'icon' => 'fas fa-users',
-                'href' => route('admin.messages.inbox'),
-                'patterns' => ['admin.listeners.*', 'admin.requests.*', 'admin.contests.*', 'admin.messages.*'],
+                'label' => 'Podcast',
+                'icon' => 'fas fa-podcast',
+                'href' => route('admin.podcasts.manage'),
+                'patterns' => ['admin.podcasts.*'],
+            ],
+            [
+                'label' => 'All Shows',
+                'icon' => 'fas fa-microphone',
+                'href' => route($isAdminUser ? 'admin.shows.index' : 'shows.index'),
+                'patterns' => $isAdminUser ? ['admin.shows.*'] : ['shows.*'],
             ],
         ];
-
-        if ($isAdminUser) {
-            $adminMobileNav[] = [
-                'label' => 'Broadcast',
-                'icon' => 'fas fa-broadcast-tower',
-                'href' => route('admin.stream'),
-                'patterns' => ['admin.stream', 'admin.shows.*'],
-            ];
-
-            $adminMobileNav[] = [
-                'label' => 'Admin',
-                'icon' => 'fas fa-shield-halved',
-                'href' => route('admin.approvals'),
-                'patterns' => [
-                    'admin.approvals',
-                    'admin.ads.*',
-                    'admin.team.*',
-                    'admin.users.*',
-                    'admin.newsletter.*',
-                    'admin.settings.*',
-                ],
-            ];
-        } else {
-            $adminMobileNav[] = [
-                'label' => 'Profile',
-                'icon' => 'fas fa-user-circle',
-                'href' => route('admin.profile'),
-                'patterns' => ['admin.profile'],
-            ];
-        }
     @endphp
     <title>{{ $title ?? $stationName . ' - Admin Dashboard' }}</title>
     @if (!empty($stationLogoUrl))
@@ -129,7 +98,7 @@
     <div class="min-h-screen bg-transparent lg:bg-gray-50">
         <!-- Sidebar -->
         <aside
-            class="mobile-app-surface fixed left-3 top-[calc(env(safe-area-inset-top)+0.75rem)] bottom-[calc(env(safe-area-inset-bottom)+8rem)] z-50 flex w-[min(88vw,22rem)] flex-col overflow-hidden rounded-[2rem] border border-white/70 shadow-2xl transform transition-transform duration-300 ease-in-out lg:inset-y-0 lg:left-0 lg:top-0 lg:bottom-0 lg:w-72 lg:rounded-none lg:border-r lg:border-gray-200 lg:bg-white lg:shadow-none lg:backdrop-blur-none lg:translate-x-0"
+            class="mobile-app-surface fixed left-3 top-[calc(env(safe-area-inset-top)+0.75rem)] bottom-[calc(env(safe-area-inset-bottom)+6.5rem)] z-50 flex w-[min(88vw,22rem)] flex-col overflow-hidden rounded-[2rem] border border-white/70 shadow-2xl transform transition-transform duration-300 ease-in-out lg:inset-y-0 lg:left-0 lg:top-0 lg:bottom-0 lg:w-72 lg:rounded-none lg:border-r lg:border-gray-200 lg:bg-white lg:shadow-none lg:backdrop-blur-none lg:translate-x-0"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" aria-label="Admin sidebar">
             <!-- Brand -->
             <div
@@ -408,7 +377,7 @@
             </header>
 
             <!-- Main Content -->
-            <main class="flex-1 overflow-y-auto px-3 pb-32 pt-4 lg:bg-gray-50 lg:p-6">
+            <main class="flex-1 overflow-y-auto px-3 pb-24 pt-4 lg:bg-gray-50 lg:p-6">
                 <div class="mx-auto max-w-7xl">
                     @if (session()->has('error'))
                         <div
@@ -430,20 +399,15 @@
     </div>
 
     <nav
-        class="mobile-app-surface mobile-dock-shadow fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-40 rounded-[2rem] border border-white/70 px-3 py-2 lg:hidden">
-        <div class="grid grid-cols-3 gap-1.5">
+        class="mobile-app-surface mobile-dock-shadow fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] z-40 mx-auto max-w-md rounded-[1.4rem] border border-white/70 px-2 py-1.5 lg:hidden">
+        <div class="grid grid-cols-4 gap-1">
             @foreach ($adminMobileNav as $navItem)
                 <a href="{{ $navItem['href'] }}"
-                    class="flex flex-col items-center justify-center rounded-[1.35rem] px-2 py-2.5 text-[11px] font-medium transition {{ request()->routeIs(...$navItem['patterns']) ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-900/5 hover:text-emerald-700' }}">
-                    <i class="{{ $navItem['icon'] }} mb-1 text-sm"></i>
-                    <span>{{ $navItem['label'] }}</span>
+                    class="flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-1.5 text-[10px] font-semibold leading-none transition {{ request()->routeIs(...$navItem['patterns']) ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-900/5 hover:text-emerald-700' }}">
+                    <i class="{{ $navItem['icon'] }} mb-0.5 text-xs"></i>
+                    <span class="max-w-full truncate whitespace-nowrap">{{ $navItem['label'] }}</span>
                 </a>
             @endforeach
-            <button type="button" @click="sidebarOpen = true"
-                class="flex flex-col items-center justify-center rounded-[1.35rem] px-2 py-2.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-900/5 hover:text-emerald-700">
-                <i class="fas fa-layer-group mb-1 text-sm"></i>
-                <span>All Menu</span>
-            </button>
         </div>
     </nav>
 

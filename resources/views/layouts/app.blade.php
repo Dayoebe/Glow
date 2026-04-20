@@ -318,7 +318,7 @@
                 'inactive_classes' => 'bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100',
             ],
             [
-                'label' => 'Shows',
+                'label' => 'All Shows',
                 'icon' => 'fas fa-microphone-lines',
                 'href' => route('shows.index'),
                 'active' => request()->routeIs('shows.*'),
@@ -678,7 +678,7 @@
             x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-4"
-            class="mobile-app-surface fixed inset-x-3 top-[calc(env(safe-area-inset-top)+7.25rem)] bottom-[calc(env(safe-area-inset-bottom)+7rem)] z-[60] overflow-y-auto rounded-[2rem] border border-white/70 p-4 shadow-2xl lg:hidden">
+            class="mobile-app-surface fixed inset-x-3 top-[calc(env(safe-area-inset-top)+7.25rem)] bottom-[calc(env(safe-area-inset-bottom)+6rem)] z-[60] overflow-y-auto rounded-[2rem] border border-white/70 p-4 shadow-2xl lg:hidden">
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <a href="/" @click="closeMobileChrome()"
@@ -849,7 +849,7 @@
     @endif
 
     <!-- Main Content -->
-    <main class="relative z-10 pb-36 lg:pb-0" @click="closeMobileChrome()">
+    <main class="relative z-10 pb-28 lg:pb-0" @click="closeMobileChrome()">
         {{ $slot }}
     </main>
 
@@ -860,25 +860,13 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-4"
-        class="mobile-app-surface mobile-dock-shadow fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-40 rounded-[2rem] border border-white/70 px-3 py-2 lg:hidden">
-        <div class="grid grid-cols-5 gap-1">
-            @foreach (collect($publicMobileNav)->take(2) as $navItem)
+        class="mobile-app-surface mobile-dock-shadow fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] z-40 mx-auto max-w-md rounded-[1.4rem] border border-white/70 px-2 py-1.5 lg:hidden">
+        <div class="grid grid-cols-4 gap-1">
+            @foreach ($publicMobileNav as $navItem)
                 <a href="{{ $navItem['href'] }}" @click="closeMobileChrome()"
-                    class="flex flex-col items-center justify-center rounded-[1.35rem] px-2 py-2 text-[11px] font-medium transition {{ $navItem['active'] ? $navItem['active_classes'] : $navItem['inactive_classes'] }}">
-                    <i class="{{ $navItem['icon'] }} mb-1 text-sm"></i>
-                    <span>{{ $navItem['label'] }}</span>
-                </a>
-            @endforeach
-            <button type="button" @click="startLive; closeMobileChrome()"
-                class="flex flex-col items-center justify-center rounded-[1.35rem] bg-rose-600 px-2 py-2 text-[11px] font-medium text-white shadow-lg transition hover:bg-rose-700">
-                <i class="fas fa-play mb-1 text-sm"></i>
-                <span>Listen</span>
-            </button>
-            @foreach (collect($publicMobileNav)->slice(2) as $navItem)
-                <a href="{{ $navItem['href'] }}" @click="closeMobileChrome()"
-                    class="flex flex-col items-center justify-center rounded-[1.35rem] px-2 py-2 text-[11px] font-medium transition {{ $navItem['active'] ? $navItem['active_classes'] : $navItem['inactive_classes'] }}">
-                    <i class="{{ $navItem['icon'] }} mb-1 text-sm"></i>
-                    <span>{{ $navItem['label'] }}</span>
+                    class="flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-1.5 text-[10px] font-semibold leading-none transition {{ $navItem['active'] ? $navItem['active_classes'] : $navItem['inactive_classes'] }}">
+                    <i class="{{ $navItem['icon'] }} mb-0.5 text-xs"></i>
+                    <span class="max-w-full truncate whitespace-nowrap">{{ $navItem['label'] }}</span>
                 </a>
             @endforeach
         </div>
@@ -892,7 +880,7 @@
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-4"
         @click="toggleMobileNav()"
-        class="mobile-app-surface mobile-dock-shadow fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/70 px-4 py-2 text-sm font-semibold text-slate-700 lg:hidden">
+        class="mobile-app-surface mobile-dock-shadow fixed bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/70 px-3.5 py-1.5 text-xs font-semibold text-slate-700 lg:hidden">
         <i class="fas fa-chevron-up text-xs"></i>
         <span>Menu</span>
     </button>
