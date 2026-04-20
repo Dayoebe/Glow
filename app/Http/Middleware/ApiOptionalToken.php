@@ -24,7 +24,8 @@ class ApiOptionalToken
             return response()->json(['message' => 'Invalid token.'], 401);
         }
 
-        if (isset($user->is_active) && !$user->is_active) {
+        if ((method_exists($user, 'isAccessDisabled') && $user->isAccessDisabled())
+            || (isset($user->is_active) && !$user->is_active)) {
             return response()->json(['message' => 'Account disabled.'], 403);
         }
 

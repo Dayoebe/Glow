@@ -46,15 +46,33 @@
 
                 <div class="mt-4 flex items-center justify-between text-xs">
                     <button wire:click="toggleStatus({{ $staff->id }})"
+                        @if($staff->is_active) onclick="return confirm('Mark this staff member inactive? Their dashboard access will be disabled and OAP/program assignments will be removed.')" @endif
                         class="px-3 py-1 rounded-full {{ $staff->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
-                        {{ $staff->is_active ? 'Active' : 'Inactive' }}
+                        {{ $staff->is_active ? 'Deactivate' : 'Reactivate' }}
                     </button>
                     <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700">
                         {{ $staff->employment_status }}
                     </span>
                 </div>
 
+                <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                    @if($staff->user)
+                        <span class="px-3 py-1 rounded-full {{ $staff->user->is_active && $staff->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
+                            {{ $staff->user->is_active && $staff->is_active ? 'Dashboard enabled' : 'Dashboard disabled' }}
+                        </span>
+                    @else
+                        <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600">No login account</span>
+                    @endif
+
+                    @if($staff->oap)
+                        <span class="px-3 py-1 rounded-full {{ $staff->oap->is_active ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
+                            {{ $staff->oap->is_active ? 'OAP' : 'OAP inactive' }}
+                        </span>
+                    @endif
+                </div>
+
                 <div class="mt-4 flex items-center justify-end space-x-3 text-sm">
+                    <a href="{{ route('admin.team.staff.show', $staff->id) }}" class="text-gray-600 hover:text-gray-900">View</a>
                     <a href="{{ route('admin.team.staff.edit', $staff->id) }}" class="text-emerald-600 hover:text-emerald-800">Edit</a>
                     <button wire:click="deleteStaff({{ $staff->id }})" onclick="return confirm('Delete this staff member?')"
                         class="text-red-600 hover:text-red-800">Delete</button>

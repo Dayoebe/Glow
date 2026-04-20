@@ -21,11 +21,16 @@ class StaffIndex extends Component
 
     public function toggleStatus($id)
     {
-        $staff = StaffMember::findOrFail($id);
-        $staff->is_active = !$staff->is_active;
-        $staff->save();
+        $staff = StaffMember::with(['user', 'oap'])->findOrFail($id);
 
-        session()->flash('success', 'Staff status updated.');
+        if ($staff->is_active) {
+            $staff->deactivateForOffboarding();
+            session()->flash('success', 'Staff member marked inactive. Dashboard access disabled and OAP/program assignments removed.');
+            return;
+        }
+
+        $staff->reactivateForStaff();
+        session()->flash('success', 'Staff member reactivated. Reassign OAP and program duties manually if needed.');
     }
 
     public function deleteStaff($id)
@@ -40,7 +45,7 @@ class StaffIndex extends Component
     public function getStaffProperty()
     {
         return StaffMember::query()
-            ->with(['departmentRelation', 'teamRole'])
+            ->with(['departmentRelation', 'teamRole', 'user', 'oap'])
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', "%{$this->search}%")
                     ->orWhere('role', 'like', "%{$this->search}%")

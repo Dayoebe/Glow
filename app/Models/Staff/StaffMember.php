@@ -2,8 +2,11 @@
 
 namespace App\Models\Staff;
 
+use App\Models\Show\ScheduleSlot;
+use App\Models\Show\Show;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Show\OAP;
 
@@ -63,6 +66,74 @@ class StaffMember extends Model
     public function oap()
     {
         return $this->hasOne(OAP::class, 'staff_member_id');
+    }
+
+    public function deactivateForOffboarding(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill(['is_active' => false])->save();
+            $this->loadMissing(['user', 'oap']);
+
+            if ($this->user) {
+                $this->user->forceFill([
+                    'is_active' => false,
+                    'api_token' => null,
+                    'api_token_created_at' => null,
+                ])->save();
+            }
+
+            if (!$this->oap) {
+                return;
+            }
+
+            $oap = $this->oap;
+            $oap->forceFill([
+                'is_active' => false,
+                'available' => false,
+            ])->save();
+
+            Show::where('primary_host_id', $oap->id)->update(['primary_host_id' => null]);
+
+            Show::query()
+                ->whereNotNull('co_hosts')
+                ->get(['id', 'co_hosts'])
+                ->each(function (Show $show) use ($oap) {
+                    $originalHosts = collect($show->co_hosts ?: [])
+                        ->map(fn ($hostId) => (int) $hostId)
+                        ->filter()
+                        ->values();
+
+                    $remainingHosts = $originalHosts
+                        ->reject(fn ($hostId) => $hostId === (int) $oap->id)
+                        ->values();
+
+                    if ($remainingHosts->count() === $originalHosts->count()) {
+                        return;
+                    }
+
+                    $show->forceFill([
+                        'co_hosts' => $remainingHosts->isEmpty() ? null : $remainingHosts->all(),
+                    ])->save();
+                });
+
+            ScheduleSlot::where('oap_id', $oap->id)->update(['oap_id' => null]);
+        });
+
+        $this->refresh();
+    }
+
+    public function reactivateForStaff(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill(['is_active' => true])->save();
+            $this->loadMissing('user');
+
+            if ($this->user) {
+                $this->user->forceFill(['is_active' => true])->save();
+            }
+        });
+
+        $this->refresh();
     }
 
     protected static function boot()

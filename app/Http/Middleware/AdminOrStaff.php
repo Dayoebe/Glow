@@ -13,6 +13,10 @@ class AdminOrStaff
         $user = $request->user();
         $allowedRoles = ['admin', 'staff', 'corp_member', 'intern'];
 
+        if (!$user || (method_exists($user, 'isAccessDisabled') && $user->isAccessDisabled())) {
+            return redirect()->route('home')->with('error', 'Your dashboard access has been disabled.');
+        }
+
         $isAllowed = $user && (
             (method_exists($user, 'hasAnyRole') && $user->hasAnyRole($allowedRoles))
             || (method_exists($user, 'isAdmin') && method_exists($user, 'isStaff') && ($user->isAdmin() || $user->isStaff()))

@@ -65,6 +65,7 @@ use App\Livewire\Admin\Team\Oaps as AdminOaps;
 use App\Livewire\Admin\Team\OapForm as AdminOapForm;
 use App\Livewire\Admin\Team\StaffIndex as AdminStaffIndex;
 use App\Livewire\Admin\Team\StaffForm as AdminStaffForm;
+use App\Livewire\Admin\Team\StaffShow as AdminStaffShow;
 use App\Livewire\Admin\Team\ProfileLinks as AdminTeamProfileLinks;
 use App\Livewire\Admin\Inbox\ContactInbox as AdminContactInbox;
 use App\Livewire\Admin\Newsletter\Subscriptions as AdminNewsletterSubscriptions;
@@ -382,6 +383,7 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::get('/oaps/{oapId}/edit', AdminOapForm::class)->name('oaps.edit');
             Route::get('/staff', AdminStaffIndex::class)->name('staff');
             Route::get('/staff/create', AdminStaffForm::class)->name('staff.create');
+            Route::get('/staff/{staffId}', AdminStaffShow::class)->name('staff.show');
             Route::get('/staff/{staffId}/edit', AdminStaffForm::class)->name('staff.edit');
             Route::get('/birthdays', \App\Livewire\Admin\Team\StaffBirthdays::class)->name('birthdays');
             Route::get('/links', AdminTeamProfileLinks::class)->name('links');

@@ -43,14 +43,39 @@ class User extends Authenticatable
 
     public const STAFF_LIKE_ROLES = ['staff', 'corp_member', 'intern'];
 
+    public function isAccessDisabled(): bool
+    {
+        if (isset($this->is_active) && !$this->is_active) {
+            return true;
+        }
+
+        if (!$this->exists) {
+            return false;
+        }
+
+        $staffMember = $this->relationLoaded('staffMember')
+            ? $this->staffMember
+            : $this->staffMember()->first();
+
+        return $staffMember !== null && !$staffMember->is_active;
+    }
+
     // Role helper methods
     public function isAdmin(): bool
     {
+        if ($this->isAccessDisabled()) {
+            return false;
+        }
+
         return $this->role === 'admin' || $this->spatieHasRole('admin');
     }
 
     public function isStaff(): bool
     {
+        if ($this->isAccessDisabled()) {
+            return false;
+        }
+
         if (in_array($this->role, self::STAFF_LIKE_ROLES, true)) {
             return true;
         }
@@ -70,6 +95,10 @@ class User extends Authenticatable
 
     public function canApproveNews(): bool
     {
+        if ($this->isAccessDisabled()) {
+            return false;
+        }
+
         $staffMember = $this->staffMember;
 
         if (!$staffMember || !$staffMember->is_active) {
@@ -86,6 +115,10 @@ class User extends Authenticatable
 
     public function hasRole($role, ?string $guard = null): bool
     {
+        if ($this->isAccessDisabled()) {
+            return false;
+        }
+
         if (is_string($role) && $role === 'staff') {
             return $this->isStaff();
         }

@@ -39,6 +39,14 @@ class Login extends Component
             session()->regenerate();
             
             $user = Auth::user();
+            if ($user && method_exists($user, 'isAccessDisabled') && $user->isAccessDisabled()) {
+                Auth::logout();
+                session()->invalidate();
+                session()->regenerateToken();
+                $this->addError('email', 'These credentials do not match our records or your account is inactive.');
+                return;
+            }
+
             if ($user && ($user->isAdmin() || $user->isStaff())) {
                 // Redirect staff/admin to intended page or dashboard
                 return $this->redirect(route('dashboard'), navigate: true);

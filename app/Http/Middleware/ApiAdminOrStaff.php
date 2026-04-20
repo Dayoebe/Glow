@@ -13,6 +13,10 @@ class ApiAdminOrStaff
         $user = $request->user();
         $allowedRoles = ['admin', 'staff', 'corp_member', 'intern'];
 
+        if (!$user || (method_exists($user, 'isAccessDisabled') && $user->isAccessDisabled())) {
+            return response()->json(['message' => 'Account disabled.'], 403);
+        }
+
         $isAllowed = $user && (
             (method_exists($user, 'hasAnyRole') && $user->hasAnyRole($allowedRoles))
             || (method_exists($user, 'isAdmin') && method_exists($user, 'isStaff') && ($user->isAdmin() || $user->isStaff()))

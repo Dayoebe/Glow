@@ -272,11 +272,26 @@ class StaffForm extends Component
 
         if ($this->isEditing) {
             $staff = StaffMember::findOrFail($this->staffId);
+            $wasActive = (bool) $staff->is_active;
+            $previousUserId = $staff->user_id;
             $staff->update($data);
             $message = 'Staff member updated successfully.';
+
+            if (!$staff->is_active && ($wasActive || (string) $previousUserId !== (string) $staff->user_id)) {
+                $staff->deactivateForOffboarding();
+                $message = 'Staff member marked inactive. Dashboard access disabled and OAP/program assignments removed.';
+            } elseif ($staff->is_active && !$wasActive) {
+                $staff->reactivateForStaff();
+                $message = 'Staff member reactivated. Reassign OAP and program duties manually if needed.';
+            }
         } else {
             $staff = StaffMember::create($data);
             $message = 'Staff member created successfully.';
+
+            if (!$staff->is_active) {
+                $staff->deactivateForOffboarding();
+                $message = 'Inactive staff member created. Dashboard access disabled.';
+            }
         }
 
         return redirect()->route('admin.team.staff')->with('success', $message);

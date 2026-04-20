@@ -87,7 +87,13 @@ class OAP extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('is_active', true)
+            ->where(function ($query) {
+                $query->whereNull('staff_member_id')
+                    ->orWhereHas('staffMember', function ($staffQuery) {
+                        $staffQuery->where('is_active', true);
+                    });
+            });
     }
 
     public function scopeAvailable($query)
@@ -136,4 +142,3 @@ class OAP extends Model
         return 'slug';
     }
 }
-

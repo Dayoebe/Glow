@@ -177,7 +177,7 @@
                             <i class="fas fa-calendar-day mr-1"></i>
                             {{ $nextBirthday['next_birthday']->diffForHumans() }}
                         </span>
-                        <a href="{{ route('admin.team.staff.edit', $nextBirthday['staff']->id) }}" class="text-emerald-600 hover:text-emerald-700 font-medium">
+                        <a href="{{ route('admin.team.staff.show', $nextBirthday['staff']->id) }}" class="text-emerald-600 hover:text-emerald-700 font-medium">
                             View Profile
                         </a>
                     </div>

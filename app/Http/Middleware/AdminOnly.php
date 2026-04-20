@@ -12,6 +12,10 @@ class AdminOnly
     {
         $user = $request->user();
 
+        if (!$user || (method_exists($user, 'isAccessDisabled') && $user->isAccessDisabled())) {
+            return redirect()->route('home')->with('error', 'Your dashboard access has been disabled.');
+        }
+
         $isAdmin = $user && (method_exists($user, 'hasRole') ? $user->hasRole('admin') : $user->isAdmin());
 
         if (!$isAdmin) {

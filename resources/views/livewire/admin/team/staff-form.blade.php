@@ -5,10 +5,18 @@
                 <h3 class="text-lg font-semibold text-gray-900">{{ $isEditing ? 'Edit Staff' : 'Add Staff' }}</h3>
                 <p class="text-sm text-gray-500">Manage your team members.</p>
             </div>
-            <a href="{{ route('admin.team.staff') }}"
-               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
-                <i class="fas fa-arrow-left mr-2"></i>Back to Staff
-            </a>
+            <div class="flex flex-col sm:flex-row gap-2">
+                @if($isEditing)
+                    <a href="{{ route('admin.team.staff.show', $staffId) }}"
+                       class="inline-flex items-center justify-center px-4 py-2 border border-emerald-200 rounded-lg text-emerald-700 hover:bg-emerald-50">
+                        <i class="fas fa-user mr-2"></i>View Profile
+                    </a>
+                @endif
+                <a href="{{ route('admin.team.staff') }}"
+                   class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Staff
+                </a>
+            </div>
         </div>
     </div>
 
@@ -192,6 +200,9 @@
                 <span>Active</span>
             </label>
         </div>
+        <p class="mt-2 text-xs text-gray-500">
+            Turning this off disables the linked dashboard account, revokes API access, marks the linked OAP unavailable, and removes their show and schedule assignments.
+        </p>
 
         <div class="mt-8">
             <h4 class="text-md font-semibold text-gray-900 mb-4">Social Links</h4>
