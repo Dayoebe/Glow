@@ -277,7 +277,8 @@ class NewsIndex extends Component
         }
 
         if ($this->filterStatus === 'published') {
-            $query->where('is_published', true);
+            $query->where('is_published', true)
+                ->where('approval_status', 'approved');
         } elseif ($this->filterStatus === 'draft') {
             $query->where('is_published', false);
         } elseif ($this->filterStatus === 'featured') {
@@ -304,7 +305,9 @@ class NewsIndex extends Component
     {
         return [
             'total' => News::count(),
-            'published' => News::where('is_published', true)->count(),
+            'published' => News::where('is_published', true)
+                ->where('approval_status', 'approved')
+                ->count(),
             'draft' => News::where('is_published', false)->count(),
             'featured' => News::where('is_featured', true)->count(),
         ];

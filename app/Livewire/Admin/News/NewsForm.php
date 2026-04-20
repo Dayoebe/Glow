@@ -140,31 +140,25 @@ class NewsForm extends Component
 
     public function save($publishNow = false)
     {
-        if ($publishNow && !$this->canApproveNews()) {
-            session()->flash('error', 'Only selected news approvers can publish articles.');
-            return null;
-        }
-
         if ($publishNow) {
-            $this->is_published = true;
-            if (empty($this->published_at)) {
-                $this->published_at = now()->format('Y-m-d\TH:i');
-            }
+            session()->flash('error', 'Use the news approval actions to make articles public.');
+            return null;
         }
 
         $this->validate();
 
         $data = $this->prepareData();
+        $canApproveNews = $this->canApproveNews();
 
         if ($this->isEditing) {
             $this->news->update($data);
-            $message = 'News article updated successfully!';
+            $message = $canApproveNews
+                ? 'News article updated successfully!'
+                : 'News article updated and sent for approval!';
         } else {
             $data['author_id'] = auth()->id();
             News::create($data);
-            $message = $publishNow ? 
-                'News article published successfully!' : 
-                'News article saved as draft!';
+            $message = 'News article submitted for approval!';
         }
 
         session()->flash('success', $message);
@@ -190,21 +184,17 @@ class NewsForm extends Component
         $featuredPosition = $this->featured_position ?: 'hero';
         $isFeatured = $this->is_featured;
         $canApproveNews = $this->canApproveNews();
-        $isPublished = $this->is_published;
-        $publishedAt = $this->is_published && $this->published_at ? $this->published_at : null;
+        $canKeepDisplaySettings = $canApproveNews && $this->isEditing && $this->news;
+        $isPublished = $canKeepDisplaySettings ? $this->is_published : false;
+        $publishedAt = $this->published_at ?: null;
+        $approvalStatus = $canKeepDisplaySettings ? $this->news->approval_status : 'pending';
+        $approvalReason = $canKeepDisplaySettings ? $this->news->approval_reason : null;
+        $reviewedBy = $canKeepDisplaySettings ? $this->news->reviewed_by : null;
+        $reviewedAt = $canKeepDisplaySettings ? $this->news->reviewed_at : null;
 
-        if (!$canApproveNews) {
-            if ($this->isEditing && $this->news) {
-                $isFeatured = $this->news->is_featured;
-                $featuredPosition = $this->news->featured_position ?: ($isFeatured ? 'hero' : 'none');
-                $isPublished = $this->news->is_published;
-                $publishedAt = $this->news->published_at;
-            } else {
-                $isFeatured = false;
-                $featuredPosition = 'none';
-                $isPublished = false;
-                $publishedAt = null;
-            }
+        if (!$canKeepDisplaySettings) {
+            $isFeatured = false;
+            $featuredPosition = 'none';
         }
 
         if (!$isFeatured) {
@@ -224,6 +214,10 @@ class NewsForm extends Component
             'is_featured' => $isFeatured,
             'featured_position' => $featuredPosition,
             'published_at' => $publishedAt,
+            'approval_status' => $approvalStatus,
+            'approval_reason' => $approvalReason,
+            'reviewed_by' => $reviewedBy,
+            'reviewed_at' => $reviewedAt,
             'meta_description' => $this->meta_description,
             'meta_keywords' => $this->meta_keywords,
             'tags' => $tagsArray,
@@ -247,7 +241,7 @@ class NewsForm extends Component
 
     public function canFeature(): bool
     {
-        return $this->canApproveNews();
+        return $this->isEditing && $this->canApproveNews();
     }
 
     public function canApproveNews(): bool
@@ -299,14 +293,15 @@ class NewsForm extends Component
         $this->save(false);
     }
 
+    public function submitForApproval()
+    {
+        $this->is_published = false;
+        $this->save(false);
+    }
+
     public function publishNow()
     {
-        if (!$this->canApproveNews()) {
-            session()->flash('error', 'Only selected news approvers can publish articles.');
-            return;
-        }
-
-        $this->save(true);
+        session()->flash('error', 'Use the news approval actions to make articles public.');
     }
 
     public function update()

@@ -20,13 +20,13 @@
         }
     </style>
 
-    <form wire:submit.prevent="saveAsDraft" class="pb-32 lg:pb-0">
+    <form wire:submit.prevent="submitForApproval" class="pb-32 lg:pb-0">
         <div class="mb-4 lg:hidden">
             <div class="mobile-app-surface mobile-editor-shell rounded-[1.75rem] border border-white/70 p-4 shadow-xl">
                 <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">New Article</p>
-                <h3 class="mt-2 text-lg font-semibold text-slate-900">{{ $title ?: 'Draft in progress' }}</h3>
+                <h3 class="mt-2 text-lg font-semibold text-slate-900">{{ $title ?: 'Article in progress' }}</h3>
                 <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                    <span class="rounded-full bg-amber-50 px-3 py-1 font-semibold text-amber-700">{{ $is_published ? 'Scheduled to publish' : 'Draft mode' }}</span>
+                    <span class="rounded-full bg-amber-50 px-3 py-1 font-semibold text-amber-700">Pending approval</span>
                     <span class="rounded-full bg-slate-900/5 px-3 py-1 font-medium text-slate-600">Autoslug enabled</span>
                 </div>
             </div>
@@ -144,63 +144,46 @@
                 
                 <!-- Actions Card -->
                 <div class="mobile-app-surface mobile-editor-shell rounded-[1.5rem] border border-white/70 p-5 shadow-xl lg:sticky lg:top-24 lg:rounded-xl lg:border-gray-200 lg:bg-white lg:p-6 lg:shadow-sm">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Publish</h3>
-                    @php
-                        $canApproveNews = $this->canApproveNews();
-                    @endphp
-                    
-                    <!-- Status -->
-                    <div class="mb-4 rounded-2xl bg-slate-900/5 p-3 lg:rounded-lg lg:bg-gray-50">
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600">Status:</span>
-                            <span class="font-semibold {{ $is_published ? 'text-green-600' : 'text-amber-600' }}">
-                                {{ $is_published ? 'Published' : 'Draft' }}
-                            </span>
-                        </div>
+
+          <!-- Preferred Display Time -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar-alt mr-1 text-emerald-600"></i>
+                            Preferred Display Time
+                        </label>
+                        <input type="datetime-local" 
+                               wire:model="published_at"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors">
+                        @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <p class="mt-1 text-xs text-gray-500">
+                            Approval is still required before this article can appear publicly.
+                        </p>
                     </div>
 
-                    @if($canApproveNews)
-                        <!-- Schedule Publishing -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-calendar-alt mr-1 text-emerald-600"></i>
-                                Schedule Publication
-                            </label>
-                            <input type="datetime-local" 
-                                   wire:model="published_at"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors">
-                            @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                            <p class="mt-1 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Leave as current time to publish immediately
-                            </p>
-                        </div>
-                    @else
-                        <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                            Only selected news approvers can publish articles.
-                        </div>
-                    @endif
-
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Submit</h3>
+                    
                     <!-- Action Buttons -->
                     <div class="space-y-3">
                         <button type="submit" 
-                                class="w-full px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors">
-                            <i class="fas fa-save mr-2"></i>
-                            Save as Draft
+                                class="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Submit
                         </button>
-                        @if($canApproveNews)
-                            <button type="button" 
-                                    wire:click="publishNow"
-                                    class="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors">
-                                <i class="fas fa-paper-plane mr-2"></i>
-                                Publish Now
-                            </button>
-                        @endif
                         <a href="{{ route('admin.news.index') }}" 
                            class="block w-full px-4 py-3 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-semibold rounded-lg transition-colors text-center">
                             <i class="fas fa-times mr-2"></i>
                             Cancel
                         </a>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-4 rounded-2xl bg-slate-900/5 p-3 lg:rounded-lg lg:bg-gray-50">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="font-semibold text-amber-600">
+                                Pending approval
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -410,20 +393,14 @@
             <div class="mobile-app-surface mobile-dock-shadow fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+6.25rem)] z-30 rounded-[1.75rem] border border-white/70 px-4 py-3">
                 <div class="flex items-center justify-between gap-3">
                     <div class="min-w-0">
-                        <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-700">{{ $is_published ? 'Ready to publish' : 'Draft mode' }}</p>
-                        <p class="truncate text-sm font-semibold text-slate-900">{{ \Illuminate\Support\Str::limit($title ?: 'Draft in progress', 28) }}</p>
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-700">Pending approval</p>
+                        <p class="truncate text-sm font-semibold text-slate-900">{{ \Illuminate\Support\Str::limit($title ?: 'Article in progress', 28) }}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <button type="submit"
-                            class="inline-flex h-11 items-center justify-center rounded-2xl bg-slate-700 px-4 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800">
-                            Draft
+                            class="inline-flex h-11 items-center justify-center rounded-2xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-700">
+                            Submit
                         </button>
-                        @if($this->canApproveNews())
-                            <button type="button" wire:click="publishNow"
-                                class="inline-flex h-11 items-center justify-center rounded-2xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-700">
-                                Publish
-                            </button>
-                        @endif
                     </div>
                 </div>
             </div>
