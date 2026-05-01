@@ -104,6 +104,7 @@ class SitemapController extends Controller
                 });
 
             $careerUrls = CareerPosition::published()
+                ->acceptingApplications()
                 ->get(['slug', 'published_at', 'updated_at'])
                 ->map(function ($position) {
                     return [

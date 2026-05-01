@@ -47,7 +47,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Description <span class="text-red-500">*</span></label>
                         <div wire:ignore>
-                            <input id="career_description" type="hidden" wire:model="description">
+                            <input id="career_description" type="hidden" value="{{ $description }}">
                             <trix-editor input="career_description"
                                 class="career-trix-editor trix-content border border-gray-300 rounded-lg"></trix-editor>
                         </div>
@@ -61,7 +61,7 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Responsibilities</label>
                         <div wire:ignore>
-                            <input id="career_responsibilities" type="hidden" wire:model="responsibilities">
+                            <input id="career_responsibilities" type="hidden" value="{{ $responsibilities }}">
                             <trix-editor input="career_responsibilities"
                                 class="career-trix-editor trix-content border border-gray-300 rounded-lg"></trix-editor>
                         </div>
@@ -71,7 +71,7 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
                         <div wire:ignore>
-                            <input id="career_requirements" type="hidden" wire:model="requirements">
+                            <input id="career_requirements" type="hidden" value="{{ $requirements }}">
                             <trix-editor input="career_requirements"
                                 class="career-trix-editor trix-content border border-gray-300 rounded-lg"></trix-editor>
                         </div>
@@ -81,7 +81,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Benefits</label>
                         <div wire:ignore>
-                            <input id="career_benefits" type="hidden" wire:model="benefits">
+                            <input id="career_benefits" type="hidden" value="{{ $benefits }}">
                             <trix-editor input="career_benefits"
                                 class="career-trix-editor trix-content border border-gray-300 rounded-lg"></trix-editor>
                         </div>
@@ -351,7 +351,14 @@
                     return;
                 }
 
-                @this.set(property, event.target.value);
+                const componentRoot = event.target.closest('[wire\\:id]');
+                const component = componentRoot && window.Livewire
+                    ? Livewire.find(componentRoot.getAttribute('wire:id'))
+                    : null;
+
+                if (component) {
+                    component.set(property, event.target.value);
+                }
             });
         }
     </script>

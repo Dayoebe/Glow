@@ -51,6 +51,7 @@ class CareerDetail extends Component
     {
         $this->position = CareerPosition::query()
             ->published()
+            ->acceptingApplications()
             ->where('slug', $slug)
             ->firstOrFail();
     }
@@ -122,6 +123,7 @@ class CareerDetail extends Component
     {
         return CareerPosition::query()
             ->published()
+            ->acceptingApplications()
             ->where('id', '!=', $this->position->id)
             ->latest('published_at')
             ->take(3)

@@ -53,6 +53,7 @@ class CareerPage extends Component
     {
         $query = CareerPosition::query()
             ->published()
+            ->acceptingApplications()
             ->withCount('applications');
 
         if (!empty($this->search)) {
@@ -106,6 +107,7 @@ class CareerPage extends Component
     {
         return CareerPosition::query()
             ->published()
+            ->acceptingApplications()
             ->whereNotNull('department')
             ->where('department', '!=', '')
             ->distinct()
@@ -118,6 +120,7 @@ class CareerPage extends Component
     {
         return CareerPosition::query()
             ->published()
+            ->acceptingApplications()
             ->whereNotNull('employment_type')
             ->distinct()
             ->orderBy('employment_type')
@@ -129,6 +132,7 @@ class CareerPage extends Component
     {
         return CareerPosition::query()
             ->published()
+            ->acceptingApplications()
             ->whereNotNull('workplace_type')
             ->distinct()
             ->orderBy('workplace_type')
