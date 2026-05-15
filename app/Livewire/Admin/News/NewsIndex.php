@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\News;
 
+use App\Models\Setting;
 use App\Models\News\News;
 use App\Models\News\NewsCategory;
 use App\Notifications\ContentApprovalUpdated;
@@ -158,7 +159,8 @@ class NewsIndex extends Component
                 'news article',
                 $news->title,
                 $action,
-                $reason ?: null
+                $reason ?: null,
+                sendMail: $this->newsApprovalMailEnabled()
             ));
         }
 
@@ -191,6 +193,11 @@ class NewsIndex extends Component
         }
 
         return (int) $news->author_id === (int) $user->id;
+    }
+
+    private function newsApprovalMailEnabled(): bool
+    {
+        return (bool) Setting::get('content_approvers.news_approval_mail_enabled', true);
     }
 
     public function toggleFeatured($newsId)

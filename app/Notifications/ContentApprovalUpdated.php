@@ -14,13 +14,14 @@ class ContentApprovalUpdated extends Notification
         public string $contentType,
         public string $title,
         public string $status,
-        public ?string $reason = null
+        public ?string $reason = null,
+        public bool $sendMail = true
     ) {
     }
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->sendMail ? ['mail', 'database'] : ['database'];
     }
 
     public function toMail(object $notifiable): MailMessage

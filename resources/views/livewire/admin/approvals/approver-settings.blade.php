@@ -5,6 +5,25 @@
             Choose staff members who can approve, flag, or reject content submissions.
         </p>
 
+        <div class="mt-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-900">News approval mail notification</h4>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Send email to the news author when an approver approves, flags, or rejects a news article.
+                    </p>
+                </div>
+
+                <label class="inline-flex cursor-pointer items-center gap-3">
+                    <input type="checkbox" wire:model="news_approval_mail_enabled" class="sr-only peer">
+                    <span class="relative h-7 w-12 rounded-full bg-gray-300 transition-colors after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform after:content-[''] peer-checked:bg-emerald-600 peer-checked:after:translate-x-5"></span>
+                    <span class="text-sm font-semibold {{ $news_approval_mail_enabled ? 'text-emerald-700' : 'text-gray-500' }}">
+                        {{ $news_approval_mail_enabled ? 'On' : 'Off' }}
+                    </span>
+                </label>
+            </div>
+        </div>
+
         <div class="mt-6">
             <label class="block text-sm font-medium text-gray-700 mb-2">Approver List</label>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -39,7 +58,7 @@
         <div class="mt-6 flex justify-end">
             <button wire:click="save"
                 class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg">
-                Save Approvers
+                Save Settings
             </button>
         </div>
     </div>

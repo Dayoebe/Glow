@@ -10,6 +10,7 @@ class ApproverSettings extends Component
 {
     public $staffMembers = [];
     public $approver_ids = [];
+    public bool $news_approval_mail_enabled = true;
 
     public function mount()
     {
@@ -19,6 +20,7 @@ class ApproverSettings extends Component
             ->get();
 
         $this->approver_ids = Setting::get('content_approvers.ids', []);
+        $this->news_approval_mail_enabled = (bool) Setting::get('content_approvers.news_approval_mail_enabled', true);
     }
 
     public function save()
@@ -35,13 +37,16 @@ class ApproverSettings extends Component
             ->pluck('id')
             ->all();
 
-        Setting::set('content_approvers', [
+        $settings = (array) Setting::get('content_approvers', []);
+
+        Setting::set('content_approvers', array_replace($settings, [
             'ids' => $validIds,
-        ], 'content_approvers');
+            'news_approval_mail_enabled' => (bool) $this->news_approval_mail_enabled,
+        ]), 'content_approvers');
 
         $this->approver_ids = $validIds;
 
-        session()->flash('success', 'Content approvers updated successfully.');
+        session()->flash('success', 'Content approvers and notification settings updated successfully.');
     }
 
     public function render()
