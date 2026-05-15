@@ -1,4 +1,22 @@
-<div class="min-h-screen bg-gray-50">
+<div
+    x-data="{
+        imageViewerOpen: false,
+        activeImage: null,
+        openImage(image) {
+            if (!image || !image.src) return;
+            this.activeImage = image;
+            this.imageViewerOpen = true;
+            document.documentElement.classList.add('overflow-hidden');
+        },
+        closeImage() {
+            this.imageViewerOpen = false;
+            this.activeImage = null;
+            document.documentElement.classList.remove('overflow-hidden');
+        }
+    }"
+    @keydown.escape.window="closeImage()"
+    class="min-h-screen bg-gray-50"
+>
     
     <!-- Breaking News Banner -->
     @if($news->is_breaking)
@@ -112,82 +130,37 @@
 
     <!-- Main Content -->
     <div class="container mx-auto px-4 py-12">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- Floating Action Bar (Left) -->
-            <aside class="hidden lg:block lg:col-span-1">
-                <div class="sticky top-24 space-y-3">
-                    <!-- Reactions -->
-                    @foreach(['love' => ['❤️', 'Love'], 'fire' => ['🔥', 'Fire'], 'wow' => ['😮', 'Wow'], 'insightful' => ['💡', 'Smart']] as $type => $data)
-                    <button wire:click="toggleReaction('{{ $type }}')" 
-                            class="group relative flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all {{ isset($userReactions[$type]) ? 'bg-emerald-100 ring-2 ring-emerald-500' : 'bg-white hover:bg-gray-50' }}">
-                        <span class="text-2xl">{{ $data[0] }}</span>
-                        @if(($reactions[$type] ?? 0) > 0)
-                        <span class="absolute -right-1 -top-1 w-6 h-6 bg-emerald-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                            {{ $reactions[$type] }}
-                        </span>
-                        @endif
-                        <span class="absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">
-                            {{ $data[1] }}
-                        </span>
-                    </button>
-                    @endforeach
-
-                    <!-- Bookmark -->
-                    <button wire:click="toggleBookmark" 
-                            class="group relative flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all {{ $isBookmarked ? 'bg-yellow-100 ring-2 ring-yellow-500' : 'bg-white hover:bg-gray-50' }}">
-                        <i class="fas fa-bookmark text-xl {{ $isBookmarked ? 'text-yellow-600' : 'text-gray-600' }}"></i>
-                        <span class="absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">
-                            {{ $isBookmarked ? 'Saved' : 'Save' }}
-                        </span>
-                    </button>
-
-                    <!-- Share -->
-                    <div class="relative group">
-                        <button class="flex flex-col items-center justify-center w-14 h-14 bg-white hover:bg-gray-50 rounded-full shadow-lg transition-all">
-                            <i class="fas fa-share-alt text-xl text-gray-600"></i>
-                        </button>
-                        <div class="absolute left-full ml-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div class="bg-white rounded-lg shadow-xl p-3 space-y-2 whitespace-nowrap">
-                                <button wire:click="shareNews('x')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-x-twitter text-gray-900"></i><span class="text-sm">X</span>
-                                </button>
-                                <button wire:click="shareNews('facebook')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-facebook text-blue-600"></i><span class="text-sm">Facebook</span>
-                                </button>
-                                <button wire:click="shareNews('instagram')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-instagram text-pink-500"></i><span class="text-sm">Instagram</span>
-                                </button>
-                                <button wire:click="shareNews('linkedin')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-linkedin text-blue-700"></i><span class="text-sm">LinkedIn</span>
-                                </button>
-                                <button wire:click="shareNews('whatsapp')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-whatsapp text-green-500"></i><span class="text-sm">WhatsApp</span>
-                                </button>
-                                <button wire:click="shareNews('telegram')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-telegram text-blue-400"></i><span class="text-sm">Telegram</span>
-                                </button>
-                                <button wire:click="shareNews('reddit')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-reddit-alien text-orange-500"></i><span class="text-sm">Reddit</span>
-                                </button>
-                                <button wire:click="shareNews('email')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fas fa-envelope text-gray-600"></i><span class="text-sm">Email</span>
-                                </button>
-                                <button type="button" data-copy-link="{{ url()->current() }}" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fas fa-link text-gray-600"></i><span class="text-sm" data-copy-text>Copy link</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
+        <div class="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_21rem]">
             <!-- Article Content -->
-            <main class="lg:col-span-8">
+            <main class="min-w-0">
                 <article class="bg-white rounded-2xl shadow-lg overflow-hidden">
                     
                     <!-- Featured Image -->
-                    <div class="relative h-96">
+                    @php
+                        $featuredImageViewer = [
+                            'src' => $news->featured_image,
+                            'title' => $news->title,
+                            'label' => 'Featured image',
+                        ];
+                    @endphp
+                    <div class="relative h-72 bg-emerald-900 sm:h-96">
+                        @if($news->featured_image)
+                        <button type="button"
+                                @click='openImage(@json($featuredImageViewer))'
+                                class="group relative block h-full w-full cursor-zoom-in overflow-hidden text-left"
+                                aria-label="Open full image for {{ $news->title }}">
+                            <x-initials-image
+                                :src="$news->featured_image"
+                                :title="$news->title"
+                                imgClass="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                                fallbackClass="bg-emerald-700/90"
+                                textClass="text-5xl font-bold text-white"
+                            />
+                            <span class="absolute bottom-4 right-4 inline-flex items-center rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white shadow-lg backdrop-blur-sm transition group-hover:bg-black/85">
+                                <i class="fas fa-search-plus mr-2"></i>View full image
+                            </span>
+                        </button>
+                        @else
                         <x-initials-image
                             :src="$news->featured_image"
                             :title="$news->title"
@@ -195,6 +168,7 @@
                             fallbackClass="bg-emerald-700/90"
                             textClass="text-5xl font-bold text-white"
                         />
+                        @endif
                     </div>
 
                     <!-- Video Embed -->
@@ -225,7 +199,17 @@
                             </h3>
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 @foreach($news->gallery as $image)
-                                <div class="relative h-64 rounded-xl overflow-hidden group cursor-pointer">
+                                @php
+                                    $galleryImageViewer = [
+                                        'src' => $image,
+                                        'title' => $news->title,
+                                        'label' => 'Gallery image ' . $loop->iteration,
+                                    ];
+                                @endphp
+                                <button type="button"
+                                        @click='openImage(@json($galleryImageViewer))'
+                                        class="group relative h-64 w-full overflow-hidden rounded-xl text-left cursor-zoom-in"
+                                        aria-label="Open gallery image {{ $loop->iteration }} for {{ $news->title }}">
                                     <x-initials-image
                                         :src="$image"
                                         :title="$news->title"
@@ -236,7 +220,7 @@
                                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                                         <i class="fas fa-search-plus text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity"></i>
                                     </div>
-                                </div>
+                                </button>
                                 @endforeach
                             </div>
                         </div>
@@ -277,45 +261,55 @@
                         </div>
 
                         <!-- Share Section -->
-                        <div class="mb-12 pb-8 border-b border-gray-200">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4">Share this story</h3>
-                            <div class="flex flex-wrap gap-3">
-                                <button wire:click="shareNews('x')" 
-                                    class="px-6 py-3 bg-gray-900 hover:bg-black text-white rounded-lg transition-colors flex items-center space-x-2">
-                                    <i class="fab fa-x-twitter"></i><span>X</span>
-                                </button>
-                                <button wire:click="shareNews('facebook')" 
-                                        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2">
-                                    <i class="fab fa-facebook"></i><span>Facebook</span>
-                                </button>
-                                <button wire:click="shareNews('instagram')" 
-                                        class="px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white rounded-lg transition-colors flex items-center space-x-2">
-                                    <i class="fab fa-instagram"></i><span>Instagram</span>
-                                </button>
-                                <button wire:click="shareNews('linkedin')" 
-                                        class="px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-colors flex items-center space-x-2">
-                                    <i class="fab fa-linkedin"></i><span>LinkedIn</span>
-                                </button>
-                                <button wire:click="shareNews('whatsapp')" 
-                                    class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center space-x-2">
-                                    <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
-                                </button>
-                                <button wire:click="shareNews('telegram')" 
-                                    class="px-6 py-3 bg-blue-400 hover:bg-blue-500 text-white rounded-lg transition-colors flex items-center space-x-2">
-                                    <i class="fab fa-telegram"></i><span>Telegram</span>
-                                </button>
-                                <button wire:click="shareNews('reddit')" 
-                                    class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center space-x-2">
-                                    <i class="fab fa-reddit-alien"></i><span>Reddit</span>
-                                </button>
-                                <button wire:click="shareNews('email')" 
-                                    class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors flex items-center space-x-2">
-                                    <i class="fas fa-envelope"></i><span>Email</span>
-                                </button>
-                                <button type="button" data-copy-link="{{ url()->current() }}" 
-                                    class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors flex items-center space-x-2">
-                                    <i class="fas fa-link"></i><span data-copy-text>Copy link</span>
-                                </button>
+                        <div class="mb-12 border-y border-gray-200 py-6 select-none">
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <h3 class="text-lg font-bold text-gray-900">Share this story</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <button wire:click="shareNews('x')"
+                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-black"
+                                        aria-label="Share on X">
+                                        <i class="fab fa-x-twitter"></i>
+                                    </button>
+                                    <button wire:click="shareNews('facebook')"
+                                            class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white transition-colors hover:bg-blue-700"
+                                            aria-label="Share on Facebook">
+                                        <i class="fab fa-facebook"></i>
+                                    </button>
+                                    <button wire:click="shareNews('instagram')"
+                                            class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-pink-500 text-white transition-colors hover:bg-pink-600"
+                                            aria-label="Share on Instagram">
+                                        <i class="fab fa-instagram"></i>
+                                    </button>
+                                    <button wire:click="shareNews('linkedin')"
+                                            class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-700 text-white transition-colors hover:bg-blue-800"
+                                            aria-label="Share on LinkedIn">
+                                        <i class="fab fa-linkedin"></i>
+                                    </button>
+                                    <button wire:click="shareNews('whatsapp')"
+                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-green-500 text-white transition-colors hover:bg-green-600"
+                                        aria-label="Share on WhatsApp">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </button>
+                                    <button wire:click="shareNews('telegram')"
+                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-400 text-white transition-colors hover:bg-blue-500"
+                                        aria-label="Share on Telegram">
+                                        <i class="fab fa-telegram"></i>
+                                    </button>
+                                    <button wire:click="shareNews('reddit')"
+                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-orange-500 text-white transition-colors hover:bg-orange-600"
+                                        aria-label="Share on Reddit">
+                                        <i class="fab fa-reddit-alien"></i>
+                                    </button>
+                                    <button wire:click="shareNews('email')"
+                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-gray-200 text-gray-800 transition-colors hover:bg-gray-300"
+                                        aria-label="Share by email">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                    <button type="button" data-copy-link="{{ url()->current() }}"
+                                        class="inline-flex h-11 items-center space-x-2 rounded-full bg-gray-100 px-4 text-gray-800 transition-colors hover:bg-gray-200">
+                                        <i class="fas fa-link"></i><span data-copy-text>Copy link</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -445,7 +439,7 @@
             </main>
 
             <!-- Right Sidebar -->
-            <aside class="lg:col-span-3 space-y-6">
+            <aside class="space-y-6">
                 <div class="sticky top-24 space-y-6">
                     
                     <!-- Quick Stats -->
@@ -511,6 +505,32 @@
                     </div>
                 </div>
             </aside>
+        </div>
+    </div>
+
+    <div x-cloak x-show="imageViewerOpen" x-transition.opacity class="fixed inset-0 z-[90]" role="dialog" aria-modal="true" aria-label="Full news image">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" @click="closeImage()"></div>
+
+        <div class="relative flex min-h-screen items-center justify-center p-4 md:p-8" @click.self="closeImage()">
+            <div class="relative w-full max-w-6xl">
+                <button type="button"
+                        @click="closeImage()"
+                        class="absolute right-3 top-3 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/80 text-white transition hover:bg-black"
+                        aria-label="Close full image">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="overflow-hidden rounded-xl bg-slate-950 shadow-2xl">
+                    <img :src="activeImage ? activeImage.src : ''"
+                         :alt="activeImage ? activeImage.title : ''"
+                         class="max-h-[82vh] w-full object-contain">
+                </div>
+
+                <div class="mt-3 flex flex-col gap-1 text-white sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-sm font-semibold text-white/80" x-text="activeImage ? activeImage.label : ''"></p>
+                    <p class="text-base font-bold" x-text="activeImage ? activeImage.title : ''"></p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
