@@ -4,6 +4,7 @@ namespace App\Livewire\Page;
 
 use App\Models\News\News;
 use App\Models\News\NewsCategory;
+use App\Support\Seo;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -197,8 +198,22 @@ class NewsPage extends Component
 
     public function render()
     {
+        $description = 'Latest news and updates from Glow 99.1 FM Akure, covering Ondo State, Nigerian politics, public affairs, community updates, entertainment, sports, health, and youth-focused stories.';
+        $newsArticles = $this->newsArticles;
+        $newsItems = $newsArticles->getCollection()
+            ->take(40)
+            ->values()
+            ->map(fn ($news, $index) => [
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'name' => $news['title'] ?? '',
+                'url' => route('news.show', $news['slug'] ?? ''),
+                'description' => Seo::text($news['excerpt'] ?? '', 140),
+            ])
+            ->all();
+
         return view('livewire.page.news-page', [
-            'newsArticles' => $this->newsArticles,
+            'newsArticles' => $newsArticles,
             'featuredHero' => $this->featuredHero,
             'featuredSecondary' => $this->featuredSecondary,
             'featuredSidebar' => $this->featuredSidebar,
@@ -220,7 +235,32 @@ class NewsPage extends Component
                 'color' => 'emerald',
             ])->toArray(),
             'popularTags' => $this->popularTags,
-        ])->layout('layouts.app', ['title' => 'News & Updates - Glow FM']);
+        ])->layout('layouts.app', [
+            'title' => 'News & Updates - Glow 99.1 FM',
+            'meta_title' => 'Glow 99.1 FM News - Ondo State And Nigerian Updates',
+            'meta_description' => $description,
+            'canonical_url' => route('news'),
+            'structured_data' => Seo::siteGraph([
+                'title' => 'Glow 99.1 FM News',
+                'description' => $description,
+                'url' => route('news'),
+                'breadcrumbs' => [
+                    ['name' => 'Home', 'url' => route('home')],
+                    ['name' => 'News', 'url' => route('news')],
+                ],
+                'extra' => [
+                    [
+                        '@type' => 'CollectionPage',
+                        '@id' => route('news') . '#collection',
+                        'name' => 'Glow 99.1 FM News',
+                        'hasPart' => [
+                            '@type' => 'ItemList',
+                            'itemListElement' => $newsItems,
+                        ],
+                    ],
+                ],
+            ]),
+        ]);
     }
 
     private function formatNewsItem($news)

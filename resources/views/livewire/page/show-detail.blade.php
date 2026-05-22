@@ -87,6 +87,37 @@
             <main class="lg:col-span-8">
                 <article class="bg-white rounded-2xl shadow-lg overflow-hidden">
                     <div class="p-8 md:p-12">
+                        <section class="mb-10 rounded-2xl border border-emerald-100 bg-emerald-50 p-6">
+                            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Program Summary</p>
+                            <h2 class="mt-2 text-2xl font-bold text-slate-900">What {{ $show->title }} Is About</h2>
+                            <p class="mt-3 text-slate-700 leading-relaxed">
+                                {{ $programSummary ?: 'This is an active Glow 99.1 FM program. Check the schedule for current airtime and host information.' }}
+                            </p>
+                            <dl class="mt-6 grid gap-4 sm:grid-cols-2">
+                                <div class="rounded-xl bg-white p-4">
+                                    <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Airing Time</dt>
+                                    <dd class="mt-1 text-sm font-semibold text-slate-900">
+                                        {{ $upcomingSlots->first()?->time_range ?? 'Schedule TBA' }}
+                                    </dd>
+                                </div>
+                                <div class="rounded-xl bg-white p-4">
+                                    <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Host</dt>
+                                    <dd class="mt-1 text-sm font-semibold text-slate-900">{{ $show->primaryHost?->name ?? 'Host TBA' }}</dd>
+                                </div>
+                                <div class="rounded-xl bg-white p-4">
+                                    <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Language</dt>
+                                    <dd class="mt-1 text-sm font-semibold text-slate-900">English, Yoruba, and Nigerian Pidgin where applicable</dd>
+                                </div>
+                                <div class="rounded-xl bg-white p-4">
+                                    <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">How To Listen</dt>
+                                    <dd class="mt-1 text-sm font-semibold text-slate-900">
+                                        <a href="{{ route('listen.live') }}" class="text-emerald-700 hover:text-emerald-800">Listen live online</a>
+                                        or tune to 99.1 FM in Akure.
+                                    </dd>
+                                </div>
+                            </dl>
+                        </section>
+
                         <div class="prose prose-lg max-w-none mb-10">
                             {!! $show->full_description ?: nl2br(e($show->description)) !!}
                         </div>
@@ -109,6 +140,31 @@
                                             </div>
                                             @if($segment->description)
                                                 <p class="text-sm text-gray-600 mt-2">{{ $segment->description }}</p>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($latestEpisodes->count() > 0)
+                            <div class="mb-12">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                    <i class="fas fa-wave-square text-emerald-600 mr-3"></i>
+                                    Related Episodes
+                                </h3>
+                                <div class="space-y-4">
+                                    @foreach($latestEpisodes as $episode)
+                                        <div class="rounded-xl bg-slate-50 p-4">
+                                            <p class="font-semibold text-slate-900">{{ $episode->title ?: $show->title }}</p>
+                                            <p class="mt-1 text-sm text-slate-600">
+                                                {{ $episode->aired_at?->format('M d, Y') ?? 'Aired date unavailable' }}
+                                                @if($episode->actual_duration)
+                                                    <span class="mx-2">•</span>{{ $episode->actual_duration }} mins
+                                                @endif
+                                            </p>
+                                            @if($episode->description)
+                                                <p class="mt-2 text-sm text-slate-700">{{ $episode->description }}</p>
                                             @endif
                                         </div>
                                     @endforeach

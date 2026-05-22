@@ -4,6 +4,7 @@ namespace App\Livewire\Podcast;
 
 use App\Models\Podcast\Show;
 use App\Models\Podcast\Episode;
+use App\Support\Seo;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -96,12 +97,51 @@ class Index extends Component
 
     public function render()
     {
+        $description = 'Glow 99.1 FM podcasts and audio/video episodes from Akure, including interviews, public affairs, entertainment, community conversations, and Glow TV-related digital media.';
+        $shows = $this->shows;
+        $showItems = $shows->getCollection()
+            ->take(40)
+            ->values()
+            ->map(fn ($show, $index) => [
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'name' => $show->title,
+                'url' => route('podcasts.show', $show->slug),
+                'description' => Seo::text($show->description, 140),
+            ])
+            ->all();
+
         return view('livewire.podcast.index', [
-            'shows' => $this->shows,
+            'shows' => $shows,
             'latestEpisodes' => $this->latestEpisodes,
             'featuredShows' => $this->featuredShows,
             'trendingEpisodes' => $this->trendingEpisodes,
             'categories' => $this->categories,
-        ])->layout('layouts.app', ['title' => 'Podcasts - Glow FM']);
+        ])->layout('layouts.app', [
+            'title' => 'Podcasts - Glow 99.1 FM',
+            'meta_title' => 'Glow 99.1 FM Podcasts And Digital Episodes',
+            'meta_description' => $description,
+            'canonical_url' => route('podcasts.index'),
+            'structured_data' => Seo::siteGraph([
+                'title' => 'Glow 99.1 FM Podcasts',
+                'description' => $description,
+                'url' => route('podcasts.index'),
+                'breadcrumbs' => [
+                    ['name' => 'Home', 'url' => route('home')],
+                    ['name' => 'Podcasts', 'url' => route('podcasts.index')],
+                ],
+                'extra' => [
+                    [
+                        '@type' => 'CollectionPage',
+                        '@id' => route('podcasts.index') . '#collection',
+                        'name' => 'Glow 99.1 FM Podcasts',
+                        'hasPart' => [
+                            '@type' => 'ItemList',
+                            'itemListElement' => $showItems,
+                        ],
+                    ],
+                ],
+            ]),
+        ]);
     }
 }

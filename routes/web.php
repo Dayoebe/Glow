@@ -78,6 +78,10 @@ use App\Livewire\Admin\Ads\Form as AdminAdsForm;
 use App\Livewire\Admin\Approvals\ApproverSettings;
 use App\Livewire\Admin\Profile\ProfileForm as AdminProfileForm;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\AiDiscoveryController;
+use App\Http\Controllers\FeedController;
+use App\Livewire\Page\AdvertisePage;
+use App\Livewire\Page\ListenLivePage;
 
 use App\Livewire\Admin\Show\Manage as ShowManage;
 use App\Livewire\Admin\Show\ShowForm as AdminShowForm;
@@ -90,6 +94,25 @@ use App\Livewire\Admin\Show\Reviews as AdminShowReviews;
 // Public Routes
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/sitemap', [SitemapController::class, 'index'])->name('sitemap.legacy');
+Route::get('/sitemaps/pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
+Route::get('/sitemaps/news.xml', [SitemapController::class, 'news'])->name('sitemap.news');
+Route::get('/sitemaps/programs.xml', [SitemapController::class, 'programs'])->name('sitemap.programs');
+Route::get('/sitemaps/categories.xml', [SitemapController::class, 'categories'])->name('sitemap.categories');
+Route::get('/sitemaps/images.xml', [SitemapController::class, 'images'])->name('sitemap.images');
+Route::get('/sitemaps/videos.xml', [SitemapController::class, 'videos'])->name('sitemap.videos');
+Route::get('/robots.txt', function () {
+    return response()->file(public_path('robots.txt'), [
+        'Content-Type' => 'text/plain; charset=UTF-8',
+    ]);
+})->name('robots.txt');
+Route::get('/llms.txt', [AiDiscoveryController::class, 'llms'])->name('llms');
+Route::get('/llms-full.txt', [AiDiscoveryController::class, 'llmsFull'])->name('llms.full');
+Route::get('/ai.txt', [AiDiscoveryController::class, 'ai'])->name('ai.guidance');
+Route::get('/feed.xml', [FeedController::class, 'news'])->name('feed');
+Route::get('/rss.xml', [FeedController::class, 'news'])->name('rss');
+Route::get('/news/feed.xml', [FeedController::class, 'news'])->name('news.feed');
+Route::get('/podcasts/feed.xml', [FeedController::class, 'podcasts'])->name('podcasts.feed');
+Route::get('/shows/feed.xml', [FeedController::class, 'shows'])->name('shows.feed');
 Route::get('/ads.txt', function () {
     return response()->file(public_path('ads.txt'), [
         'Content-Type' => 'text/plain; charset=UTF-8',
@@ -98,8 +121,11 @@ Route::get('/ads.txt', function () {
 Route::get('/', HomePage::class)->name('home');
 Route::get('/about', AboutPage::class)->name('about');
 Route::get('/contact', ContactPage::class)->name('contact');
+Route::get('/listen-live', ListenLivePage::class)->name('listen.live');
+Route::get('/advertise', AdvertisePage::class)->name('advertise');
 Route::get('/privacy-policy', PrivacyPolicy::class)->name('privacy.policy');
 Route::get('/contact/success', ContactSuccess::class)->name('contact.success');
+Route::get('/programs', ShowPage::class)->name('programs.index');
 Route::get('/shows', ShowPage::class)->name('shows.index');
 Route::get('/shows/{slug}', ShowDetail::class)->name('shows.show');
 Route::get('/schedule', SchedulePage::class)->name('schedule');

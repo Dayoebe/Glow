@@ -4,6 +4,7 @@ namespace App\Livewire\Page;
 
 use App\Models\Show\Show;
 use App\Models\Show\Category;
+use App\Support\Seo;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -152,8 +153,22 @@ class ShowPage extends Component
 
     public function render()
     {
+        $description = 'Browse Glow 99.1 FM programs and shows from Akure, including public affairs, Yoruba programming, entertainment, sports, interviews, and community radio content.';
+        $shows = $this->shows;
+        $showItems = $shows->getCollection()
+            ->take(40)
+            ->values()
+            ->map(fn ($show, $index) => [
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'name' => $show->title,
+                'url' => route('shows.show', $show->slug),
+                'description' => Seo::text($show->description, 140),
+            ])
+            ->all();
+
         return view('livewire.page.show-page', [
-            'shows' => $this->shows,
+            'shows' => $shows,
             'featuredShow' => $this->featuredShow,
             'categories' => $this->categories->map(function ($cat) {
                 return [
@@ -170,6 +185,28 @@ class ShowPage extends Component
                 'icon' => 'fas fa-microphone',
                 'color' => 'emerald',
             ])->toArray(),
-        ])->layout('layouts.app', ['title' => 'Shows & Programs - Glow FM']);
+        ])->layout('layouts.app', [
+            'title' => 'Shows & Programs - Glow 99.1 FM',
+            'meta_title' => 'Glow 99.1 FM Programs And Shows',
+            'meta_description' => $description,
+            'canonical_url' => route('shows.index'),
+            'structured_data' => Seo::siteGraph([
+                'title' => 'Glow 99.1 FM Programs And Shows',
+                'description' => $description,
+                'url' => route('shows.index'),
+                'breadcrumbs' => [
+                    ['name' => 'Home', 'url' => route('home')],
+                    ['name' => 'Programs', 'url' => route('shows.index')],
+                ],
+                'extra' => [
+                    [
+                        '@type' => 'ItemList',
+                        '@id' => route('shows.index') . '#program-list',
+                        'name' => 'Glow 99.1 FM Programs',
+                        'itemListElement' => $showItems,
+                    ],
+                ],
+            ]),
+        ]);
     }
 }

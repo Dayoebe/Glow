@@ -4,6 +4,7 @@ namespace App\Livewire\Page;
 
 use App\Models\Show\Show;
 use App\Models\Show\Review;
+use App\Support\Seo;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cookie;
 use Livewire\Component;
@@ -138,17 +139,41 @@ class ShowDetail extends Component
         $reviewsQuery = $this->show->reviews()->approved();
         $ratingCount = (clone $reviewsQuery)->count();
         $averageRating = (clone $reviewsQuery)->avg('rating') ?: 0;
+        $description = Str::limit(strip_tags($this->show->description ?: $this->show->full_description ?: ''), 180);
+        $canonical = route('shows.show', $this->show->slug);
+        $latestEpisodes = $this->show->episodes()
+            ->latest('aired_at')
+            ->take(5)
+            ->get();
 
         return view('livewire.page.show-detail', [
             'upcomingSlots' => $this->upcomingSlots,
             'reviews' => $this->show->reviews()->approved()->latest()->with('user')->get(),
             'ratingCount' => $ratingCount,
             'averageRating' => $averageRating,
+            'programSummary' => Seo::words($this->show->description ?: $this->show->full_description, 55),
+            'latestEpisodes' => $latestEpisodes,
         ])->layout('layouts.app', [
-            'title' => $this->show->title . ' - Glow FM',
-            'meta_title' => $this->show->title . ' - Glow FM',
-            'meta_description' => Str::limit(strip_tags($this->show->description ?? ''), 180),
+            'title' => $this->show->title . ' - Glow 99.1 FM',
+            'meta_title' => $this->show->title . ' - Glow 99.1 FM Program',
+            'meta_description' => $description,
             'meta_image' => $this->show->cover_image,
+            'meta_image_alt' => $this->show->title,
+            'canonical_url' => $canonical,
+            'structured_data' => Seo::siteGraph([
+                'title' => $this->show->title . ' - Glow 99.1 FM Program',
+                'description' => $description,
+                'url' => $canonical,
+                'image' => $this->show->cover_image,
+                'breadcrumbs' => [
+                    ['name' => 'Home', 'url' => route('home')],
+                    ['name' => 'Programs', 'url' => route('shows.index')],
+                    ['name' => $this->show->title, 'url' => $canonical],
+                ],
+                'extra' => [
+                    Seo::showBroadcastEvent($this->show, $this->upcomingSlots, $canonical),
+                ],
+            ]),
         ]);
     }
 }

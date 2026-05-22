@@ -1,3 +1,46 @@
+# Glow 99.1 FM crawler policy.
+# Public pages, CSS, JavaScript, images, sitemaps, RSS feeds, news articles,
+# program pages, podcast pages, and schedule pages are crawlable.
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# OpenAI search crawler used for surfacing and linking public web results.
+User-agent: OAI-SearchBot
+Allow: /
+
+# ChatGPT user-triggered browsing/fetching crawler. It should reach public pages
+# that a user asks ChatGPT to summarize, cite, or inspect.
+User-agent: ChatGPT-User
+Allow: /
+
+# GPTBot is OpenAI's training-related crawler. Keep this separate from
+# OAI-SearchBot. Change to "Allow: /" only if the site owner accepts training
+# related crawling.
+User-agent: GPTBot
+Disallow: /
+
 User-agent: *
-Disallow:
-Sitemap: /sitemap.xml
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /settings
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /download-database
+Disallow: /livewire/upload-file
+Disallow: /livewire/preview-file
+Disallow: /livewire/update
+Disallow: /newsletter/confirm/
+Disallow: /newsletter/unsubscribe/
+Disallow: /api/admin/
+Disallow: /api/auth/
+Disallow: /api/public/auth/
+Disallow: /api/public/library/
+
+Sitemap: https://glowfmradio.com/sitemap.xml

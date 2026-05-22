@@ -3,6 +3,7 @@
 namespace App\Livewire\Page;
 
 use App\Models\News\News;
+use App\Support\Seo;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -156,24 +157,102 @@ class NewsDetail extends Component
             ->get();
     }
 
+    public function getArticleSummaryProperty(): string
+    {
+        $source = trim(($this->news->excerpt ?? '') . ' ' . Seo::text($this->news->content ?? '', 500));
+
+        return Seo::words($source, 58);
+    }
+
+    public function getKeyTakeawaysProperty(): array
+    {
+        $source = trim(($this->news->excerpt ?? '') . ' ' . ($this->news->content ?? ''));
+        $takeaways = Seo::sentences($source, 3);
+
+        if (count($takeaways) < 3 && $this->news->category?->name) {
+            $takeaways[] = 'This story is filed under ' . $this->news->category->name . ' on Glow 99.1 FM.';
+        }
+
+        if (count($takeaways) < 3 && $this->news->published_at) {
+            $takeaways[] = 'It was published on ' . $this->news->published_at->format('F j, Y') . '.';
+        }
+
+        return array_slice(array_values(array_unique(array_filter($takeaways))), 0, 3);
+    }
+
+    public function getArticleFaqsProperty(): array
+    {
+        return [
+            [
+                'question' => 'What is this story about?',
+                'answer' => $this->articleSummary ?: 'This is a public news story published by Glow 99.1 FM.',
+            ],
+            [
+                'question' => 'Who published this story?',
+                'answer' => 'Glow 99.1 FM published this story' . ($this->news->author?->name ? ' with ' . $this->news->author->name . ' listed as author.' : '.'),
+            ],
+            [
+                'question' => 'When was it published?',
+                'answer' => $this->news->published_at
+                    ? $this->news->published_at->format('F j, Y')
+                    : 'A public published date is not available on this page.',
+            ],
+        ];
+    }
+
     public function render()
     {
-        $excerpt = trim($this->news->excerpt ?? '');
+        $excerpt = trim($this->news->meta_description ?: $this->news->excerpt ?? '');
         if ($excerpt === '') {
             $excerpt = Str::limit(strip_tags($this->news->content ?? ''), 180);
+        }
+
+        $canonical = $this->shareUrl ?: route('news.show', $this->news->slug);
+        $extraSchema = [
+            Seo::newsArticle($this->news, $canonical, $excerpt),
+        ];
+
+        $videoObject = Seo::videoObject(
+            $this->news->title,
+            $excerpt,
+            $this->news->video_url,
+            $this->news->featured_image,
+            $this->news->published_at
+        );
+
+        if ($videoObject) {
+            $extraSchema[] = $videoObject;
         }
 
         return view('livewire.page.news-detail', [
             'relatedNews' => $this->relatedNews,
             'reactions' => $this->news->getAllReactionCounts(),
+            'articleSummary' => $this->articleSummary,
+            'keyTakeaways' => $this->keyTakeaways,
+            'articleFaqs' => $this->articleFaqs,
         ])->layout('layouts.app', [
-            'title' => $this->news->title . ' - Glow FM News',
+            'title' => $this->news->title . ' - Glow 99.1 FM News',
             'meta_title' => $this->news->title,
             'meta_description' => $excerpt,
             'meta_image' => $this->news->featured_image,
             'meta_image_alt' => $this->news->title,
             'meta_type' => 'article',
-            'canonical_url' => $this->shareUrl ?: request()->url(),
+            'meta_published_time' => $this->news->published_at?->toAtomString(),
+            'meta_modified_time' => $this->news->updated_at?->toAtomString(),
+            'canonical_url' => $canonical,
+            'structured_data' => Seo::siteGraph([
+                'title' => $this->news->title,
+                'description' => $excerpt,
+                'url' => $canonical,
+                'image' => $this->news->featured_image,
+                'breadcrumbs' => [
+                    ['name' => 'Home', 'url' => route('home')],
+                    ['name' => 'News', 'url' => route('news')],
+                    ['name' => $this->news->category?->name ?? 'Article', 'url' => route('news', ['selectedCategory' => $this->news->category?->slug])],
+                    ['name' => $this->news->title, 'url' => $canonical],
+                ],
+                'extra' => $extraSchema,
+            ]),
         ]);
     }
 }

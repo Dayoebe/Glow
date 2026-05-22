@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\ContactSubmittedMail;
 use App\Models\ContactMessage;
 use App\Models\Setting;
+use App\Support\Seo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -13,66 +14,67 @@ class ContactController extends Controller
 {
     public function show()
     {
+        $station = Seo::station();
         $defaults = [
             'header_title' => 'Get In Touch',
             'header_subtitle' => 'We\'d love to hear from you! Whether you have a question, feedback, or just want to say hello, we\'re here to help.',
             'contact_info' => [
-                'address' => '123 Radio Street, Broadcasting City, BC 12345',
-                'phone' => '+1 (234) 567-890',
-                'email' => 'info@glowfm.com',
+                'address' => $station['address'],
+                'phone' => $station['phone'],
+                'email' => $station['email'],
                 'hours' => [
                     'weekdays' => '9AM - 6PM',
                     'saturday' => '10AM - 4PM',
                     'sunday' => '10AM - 4PM',
                 ],
-                'map_embed' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.2412648750455!2d-73.98731668459395!3d40.74844097932847!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus',
+                'map_embed' => '',
             ],
             'departments' => [
                 [
                     'name' => 'General Inquiries',
                     'icon' => 'fas fa-info-circle',
-                    'email' => 'info@glowfm.com',
-                    'phone' => '+1 (234) 567-890',
+                    'email' => $station['email'],
+                    'phone' => $station['phone'],
                     'description' => 'For general questions and information',
                     'color' => 'emerald',
                 ],
                 [
                     'name' => 'Advertising',
                     'icon' => 'fas fa-bullhorn',
-                    'email' => 'advertising@glowfm.com',
-                    'phone' => '+1 (234) 567-891',
+                    'email' => $station['email'],
+                    'phone' => $station['phone'],
                     'description' => 'Advertising and sponsorship opportunities',
                     'color' => 'blue',
                 ],
                 [
                     'name' => 'Programming',
                     'icon' => 'fas fa-microphone',
-                    'email' => 'programming@glowfm.com',
-                    'phone' => '+1 (234) 567-892',
+                    'email' => $station['email'],
+                    'phone' => $station['phone'],
                     'description' => 'Show suggestions and program feedback',
                     'color' => 'amber',
                 ],
                 [
                     'name' => 'Technical Support',
                     'icon' => 'fas fa-headset',
-                    'email' => 'support@glowfm.com',
-                    'phone' => '+1 (234) 567-893',
+                    'email' => $station['email'],
+                    'phone' => $station['phone'],
                     'description' => 'Streaming issues and technical help',
                     'color' => 'purple',
                 ],
                 [
                     'name' => 'Events',
                     'icon' => 'fas fa-calendar-alt',
-                    'email' => 'events@glowfm.com',
-                    'phone' => '+1 (234) 567-894',
+                    'email' => $station['email'],
+                    'phone' => $station['phone'],
                     'description' => 'Event inquiries and partnerships',
                     'color' => 'pink',
                 ],
                 [
                     'name' => 'Careers',
                     'icon' => 'fas fa-briefcase',
-                    'email' => 'careers@glowfm.com',
-                    'phone' => '+1 (234) 567-895',
+                    'email' => $station['email'],
+                    'phone' => $station['phone'],
                     'description' => 'Job opportunities and internships',
                     'color' => 'indigo',
                 ],
@@ -84,7 +86,7 @@ class ContactController extends Controller
                 ],
                 [
                     'question' => 'How do I request a song?',
-                    'answer' => 'You can request songs through our website contact form, by calling our request line at +1 (234) 567-890, or by sending us a message on our social media channels. Make sure to include the song title and artist name!',
+                    'answer' => 'You can request songs through our website contact form, by calling the station, or by sending us a message on our social media channels. Make sure to include the song title and artist name!',
                 ],
                 [
                     'question' => 'Can I visit the studio?',
@@ -92,7 +94,7 @@ class ContactController extends Controller
                 ],
                 [
                     'question' => 'How do I advertise on Glow FM?',
-                    'answer' => 'For advertising opportunities, please contact our advertising department at advertising@glowfm.com or call +1 (234) 567-891. Our team will help you create a custom advertising package that fits your needs and budget.',
+                    'answer' => 'For advertising opportunities, contact Glow 99.1 FM through the contact page or call the station to discuss radio spots, sponsored programs, social media promotion, live coverage, jingles, interviews, and Glow TV packages.',
                 ],
                 [
                     'question' => 'Are you hiring?',

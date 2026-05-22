@@ -11,6 +11,7 @@ use App\Models\Show\Show as ProgramShow;
 use App\Models\Show\ScheduleSlot;
 use App\Models\Event\Event;
 use App\Models\Setting;
+use App\Support\Seo;
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -554,8 +555,18 @@ class HomePage extends Component
 
     public function render()
     {
+        $description = 'Glow 99.1 FM is a radio station and digital news platform in Ijapo Estate, Akure, Ondo State, Nigeria, covering Ondo State news, live radio, podcasts, public affairs, entertainment, sports, and Yoruba programming.';
+
         return view('livewire.page.home-page')->layout('layouts.app', [
-            'title' => 'Glow FM 99.1 - Your Station, Your Voice'
+            'title' => 'Glow 99.1 FM - Your Station, Your Voice',
+            'meta_title' => 'Glow 99.1 FM Akure - Your Station, Your Voice',
+            'meta_description' => $description,
+            'canonical_url' => route('home'),
+            'structured_data' => Seo::siteGraph([
+                'title' => 'Glow 99.1 FM Akure - Your Station, Your Voice',
+                'description' => $description,
+                'url' => route('home'),
+            ]),
         ]);
     }
 }

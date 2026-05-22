@@ -5,6 +5,7 @@ namespace App\Livewire\Podcast;
 use App\Models\Podcast\Episode;
 use App\Models\Podcast\Comment;
 use App\Models\Podcast\ListeningHistory;
+use App\Support\Seo;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -159,13 +160,52 @@ class EpisodePlayer extends Component
 
     public function render()
     {
+        $description = Str::limit(strip_tags($this->episode->description ?? $this->episode->show_notes ?? ''), 180);
+        $canonical = route('podcasts.episode', [
+            'showSlug' => $this->episode->show->slug,
+            'episodeSlug' => $this->episode->slug,
+        ]);
+        $extraSchema = [
+            Seo::podcastEpisode($this->episode, $canonical, $description),
+        ];
+
+        $videoObject = Seo::videoObject(
+            $this->episode->title,
+            $description,
+            $this->episode->video_url,
+            $this->episode->cover_image ?? $this->episode->show->cover_image,
+            $this->episode->published_at
+        );
+
+        if ($videoObject) {
+            $extraSchema[] = $videoObject;
+        }
+
         return view('livewire.podcast.episode-player', [
             'relatedEpisodes' => $this->relatedEpisodes,
         ])->layout('layouts.app', [
             'title' => $this->episode->title . ' - ' . $this->episode->show->title,
             'meta_title' => $this->episode->title . ' - ' . $this->episode->show->title,
-            'meta_description' => Str::limit(strip_tags($this->episode->description ?? ''), 180),
+            'meta_description' => $description,
             'meta_image' => $this->episode->cover_image ?? $this->episode->show->cover_image,
+            'meta_image_alt' => $this->episode->title,
+            'meta_type' => 'article',
+            'meta_published_time' => $this->episode->published_at?->toAtomString(),
+            'meta_modified_time' => $this->episode->updated_at?->toAtomString(),
+            'canonical_url' => $canonical,
+            'structured_data' => Seo::siteGraph([
+                'title' => $this->episode->title,
+                'description' => $description,
+                'url' => $canonical,
+                'image' => $this->episode->cover_image ?? $this->episode->show->cover_image,
+                'breadcrumbs' => [
+                    ['name' => 'Home', 'url' => route('home')],
+                    ['name' => 'Podcasts', 'url' => route('podcasts.index')],
+                    ['name' => $this->episode->show->title, 'url' => route('podcasts.show', $this->episode->show->slug)],
+                    ['name' => $this->episode->title, 'url' => $canonical],
+                ],
+                'extra' => $extraSchema,
+            ]),
         ]);
     }
 }

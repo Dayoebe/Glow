@@ -21,46 +21,54 @@
      crossorigin="anonymous"></script>
     
     @php
+        $stationProfile = \App\Support\Seo::station();
         $stationSettings = \App\Models\Setting::get('station', []);
-        $stationName = data_get($stationSettings, 'name', 'Glow FM');
-        $stationFrequency = data_get($stationSettings, 'frequency', '99.1 MHz');
-        $stationTagline = data_get($stationSettings, 'tagline', 'Your Station, Your Voice');
+        $stationName = data_get($stationSettings, 'name', $stationProfile['display_name']);
+        $stationFrequency = data_get($stationSettings, 'frequency', $stationProfile['display_frequency']);
+        $stationTagline = data_get($stationSettings, 'tagline', $stationProfile['tagline']);
         $stationLogoUrl = data_get($stationSettings, 'logo_url', '');
         if (empty($stationLogoUrl)) {
-            $stationLogoUrl = asset('glowfm logo.jpeg');
+            $stationLogoUrl = $stationProfile['logo'] ?: asset('glowfm logo.jpeg');
         }
         if (!empty($stationLogoUrl) && !\Illuminate\Support\Str::startsWith($stationLogoUrl, ['http://', 'https://'])) {
             $stationLogoUrl = url($stationLogoUrl);
         }
-        $metaTitle = $meta_title ?? ($title ?? trim($stationName . ' ' . $stationFrequency));
-        $metaDescription = $meta_description ?? ($stationTagline . ' - The heartbeat of the city. Listen to the best music, engaging shows, and stay connected with your community.');
+        $metaTitle = $meta_title ?? ($title ?? trim($stationProfile['name'] . ' ' . $stationProfile['frequency']));
+        $metaDescription = $meta_description ?? ($stationTagline . ' - Glow 99.1 FM is a radio station and digital news platform in Akure, Ondo State, Nigeria.');
         $metaImage = $meta_image ?? $stationLogoUrl;
         if (!empty($metaImage) && !\Illuminate\Support\Str::startsWith($metaImage, ['http://', 'https://'])) {
             $metaImage = url($metaImage);
         }
         $metaImageAlt = $meta_image_alt ?? $metaTitle;
-        $canonicalUrl = $canonical_url ?? request()->url();
+        $canonicalUrl = \App\Support\Seo::absoluteUrl($canonical_url ?? request()->url()) ?: request()->url();
         $metaRobots = $meta_robots ?? 'index, follow';
         $metaType = $meta_type ?? 'website';
         $metaPublishedTime = $meta_published_time ?? null;
         $metaModifiedTime = $meta_modified_time ?? null;
         $locale = str_replace('-', '_', app()->getLocale());
         $twitterSite = $twitter_site ?? data_get($stationSettings, 'twitter_handle', '');
-        $structuredData = [
-            '@context' => 'https://schema.org',
-            '@type' => 'RadioStation',
-            'name' => $stationName,
+        $defaultBreadcrumbs = [['name' => 'Home', 'url' => route('home')]];
+        if (!request()->routeIs('home')) {
+            $segmentUrl = url('/');
+            foreach (request()->segments() as $segment) {
+                $segmentUrl .= '/' . $segment;
+                if (str_contains($segment, '{')) {
+                    continue;
+                }
+                $defaultBreadcrumbs[] = [
+                    'name' => \Illuminate\Support\Str::headline(str_replace(['-', '_'], ' ', $segment)),
+                    'url' => $segmentUrl,
+                ];
+            }
+        }
+        $structuredData = $structured_data ?? \App\Support\Seo::siteGraph([
+            'title' => $metaTitle,
+            'description' => $metaDescription,
             'url' => $canonicalUrl,
-            'logo' => $stationLogoUrl,
-            'slogan' => $stationTagline,
-            'sameAs' => array_values(array_filter([
-                data_get($stationSettings, 'socials.facebook'),
-                data_get($stationSettings, 'socials.x'),
-                data_get($stationSettings, 'socials.twitter'),
-                data_get($stationSettings, 'socials.instagram'),
-                data_get($stationSettings, 'socials.youtube'),
-            ])),
-        ];
+            'image' => $metaImage,
+            'type' => request()->routeIs('home') ? 'WebPage' : 'WebPage',
+            'breadcrumbs' => $defaultBreadcrumbs,
+        ]);
     @endphp
     <meta name="description" content="{{ $metaDescription }}">
     <meta name="robots" content="{{ $metaRobots }}">
@@ -88,6 +96,10 @@
     @if (!empty($twitterSite))
         <meta name="twitter:site" content="{{ $twitterSite }}">
     @endif
+    <link rel="alternate" type="application/rss+xml" title="{{ $stationProfile['name'] }} Latest News RSS" href="{{ route('news.feed') }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ $stationProfile['name'] }} Podcasts RSS" href="{{ route('podcasts.feed') }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ $stationProfile['name'] }} Programs RSS" href="{{ route('shows.feed') }}">
+    <link rel="alternate" type="text/markdown" title="{{ $stationProfile['name'] }} llms.txt" href="{{ route('llms') }}">
     <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -249,13 +261,13 @@
     }
 }" x-init="init()">
     @php
-        $stationName = $stationName ?? data_get($stationSettings, 'name', 'Glow FM');
-        $stationFrequency = $stationFrequency ?? data_get($stationSettings, 'frequency', '99.1 MHz');
-        $stationTagline = $stationTagline ?? data_get($stationSettings, 'tagline', 'Your Station, Your Voice');
-        $stationPhone = data_get($stationSettings, 'phone', '+1 (234) 567-890');
-        $stationEmail = data_get($stationSettings, 'email', 'info@glowfm.com');
-        $stationAddress = data_get($stationSettings, 'address', '123 Radio Street, Broadcasting City, BC 12345');
-        $stationStreamUrl = data_get($stationSettings, 'stream_url', 'https://stream-176.zeno.fm/mwam2yirv1pvv');
+        $stationName = $stationName ?? data_get($stationSettings, 'name', $stationProfile['display_name']);
+        $stationFrequency = $stationFrequency ?? data_get($stationSettings, 'frequency', $stationProfile['display_frequency']);
+        $stationTagline = $stationTagline ?? data_get($stationSettings, 'tagline', $stationProfile['tagline']);
+        $stationPhone = data_get($stationSettings, 'phone', $stationProfile['phone']);
+        $stationEmail = data_get($stationSettings, 'email', $stationProfile['email']);
+        $stationAddress = data_get($stationSettings, 'address', $stationProfile['address']);
+        $stationStreamUrl = data_get($stationSettings, 'stream_url', $stationProfile['stream_url']);
         $stationSocials = data_get($stationSettings, 'socials', []);
         $streamSettings = \App\Models\Setting::get('stream', []);
         $systemSettings = \App\Models\Setting::get('system', []);
@@ -423,7 +435,7 @@
                         </div>
                         <div>
                             <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700 lg:hidden">Live Radio</p>
-                            <h1 class="text-lg font-bold leading-none text-gray-900 lg:text-2xl">{{ $stationName }}</h1>
+                            <p class="text-lg font-bold leading-none text-gray-900 lg:text-2xl">{{ $stationName }}</p>
                             <p class="text-xs font-semibold text-emerald-600">{{ $stationFrequency }}</p>
                         </div>
                     </a>
@@ -456,7 +468,7 @@
                         </a>
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" @click.away="open = false"
-                                class="flex items-center px-4 py-2 text-gray-700 font-medium transition-colors duration-200 hover:text-emerald-600 {{ request()->is('podcasts*') || request()->is('blog*') || request()->is('oaps*') || request()->is('team*') || request()->is('events*') || request()->is('contact*') || request()->is('careers*') ? 'text-emerald-600' : '' }}">
+                                class="flex items-center px-4 py-2 text-gray-700 font-medium transition-colors duration-200 hover:text-emerald-600 {{ request()->is('podcasts*') || request()->is('blog*') || request()->is('oaps*') || request()->is('team*') || request()->is('events*') || request()->is('contact*') || request()->is('careers*') || request()->is('listen-live') || request()->is('advertise') ? 'text-emerald-600' : '' }}">
                                 More
                                 <i class="fas fa-chevron-down ml-2 text-xs"></i>
                             </button>
@@ -468,6 +480,10 @@
                                 <a href="/podcasts"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
                                     Podcasts
+                                </a>
+                                <a href="/listen-live"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
+                                    Listen Live
                                 </a>
                                 <a href="/blog"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
@@ -488,6 +504,10 @@
                                 <a href="/contact"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
                                     Contact
+                                </a>
+                                <a href="/advertise"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
+                                    Advertise
                                 </a>
                                 <div class="my-1 border-t border-gray-100"></div>
                                 <a href="/careers"
@@ -722,6 +742,10 @@
                                 class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
                                 Podcasts
                             </a>
+                            <a href="/listen-live" @click="closeMobileChrome()"
+                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
+                                Listen Live
+                            </a>
                             <a href="/blog" @click="closeMobileChrome()"
                                 class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
                                 Blog
@@ -741,6 +765,10 @@
                             <a href="/contact" @click="closeMobileChrome()"
                                 class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
                                 Contact
+                            </a>
+                            <a href="/advertise" @click="closeMobileChrome()"
+                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
+                                Advertise
                             </a>
                             <a href="/careers" @click="closeMobileChrome()"
                                 class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
@@ -956,6 +984,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="/listen-live"
+                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-chevron-right text-xs mr-2"></i>
+                                Listen Live
+                            </a>
+                        </li>
+                        <li>
                             <a href="/podcasts"
                                 class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
@@ -974,6 +1009,13 @@
                                 class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Contact Us
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/advertise"
+                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-chevron-right text-xs mr-2"></i>
+                                Advertise
                             </a>
                         </li>
                         <li>

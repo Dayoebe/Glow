@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings;
 
 use App\Models\Setting;
+use App\Support\Seo;
 use Livewire\Component;
 
 class StationSettings extends Component
@@ -28,14 +29,15 @@ class StationSettings extends Component
 
     public function mount()
     {
+        $station = Seo::station();
         $defaults = [
-            'name' => 'Glow FM',
-            'frequency' => '99.1 MHz',
-            'tagline' => 'Your Station, Your Voice',
-            'phone' => '+1 (234) 567-890',
-            'email' => 'info@glowfm.com',
-            'address' => '123 Radio Street, Broadcasting City, BC 12345',
-            'stream_url' => 'https://stream-176.zeno.fm/mwam2yirv1pvv',
+            'name' => $station['name'],
+            'frequency' => $station['frequency'],
+            'tagline' => $station['tagline'],
+            'phone' => $station['phone'],
+            'email' => $station['email'],
+            'address' => $station['address'],
+            'stream_url' => $station['stream_url'],
             'logo_url' => '',
             'favicon_url' => '',
             'socials' => $this->socials,
