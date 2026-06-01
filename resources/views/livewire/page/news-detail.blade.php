@@ -188,27 +188,6 @@
 
                     <!-- Content -->
                     <div class="p-8 md:p-12">
-                        @if($articleSummary)
-                            <section class="mb-8 rounded-2xl border border-emerald-100 bg-emerald-50 p-6">
-                                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Summary</p>
-                                <p class="mt-3 text-lg leading-relaxed text-slate-800">{{ $articleSummary }}</p>
-                            </section>
-                        @endif
-
-                        @if(count($keyTakeaways) > 0)
-                            <section class="mb-10 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-                                <h2 class="text-xl font-bold text-slate-900">Key Takeaways</h2>
-                                <ul class="mt-4 space-y-3">
-                                    @foreach($keyTakeaways as $takeaway)
-                                        <li class="flex gap-3 text-slate-700">
-                                            <i class="fas fa-check-circle mt-1 text-emerald-600"></i>
-                                            <span>{{ $takeaway }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </section>
-                        @endif
-
                         <!-- Article Body -->
                         <div class="prose prose-lg max-w-none mb-12">
                             {!! $news->content !!}
@@ -268,16 +247,62 @@
                         </div>
                         @endif
 
-                        @if(count($articleFaqs) > 0)
-                            <section class="mb-12 border-y border-slate-200 py-8">
-                                <h2 class="text-2xl font-bold text-gray-900">Article FAQ</h2>
-                                <div class="mt-5 space-y-4">
-                                    @foreach($articleFaqs as $faq)
-                                        <div class="rounded-xl bg-slate-50 p-5">
-                                            <h3 class="font-bold text-slate-900">{{ $faq['question'] }}</h3>
-                                            <p class="mt-2 text-sm leading-relaxed text-slate-700">{{ $faq['answer'] }}</p>
-                                        </div>
-                                    @endforeach
+                        @if($articleSummary || count($keyTakeaways) > 0 || count($articleFaqs) > 0)
+                            <section class="mb-12 border-y border-slate-200 py-6">
+                                <div class="space-y-4">
+                                    @if($articleSummary)
+                                        <details class="group rounded-2xl border border-emerald-100 bg-emerald-50">
+                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left">
+                                                <span class="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Summary</span>
+                                                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm transition-transform group-open:rotate-180">
+                                                    <i class="fas fa-chevron-down"></i>
+                                                </span>
+                                            </summary>
+                                            <div class="px-5 pb-5">
+                                                <p class="text-lg leading-relaxed text-slate-800">{{ $articleSummary }}</p>
+                                            </div>
+                                        </details>
+                                    @endif
+
+                                    @if(count($keyTakeaways) > 0)
+                                        <details class="group rounded-2xl border border-slate-200 bg-slate-50">
+                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left">
+                                                <span class="text-xl font-bold text-slate-900">Key Takeaways</span>
+                                                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition-transform group-open:rotate-180">
+                                                    <i class="fas fa-chevron-down"></i>
+                                                </span>
+                                            </summary>
+                                            <div class="px-5 pb-5">
+                                                <ul class="space-y-3">
+                                                    @foreach($keyTakeaways as $takeaway)
+                                                        <li class="flex gap-3 text-slate-700">
+                                                            <i class="fas fa-check-circle mt-1 text-emerald-600"></i>
+                                                            <span>{{ $takeaway }}</span>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </details>
+                                    @endif
+
+                                    @if(count($articleFaqs) > 0)
+                                        <details class="group rounded-2xl border border-slate-200 bg-white">
+                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left">
+                                                <span class="text-xl font-bold text-gray-900">Article FAQ</span>
+                                                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-50 text-slate-700 shadow-sm transition-transform group-open:rotate-180">
+                                                    <i class="fas fa-chevron-down"></i>
+                                                </span>
+                                            </summary>
+                                            <div class="space-y-4 px-5 pb-5">
+                                                @foreach($articleFaqs as $faq)
+                                                    <div class="rounded-xl bg-slate-50 p-5">
+                                                        <h3 class="font-bold text-slate-900">{{ $faq['question'] }}</h3>
+                                                        <p class="mt-2 text-sm leading-relaxed text-slate-700">{{ $faq['answer'] }}</p>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </details>
+                                    @endif
                                 </div>
                             </section>
                         @endif
