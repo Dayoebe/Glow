@@ -1,4 +1,4 @@
-<div wire:poll.60s="refreshHomeData">
+<div wire:poll.60s="refreshCurrentShow">
     @normalizeArray($featuredShows)
     @normalizeArray($latestPodcastEpisodes)
     @normalizeArray($latestNews)
@@ -83,7 +83,7 @@
                                     <h3 class="text-lg font-bold">
                                         @if(!empty($currentShow['slug']))
                                             <a href="{{ route('shows.show', $currentShow['slug']) }}" class="hover:text-white">
-                                                {{ $currentShow['title'] }}
+                                                {{ $currentShow['title'] ?? 'On Air' }}
                                             </a>
                                         @else
                                             {{ $currentShow['title'] ?? 'On Air' }}
@@ -92,7 +92,7 @@
                                     <p class="text-sm text-emerald-100">
                                         @if(!empty($currentShow['host_slug']))
                                             <a href="{{ route('oaps.show', $currentShow['host_slug']) }}" class="hover:text-white">
-                                                {{ $currentShow['host'] }}
+                                                {{ $currentShow['host'] ?? 'Live' }}
                                             </a>
                                         @else
                                             {{ $currentShow['host'] ?? 'Live' }}

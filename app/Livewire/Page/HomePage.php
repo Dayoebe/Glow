@@ -461,6 +461,11 @@ class HomePage extends Component
         $this->loadHomeContent();
     }
 
+    public function refreshCurrentShow(): void
+    {
+        $this->loadCurrentShow();
+    }
+
     private function loadUpcomingEvents()
     {
         $this->upcomingEvents = Event::with(['category'])
