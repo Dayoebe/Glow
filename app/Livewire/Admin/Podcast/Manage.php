@@ -438,6 +438,13 @@ class Manage extends Component
             'custom_links' => !empty($this->custom_links) ? $this->custom_links : null,
         ];
 
+        if ($this->episode_status === 'published' && $this->canReview()) {
+            $data['approval_status'] = 'approved';
+            $data['approval_reason'] = null;
+            $data['reviewed_by'] = auth()->id();
+            $data['reviewed_at'] = now();
+        }
+
         if ($this->editMode) {
             Episode::find($this->itemId)->update($data);
             session()->flash('success', 'Episode updated successfully!');
