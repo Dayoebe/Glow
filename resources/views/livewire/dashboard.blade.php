@@ -1,4 +1,48 @@
-<div>
+<div wire:poll.15s="loadMessages">
+    @if($unreadMessageCount > 0)
+        <section class="mb-6 overflow-hidden rounded-xl border border-amber-200 bg-amber-50 shadow-sm" aria-label="New contact messages">
+            <div class="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-start gap-3">
+                    <span class="relative mt-0.5 flex h-10 w-10 flex-none items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                        <i class="fas fa-envelope"></i>
+                        <span class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                            {{ $unreadMessageCount > 99 ? '99+' : $unreadMessageCount }}
+                        </span>
+                    </span>
+                    <div>
+                        <h2 class="font-semibold text-amber-950">
+                            {{ $unreadMessageCount === 1 ? 'You have a new contact message' : "You have {$unreadMessageCount} new contact messages" }}
+                        </h2>
+                        <p class="mt-1 text-sm text-amber-800">Open a message below to read it without leaving the dashboard.</p>
+                    </div>
+                </div>
+                <a href="{{ route('admin.messages.inbox') }}"
+                    class="inline-flex items-center justify-center rounded-lg border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100">
+                    Open Inbox
+                    <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                </a>
+            </div>
+
+            <div class="divide-y divide-amber-200 border-t border-amber-200 bg-white/70">
+                @foreach($recentMessages as $message)
+                    <button type="button" wire:click="openMessage({{ $message['id'] }})"
+                        class="flex w-full items-start gap-3 px-5 py-3 text-left transition hover:bg-amber-50">
+                        <span class="mt-1 h-2.5 w-2.5 flex-none rounded-full bg-emerald-500"></span>
+                        <span class="min-w-0 flex-1">
+                            <span class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                <span class="truncate text-sm font-semibold text-gray-900">{{ $message['subject'] }}</span>
+                                <span class="flex-none text-xs text-gray-500">{{ $message['received'] }}</span>
+                            </span>
+                            <span class="mt-0.5 block text-xs text-gray-600">From {{ $message['name'] }}</span>
+                            <span class="mt-1 block truncate text-sm text-gray-600">{{ $message['preview'] }}</span>
+                        </span>
+                        <i class="fas fa-chevron-right mt-2 flex-none text-xs text-gray-400"></i>
+                    </button>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         @foreach($stats as $stat)
@@ -400,4 +444,63 @@
             </div>
         </a>
     </div>
+
+    @if($showMessageModal && $this->selectedMessage)
+        <div class="fixed inset-0 z-[100] overflow-y-auto" role="dialog" aria-modal="true"
+            aria-labelledby="dashboard-message-title">
+            <div class="flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm" wire:click="closeMessage"></div>
+                <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+                <article class="relative z-10 inline-block w-full max-w-2xl overflow-hidden rounded-2xl bg-white text-left align-bottom shadow-2xl sm:my-8 sm:align-middle">
+                    <header class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-5">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Contact message</p>
+                            <h2 id="dashboard-message-title" class="mt-1 text-xl font-semibold text-gray-900">
+                                {{ $this->selectedMessage->subject }}
+                            </h2>
+                        </div>
+                        <button type="button" wire:click="closeMessage"
+                            class="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                            aria-label="Close message">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </header>
+
+                    <div class="max-h-[65vh] overflow-y-auto px-6 py-5">
+                        <dl class="grid gap-3 rounded-xl bg-gray-50 p-4 text-sm sm:grid-cols-2">
+                            <div>
+                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-500">From</dt>
+                                <dd class="mt-1 font-medium text-gray-900">{{ $this->selectedMessage->name }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-500">Email</dt>
+                                <dd class="mt-1 break-all text-gray-900">{{ $this->selectedMessage->email }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-500">Phone</dt>
+                                <dd class="mt-1 text-gray-900">{{ $this->selectedMessage->phone ?: 'Not provided' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-500">Received</dt>
+                                <dd class="mt-1 text-gray-900">{{ $this->selectedMessage->created_at->format('M j, Y g:i A') }}</dd>
+                            </div>
+                        </dl>
+
+                        <div class="mt-5 whitespace-pre-line text-sm leading-6 text-gray-700">{{ $this->selectedMessage->message }}</div>
+                    </div>
+
+                    <footer class="flex flex-col-reverse gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 sm:flex-row sm:justify-end">
+                        <button type="button" wire:click="closeMessage"
+                            class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100">
+                            Close
+                        </button>
+                        <a href="{{ route('admin.messages.inbox') }}"
+                            class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                            Open Full Inbox
+                        </a>
+                    </footer>
+                </article>
+            </div>
+        </div>
+    @endif
 </div>

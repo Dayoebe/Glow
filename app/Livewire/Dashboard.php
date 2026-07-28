@@ -31,6 +31,10 @@ class Dashboard extends Component
     public $recentReviews = [];
     public $todaySchedule = [];
     public $nextBirthday = null;
+    public $unreadMessageCount = 0;
+    public $recentMessages = [];
+    public $selectedMessageId = null;
+    public $showMessageModal = false;
 
     public function mount()
     {
@@ -47,6 +51,52 @@ class Dashboard extends Component
         $this->loadTopItems();
         $this->loadRecentReviews();
         $this->loadNextBirthday();
+        $this->loadMessages();
+    }
+
+    public function loadMessages(): void
+    {
+        $this->unreadMessageCount = ContactMessage::where('is_read', false)->count();
+        $this->recentMessages = ContactMessage::query()
+            ->where('is_read', false)
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn (ContactMessage $message) => [
+                'id' => $message->id,
+                'name' => $message->name,
+                'subject' => $message->subject,
+                'preview' => str($message->message)->limit(90)->toString(),
+                'received' => $message->created_at?->diffForHumans() ?? '',
+            ])
+            ->all();
+    }
+
+    public function openMessage(int $id): void
+    {
+        $message = ContactMessage::find($id);
+
+        if (!$message) {
+            return;
+        }
+
+        $this->selectedMessageId = $message->id;
+        $this->showMessageModal = true;
+        $message->update(['is_read' => true]);
+        $this->loadMessages();
+    }
+
+    public function closeMessage(): void
+    {
+        $this->showMessageModal = false;
+        $this->selectedMessageId = null;
+    }
+
+    public function getSelectedMessageProperty(): ?ContactMessage
+    {
+        return $this->selectedMessageId
+            ? ContactMessage::find($this->selectedMessageId)
+            : null;
     }
 
     private function loadStats(): void

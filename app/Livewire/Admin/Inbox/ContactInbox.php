@@ -18,8 +18,22 @@ class ContactInbox extends Component
     public $replyMessage = '';
     public $adminNotes = '';
     public $status = 'new';
+    public $message = null;
 
-    protected $queryString = ['search'];
+    protected $queryString = [
+        'search',
+        'message' => ['except' => null],
+    ];
+
+    public function mount(): void
+    {
+        $messageId = (int) $this->message;
+
+        if ($messageId > 0) {
+            $this->openMessage($messageId);
+            $this->message = null;
+        }
+    }
 
     public function updatingSearch()
     {

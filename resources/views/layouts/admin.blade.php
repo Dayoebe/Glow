@@ -257,69 +257,7 @@
                                 class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         </div>
 
-                        <!-- Notifications -->
-                        <div x-data="{ open: false }" class="relative">
-                            <button @click="open = !open"
-                                class="relative flex h-11 w-11 items-center justify-center rounded-2xl text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900">
-                                <i class="fas fa-bell text-xl"></i>
-                                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                            </button>
-
-                            <!-- Notification Dropdown -->
-                            <div x-show="open" x-cloak @click.away="open = false" x-transition
-                                class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                <div class="p-4 border-b border-gray-200">
-                                    <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
-                                </div>
-                                <div class="max-h-96 overflow-y-auto">
-                                    <a href="#"
-                                        class="flex items-start p-4 hover:bg-gray-50 transition-colors duration-150">
-                                        <div class="flex-shrink-0">
-                                            <div
-                                                class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-music text-emerald-600"></i>
-                                            </div>
-                                        </div>
-                                        <div class="ml-3 flex-1">
-                                            <p class="text-sm text-gray-900">New song request received</p>
-                                            <p class="text-xs text-gray-500 mt-1">2 minutes ago</p>
-                                        </div>
-                                    </a>
-                                    <a href="#"
-                                        class="flex items-start p-4 hover:bg-gray-50 transition-colors duration-150">
-                                        <div class="flex-shrink-0">
-                                            <div
-                                                class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-comment text-blue-600"></i>
-                                            </div>
-                                        </div>
-                                        <div class="ml-3 flex-1">
-                                            <p class="text-sm text-gray-900">New listener message</p>
-                                            <p class="text-xs text-gray-500 mt-1">15 minutes ago</p>
-                                        </div>
-                                    </a>
-                                    <a href="#"
-                                        class="flex items-start p-4 hover:bg-gray-50 transition-colors duration-150">
-                                        <div class="flex-shrink-0">
-                                            <div
-                                                class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-broadcast-tower text-amber-600"></i>
-                                            </div>
-                                        </div>
-                                        <div class="ml-3 flex-1">
-                                            <p class="text-sm text-gray-900">Stream status update</p>
-                                            <p class="text-xs text-gray-500 mt-1">1 hour ago</p>
-                                        </div>
-                                    </a>
-                                </div>
-                                <div class="p-3 border-t border-gray-200">
-                                    <a href="#"
-                                        class="block text-center text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                                        View all notifications
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                        <livewire:admin.notification-dropdown />
 
                         <!-- User Profile Dropdown -->
                         <div x-data="{ open: false }" class="relative">

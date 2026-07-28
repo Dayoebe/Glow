@@ -11,6 +11,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class Manage extends Component
@@ -318,7 +319,7 @@ class Manage extends Component
             'description' => $this->show_description,
             'cover_image' => $coverPath,
             'host_name' => $this->show_host_name,
-            'host_id' => auth()->id(),
+            'host_id' => \Illuminate\Support\Facades\Auth::id(),
             'category' => $this->show_category,
             'frequency' => $this->show_frequency,
             'explicit' => $this->show_explicit,
@@ -441,7 +442,7 @@ class Manage extends Component
         if ($this->episode_status === 'published' && $this->canReview()) {
             $data['approval_status'] = 'approved';
             $data['approval_reason'] = null;
-            $data['reviewed_by'] = auth()->id();
+            $data['reviewed_by'] = optional(Auth::user())->id;
             $data['reviewed_at'] = now();
         }
 
@@ -543,7 +544,7 @@ class Manage extends Component
 
         $episode->approval_status = $action;
         $episode->approval_reason = $reason ?: null;
-        $episode->reviewed_by = auth()->id();
+        $episode->reviewed_by = Auth::user()?->id;
         $episode->reviewed_at = now();
 
         if (in_array($action, ['flagged', 'rejected'], true)) {
