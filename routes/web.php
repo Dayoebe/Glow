@@ -39,6 +39,7 @@ use App\Livewire\Admin\News\NewsForm;
 use App\Livewire\Admin\News\Categories as NewsCategories;
 use App\Livewire\Admin\News\NewsIndex as AdminNewsIndex;
 use App\Livewire\Admin\News\Analytics as AdminNewsAnalytics;
+use App\Livewire\Admin\News\NewsShow as AdminNewsShow;
 use App\Livewire\Page\EventPage;
 use App\Livewire\Page\EventDetail;
 use App\Livewire\Page\CareerPage;
@@ -327,6 +328,7 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
         Route::get('/{id}/edit', NewsForm::class)->name('edit');
         Route::get('/categories', NewsCategories::class)->name('categories');
         Route::get('/analytics', AdminNewsAnalytics::class)->name('analytics');
+        Route::get('/{id}', AdminNewsShow::class)->whereNumber('id')->name('show');
     });
 
     Route::get('/admin/podcasts', PodcastManage::class)->name('admin.podcasts.manage');

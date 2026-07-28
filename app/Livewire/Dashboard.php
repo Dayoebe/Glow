@@ -304,7 +304,7 @@ class Dashboard extends Component
             'title',
             'fas fa-newspaper',
             'emerald',
-            fn (News $news) => route('news.show', $news->slug)
+            fn (News $news) => route('admin.news.show', $news->id)
         ));
 
         $activities = $activities->merge($this->mapActivity(
