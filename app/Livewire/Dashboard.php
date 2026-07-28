@@ -313,13 +313,19 @@ class Dashboard extends Component
             'amber'
         ));
 
-        $activities = $activities->merge($this->mapActivity(
-            ContactMessage::latest()->take(3)->get(),
-            'Contact message',
-            'subject',
-            'fas fa-comment',
-            'blue'
-        ));
+        $activities = $activities->merge(
+            ContactMessage::latest()
+                ->take(3)
+                ->get()
+                ->map(fn (ContactMessage $message) => [
+                    'title' => 'Contact message',
+                    'description' => $message->subject ?: 'No subject provided',
+                    'time_raw' => $message->created_at,
+                    'icon' => 'fas fa-comment',
+                    'color' => 'blue',
+                    'url' => route('admin.messages.inbox', ['message' => $message->id]),
+                ])
+        );
 
         $activities = $activities->merge($this->mapActivity(
             NewsletterSubscription::latest()->take(3)->get(),

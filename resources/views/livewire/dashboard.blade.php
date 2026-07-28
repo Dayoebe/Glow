@@ -250,7 +250,13 @@
 
             <div class="space-y-4">
                 @forelse($recentActivities as $activity)
-                    <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 rounded-lg transition-colors duration-150">
+                    @if(!empty($activity['url']))
+                        <a href="{{ $activity['url'] }}"
+                            class="group flex items-start space-x-4 rounded-lg p-4 transition-colors duration-150 hover:bg-emerald-50"
+                            aria-label="Open {{ $activity['description'] }}">
+                    @else
+                        <div class="flex items-start space-x-4 rounded-lg p-4 transition-colors duration-150 hover:bg-gray-50">
+                    @endif
                         <div class="flex-shrink-0">
                             <div class="w-10 h-10 bg-{{ $activity['color'] }}-100 rounded-full flex items-center justify-center">
                                 <i class="{{ $activity['icon'] }} text-{{ $activity['color'] }}-600"></i>
@@ -261,7 +267,14 @@
                             <p class="text-sm text-gray-600 mt-0.5">{{ $activity['description'] }}</p>
                             <p class="text-xs text-gray-500 mt-1">{{ $activity['time'] }}</p>
                         </div>
-                    </div>
+                        @if(!empty($activity['url']))
+                            <i class="fas fa-chevron-right mt-3 text-xs text-gray-400 transition group-hover:text-emerald-600"></i>
+                        @endif
+                    @if(!empty($activity['url']))
+                        </a>
+                    @else
+                        </div>
+                    @endif
                 @empty
                     <p class="text-sm text-gray-500">No recent activity yet.</p>
                 @endforelse
