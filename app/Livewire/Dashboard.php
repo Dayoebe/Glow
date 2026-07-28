@@ -296,13 +296,15 @@ class Dashboard extends Component
     private function loadRecentActivities(): void
     {
         $activities = collect();
+        $canManageAdminOnly = auth()->user()?->isAdmin() ?? false;
 
         $activities = $activities->merge($this->mapActivity(
             News::latest()->take(3)->get(),
             'News published',
             'title',
             'fas fa-newspaper',
-            'emerald'
+            'emerald',
+            fn (News $news) => route('news.show', $news->slug)
         ));
 
         $activities = $activities->merge($this->mapActivity(
@@ -310,29 +312,28 @@ class Dashboard extends Component
             'Event created',
             'title',
             'fas fa-calendar',
-            'amber'
+            'amber',
+            fn (Event $event) => route('admin.events.edit', $event->id)
         ));
 
-        $activities = $activities->merge(
-            ContactMessage::latest()
-                ->take(3)
-                ->get()
-                ->map(fn (ContactMessage $message) => [
-                    'title' => 'Contact message',
-                    'description' => $message->subject ?: 'No subject provided',
-                    'time_raw' => $message->created_at,
-                    'icon' => 'fas fa-comment',
-                    'color' => 'blue',
-                    'url' => route('admin.messages.inbox', ['message' => $message->id]),
-                ])
-        );
+        $activities = $activities->merge($this->mapActivity(
+            ContactMessage::latest()->take(3)->get(),
+            'Contact message',
+            'subject',
+            'fas fa-comment',
+            'blue',
+            fn (ContactMessage $message) => route('admin.messages.inbox', ['message' => $message->id])
+        ));
 
         $activities = $activities->merge($this->mapActivity(
             NewsletterSubscription::latest()->take(3)->get(),
             'Newsletter signup',
             'email',
             'fas fa-envelope-open-text',
-            'violet'
+            'violet',
+            fn (NewsletterSubscription $subscription) => $canManageAdminOnly
+                ? route('admin.newsletter.subscribers', ['search' => $subscription->email])
+                : route('admin.comms.analytics')
         ));
 
         $activities = $activities->merge($this->mapActivity(
@@ -340,7 +341,12 @@ class Dashboard extends Component
             'Staff added',
             'name',
             'fas fa-user-plus',
-            'pink'
+            'pink',
+            fn (StaffMember $staffMember) => $canManageAdminOnly
+                ? route('admin.team.staff.show', $staffMember->id)
+                : ($staffMember->slug
+                    ? route('staff.show', $staffMember->slug)
+                    : route('staff.index'))
         ));
 
         $this->recentActivities = $activities
@@ -355,15 +361,23 @@ class Dashboard extends Component
             ->all();
     }
 
-    private function mapActivity(Collection $items, string $title, string $field, string $icon, string $color): Collection
+    private function mapActivity(
+        Collection $items,
+        string $title,
+        string $field,
+        string $icon,
+        string $color,
+        ?callable $urlResolver = null
+    ): Collection
     {
-        return $items->map(function ($item) use ($title, $field, $icon, $color) {
+        return $items->map(function ($item) use ($title, $field, $icon, $color, $urlResolver) {
             return [
                 'title' => $title,
                 'description' => $item->{$field} ?: 'No details provided',
                 'time_raw' => $item->created_at,
                 'icon' => $icon,
                 'color' => $color,
+                'url' => $urlResolver ? $urlResolver($item) : null,
             ];
         });
     }
