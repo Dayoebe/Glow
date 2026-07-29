@@ -349,6 +349,46 @@ class Dashboard extends Component
                     : route('staff.index'))
         ));
 
+        if ($canManageAdminOnly) {
+            $activities = $activities->merge($this->mapActivity(
+                \App\Models\Career\CareerApplication::with('position')->latest()->take(3)->get(),
+                'Job application received',
+                'full_name',
+                'fas fa-briefcase',
+                'blue',
+                fn (\App\Models\Career\CareerApplication $application) => route('admin.careers.applications', [
+                    'search' => $application->application_code,
+                ])
+            ));
+
+            $activities = $activities->merge($this->mapActivity(
+                \App\Models\Vettas\VettasReservation::latest()->take(3)->get(),
+                'Vettas reservation received',
+                'full_name',
+                'fas fa-calendar-check',
+                'violet',
+                fn (\App\Models\Vettas\VettasReservation $reservation) => route('admin.vettas.reservations', [
+                    'search' => $reservation->reservation_code,
+                    'filterTimeline' => '',
+                ])
+            ));
+
+            $activities = $activities->merge(
+                Review::with('show')
+                    ->latest()
+                    ->take(3)
+                    ->get()
+                    ->map(fn (Review $review) => [
+                        'title' => 'Show review received',
+                        'description' => ($review->show?->title ?? 'Show') . ' — ' . $review->rating . '/5',
+                        'time_raw' => $review->created_at,
+                        'icon' => 'fas fa-star',
+                        'color' => 'amber',
+                        'url' => route('admin.shows.reviews'),
+                    ])
+            );
+        }
+
         $this->recentActivities = $activities
             ->sortByDesc('time_raw')
             ->take(6)
