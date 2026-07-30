@@ -2,6 +2,46 @@
     x-data="{
         imageViewerOpen: false,
         activeImage: null,
+        qualifiedViewRecorded: false,
+        qualifiedViewTimer: null,
+        qualifiedViewScrollHandler: null,
+        init() {
+            this.qualifiedViewScrollHandler = () => this.checkQualifiedViewScroll();
+            this.qualifiedViewTimer = window.setTimeout(() => this.recordQualifiedView(), 10000);
+            window.addEventListener('scroll', this.qualifiedViewScrollHandler, { passive: true });
+            this.$nextTick(() => this.checkQualifiedViewScroll());
+        },
+        destroy() {
+            this.stopQualifiedViewTracking();
+            document.documentElement.classList.remove('overflow-hidden');
+        },
+        checkQualifiedViewScroll() {
+            const documentElement = document.documentElement;
+            const scrollTop = window.scrollY || documentElement.scrollTop;
+            const scrollHeight = documentElement.scrollHeight - window.innerHeight;
+
+            if (scrollHeight > 0 && (scrollTop / scrollHeight) * 100 >= 25) {
+                this.recordQualifiedView();
+            }
+        },
+        recordQualifiedView() {
+            if (this.qualifiedViewRecorded || !this.$root.isConnected) return;
+
+            this.qualifiedViewRecorded = true;
+            this.stopQualifiedViewTracking();
+            $wire.recordQualifiedView();
+        },
+        stopQualifiedViewTracking() {
+            if (this.qualifiedViewTimer !== null) {
+                window.clearTimeout(this.qualifiedViewTimer);
+                this.qualifiedViewTimer = null;
+            }
+
+            if (this.qualifiedViewScrollHandler !== null) {
+                window.removeEventListener('scroll', this.qualifiedViewScrollHandler);
+                this.qualifiedViewScrollHandler = null;
+            }
+        },
         openImage(image) {
             if (!image || !image.src) return;
             this.activeImage = image;
@@ -15,621 +55,506 @@
         }
     }"
     @keydown.escape.window="closeImage()"
-    class="min-h-screen bg-gray-50"
+    data-qualified-view-tracker
+    class="min-h-screen bg-glow-ivory text-slate-950"
 >
-    
-    <!-- Breaking News Banner -->
     @if($news->is_breaking)
-    <div class="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white py-3 sticky top-0 z-50 shadow-lg animate-pulse">
-        <div class="container mx-auto px-4 flex items-center justify-center space-x-3">
-            <x-ad-slot placement="news-detail" />
-            <span class="flex items-center space-x-2 font-bold text-lg">
-                @if($news->breaking === 'urgent')
-                <i class="fas fa-exclamation-triangle animate-bounce"></i>
-                <span>🚨 URGENT</span>
-                @else
-                <i class="fas fa-bolt"></i>
-                <span>⚡ BREAKING NEWS</span>
-                @endif
-            </span>
+        <div class="border-b border-red-500/30 bg-red-700 text-white">
+            <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 text-sm sm:px-6 lg:px-8">
+                <span class="bg-white px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-red-700">
+                    {{ $news->breaking === 'urgent' ? 'Urgent' : 'Breaking' }}
+                </span>
+                <span class="font-semibold">Developing story from the Glow FM newsroom</span>
+            </div>
         </div>
-    </div>
     @endif
 
-    <!-- Hero Section -->
-    <section class="relative bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white py-16">
-        <div class="absolute inset-0 opacity-20">
-            <x-initials-image
-                :src="$news->featured_image"
-                :title="$news->title"
-                imgClass="w-full h-full object-cover"
-                fallbackClass="bg-emerald-800/60"
-                textClass="text-6xl font-bold text-white/80"
-            />
-        </div>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-        
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="max-w-4xl mx-auto">
-                <!-- Breadcrumb -->
-                <nav class="flex items-center space-x-2 text-sm text-emerald-200 mb-6">
-                    <a href="{{ route('news') }}" class="hover:text-white">News</a>
-                    <span>›</span>
-                    <a href="{{ route('news') }}?selectedCategory={{ $news->category->slug }}" class="hover:text-white">
-                        {{ $news->category->name }}
-                    </a>
-                    <span>›</span>
-                    <span class="text-white">Article</span>
-                </nav>
+    <header class="border-b border-slate-200 bg-white">
+        <div class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+            <nav class="mb-8 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-500"
+                 aria-label="Breadcrumb">
+                <a href="{{ route('home') }}" class="transition hover:text-orange-600">Home</a>
+                <i class="fas fa-chevron-right text-[8px] text-slate-300"></i>
+                <a href="{{ route('news') }}" class="transition hover:text-orange-600">News</a>
+                <i class="fas fa-chevron-right text-[8px] text-slate-300"></i>
+                <a href="{{ route('news', ['selectedCategory' => $news->category->slug]) }}"
+                   class="text-orange-600 transition hover:text-orange-700">
+                    {{ $news->category->name }}
+                </a>
+            </nav>
 
-                <!-- Category Badge -->
-                <div class="flex flex-wrap items-center gap-3 mb-6">
-                    <span class="px-4 py-2 bg-{{ $news->category->slug === 'station-news' ? 'blue' : ($news->category->slug === 'music' ? 'purple' : ($news->category->slug === 'interviews' ? 'amber' : 'pink')) }}-600 text-white font-bold rounded-full">
-                        {{ $news->category->name }}
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="border-l-4 border-orange-500 pl-3 text-xs font-black uppercase tracking-[0.18em] text-[#071a33]">
+                    {{ $news->category->name }}
+                </span>
+                @if($news->video_url)
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <i class="fas fa-play mr-1.5 text-orange-500"></i>Video
                     </span>
-                    @if($news->video_url)
-                    <span class="px-4 py-2 bg-red-600 text-white font-bold rounded-full">
-                        <i class="fas fa-play mr-2"></i>Video
+                @endif
+                @if($news->gallery && count($news->gallery) > 0)
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <i class="far fa-images mr-1.5 text-orange-500"></i>{{ count($news->gallery) }} photos
                     </span>
-                    @endif
-                    @if($news->gallery && count($news->gallery) > 0)
-                    <span class="px-4 py-2 bg-blue-600 text-white font-bold rounded-full">
-                        <i class="fas fa-images mr-2"></i>{{ count($news->gallery) }} Photos
-                    </span>
-                    @endif
-                </div>
+                @endif
+            </div>
 
-                <!-- Title -->
-                <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">{{ $news->title }}</h1>
+            <h1 class="font-editorial mt-6 max-w-5xl text-4xl font-bold leading-[1.06] tracking-tight text-[#071a33] sm:text-5xl lg:text-6xl">
+                {{ $news->title }}
+            </h1>
 
-                <!-- Meta Info -->
-                <div class="flex flex-wrap items-center gap-6 mb-8">
-                    @php
-                        $stationSettings = \App\Models\Setting::get('station', []);
-                        $stationName = data_get($stationSettings, 'name', 'Glow FM');
-                        $stationLogoUrl = data_get($stationSettings, 'logo_url', '');
-                        if (!empty($stationLogoUrl) && !\Illuminate\Support\Str::startsWith($stationLogoUrl, ['http://', 'https://'])) {
-                            $stationLogoUrl = url($stationLogoUrl);
-                        }
-                    @endphp
-                    <div class="flex items-center space-x-3">
-                        @if (!empty($stationLogoUrl))
-                            <img src="{{ $stationLogoUrl }}" alt="{{ $stationName }} logo"
-                                 class="w-12 h-12 rounded-full border-2 border-emerald-300 object-contain bg-white">
-                        @else
-                            <div class="w-12 h-12 rounded-full border-2 border-emerald-300 bg-emerald-600 flex items-center justify-center">
-                                <i class="fas fa-radio text-white"></i>
-                            </div>
+            @if($news->excerpt)
+                <p class="mt-6 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl">
+                    {{ $news->excerpt }}
+                </p>
+            @endif
+
+            <div class="mt-8 flex flex-col gap-5 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="font-bold text-[#071a33]">
+                        By {{ $news->author?->name ?? 'Glow FM Newsroom' }}
+                    </p>
+                    <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500">
+                        <time datetime="{{ $news->published_at?->toAtomString() }}">{{ $news->formatted_published_date }}</time>
+                        <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                        <span>{{ $news->read_time }}</span>
+                        <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                        <span>{{ number_format($news->views) }} views</span>
+                        @if($news->updated_at && (!$news->published_at || $news->updated_at->gt($news->published_at)))
+                            <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                            <span>Updated {{ $news->updated_at->format('M j, Y') }}</span>
                         @endif
-                        <div>
-                            <p class="font-semibold">{{ $stationName }}</p>
-                            <p class="text-sm text-emerald-200">Official Update</p>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-4 text-sm text-emerald-200">
-                        <span><i class="fas fa-calendar mr-1"></i>{{ $news->formatted_published_date }}</span>
-                        @if($news->updated_at)
-                            <span><i class="fas fa-rotate mr-1"></i>Updated {{ $news->updated_at->format('M d, Y') }}</span>
-                        @endif
-                        <span><i class="fas fa-clock mr-1"></i>{{ $news->read_time }}</span>
-                        <span><i class="fas fa-eye mr-1"></i>{{ number_format($news->views) }} views</span>
-                        <span><i class="fas fa-share-alt mr-1"></i>{{ number_format($news->shares) }} shares</span>
                     </div>
                 </div>
 
-                <!-- Quick Reactions Preview -->
-                <div class="flex items-center space-x-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-                    @foreach(['love' => '❤️', 'fire' => '🔥', 'wow' => '😮', 'insightful' => '💡'] as $type => $emoji)
-                    <button wire:click="toggleReaction('{{ $type }}')" 
-                            class="flex items-center space-x-2 px-3 py-2 rounded-lg transition-all {{ isset($userReactions[$type]) ? 'bg-white/20' : 'hover:bg-white/10' }}">
-                        <span class="text-2xl">{{ $emoji }}</span>
-                        <span class="font-semibold">{{ $reactions[$type] ?? 0 }}</span>
+                <div class="flex items-center gap-2" aria-label="Article actions">
+                    <button type="button"
+                            wire:click="toggleBookmark"
+                            class="inline-flex h-10 items-center gap-2 border border-slate-300 px-3.5 text-sm font-bold text-slate-700 transition hover:border-orange-500 hover:text-orange-600"
+                            aria-label="{{ $isBookmarked ? 'Remove bookmark' : 'Save article' }}">
+                        <i class="{{ $isBookmarked ? 'fas' : 'far' }} fa-bookmark"></i>
+                        <span class="hidden sm:inline">{{ $isBookmarked ? 'Saved' : 'Save' }}</span>
                     </button>
-                    @endforeach
+                    <button type="button"
+                            data-copy-link="{{ url()->current() }}"
+                            class="inline-flex h-10 items-center gap-2 border border-slate-300 px-3.5 text-sm font-bold text-slate-700 transition hover:border-orange-500 hover:text-orange-600">
+                        <i class="fas fa-link"></i>
+                        <span data-copy-text class="hidden sm:inline">Copy link</span>
+                    </button>
                 </div>
             </div>
         </div>
-    </section>
+    </header>
 
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 py-12">
-        <div class="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_21rem]">
-            <!-- Article Content -->
-            <main class="min-w-0">
-                <article class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    
-                    <!-- Featured Image -->
-                    @php
-                        $featuredImageViewer = [
-                            'src' => $news->featured_image,
-                            'title' => $news->title,
-                            'label' => 'Featured image',
-                        ];
-                    @endphp
-                    <div class="relative h-72 bg-emerald-900 sm:h-96">
-                        @if($news->featured_image)
-                        <button type="button"
-                                @click='openImage(@json($featuredImageViewer))'
-                                class="group relative block h-full w-full cursor-zoom-in overflow-hidden text-left"
-                                aria-label="Open full image for {{ $news->title }}">
-                            <x-initials-image
-                                :src="$news->featured_image"
-                                :title="$news->title"
-                                imgClass="w-full h-full object-cover transition duration-500 group-hover:scale-105"
-                                fallbackClass="bg-emerald-700/90"
-                                textClass="text-5xl font-bold text-white"
-                            />
-                            <span class="absolute bottom-4 right-4 inline-flex items-center rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white shadow-lg backdrop-blur-sm transition group-hover:bg-black/85">
-                                <i class="fas fa-search-plus mr-2"></i>View full image
-                            </span>
-                        </button>
-                        @else
-                        <x-initials-image
-                            :src="$news->featured_image"
-                            :title="$news->title"
-                            imgClass="w-full h-full object-cover"
-                            fallbackClass="bg-emerald-700/90"
-                            textClass="text-5xl font-bold text-white"
-                        />
-                        @endif
-                    </div>
+    @php
+        $featuredImageViewer = [
+            'src' => $news->featured_image,
+            'title' => $news->title,
+            'label' => 'Featured image',
+        ];
+    @endphp
 
-                    <!-- Video Embed -->
-                    @if($news->video_url)
-                    <div class="aspect-video">
-                        <iframe src="{{ $news->video_url }}" 
-                                class="w-full h-full" 
-                                frameborder="0" 
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                allowfullscreen>
-                        </iframe>
-                    </div>
-                    @endif
+    <div class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8 lg:pt-10">
+        <figure class="overflow-hidden bg-[#102b4e]">
+            @if($news->featured_image)
+                <button type="button"
+                        @click='openImage(@json($featuredImageViewer))'
+                        class="group relative block aspect-[16/9] max-h-[680px] w-full cursor-zoom-in overflow-hidden text-left"
+                        aria-label="Open full image for {{ $news->title }}">
+                    <x-initials-image
+                        :src="$news->featured_image"
+                        :title="$news->title"
+                        imgClass="h-full w-full object-cover transition duration-700 group-hover:scale-[1.015]"
+                        fallbackClass="bg-[#102b4e]"
+                        textClass="text-6xl font-black text-white"
+                        loading="eager"
+                        fetchpriority="high"
+                        width="1600"
+                        height="900"
+                        sizes="(min-width: 1280px) 80rem, 100vw"
+                    />
+                    <span class="absolute bottom-4 right-4 inline-flex h-10 w-10 items-center justify-center bg-[#071a33]/85 text-sm text-white opacity-90 backdrop-blur-sm transition group-hover:bg-orange-500 group-hover:text-[#071a33]"
+                          aria-hidden="true">
+                        <i class="fas fa-expand"></i>
+                    </span>
+                </button>
+            @else
+                <div class="aspect-[16/9] max-h-[680px]">
+                    <x-initials-image
+                        :src="$news->featured_image"
+                        :title="$news->title"
+                        imgClass="h-full w-full object-cover"
+                        fallbackClass="bg-[#102b4e]"
+                        textClass="text-6xl font-black text-white"
+                        loading="eager"
+                        fetchpriority="high"
+                        width="1600"
+                        height="900"
+                        sizes="(min-width: 1280px) 80rem, 100vw"
+                    />
+                </div>
+            @endif
+        </figure>
+    </div>
 
-                    <!-- Content -->
-                    <div class="p-8 md:p-12">
-                        <!-- Article Body -->
-                        <div class="prose prose-lg max-w-none mb-12">
-                            {!! $news->content !!}
-                        </div>
+    <div class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+        <x-ad-slot placement="news-detail" />
+    </div>
 
-                        <!-- Gallery -->
-                        @if($news->gallery && count($news->gallery) > 0)
-                        <div class="mb-12">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                <i class="fas fa-images text-emerald-600 mr-3"></i>
-                                Photo Gallery
-                            </h3>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                @foreach($news->gallery as $image)
-                                @php
-                                    $galleryImageViewer = [
-                                        'src' => $image,
-                                        'title' => $news->title,
-                                        'label' => 'Gallery image ' . $loop->iteration,
-                                    ];
-                                @endphp
-                                <button type="button"
-                                        @click='openImage(@json($galleryImageViewer))'
-                                        class="group relative h-64 w-full overflow-hidden rounded-xl text-left cursor-zoom-in"
-                                        aria-label="Open gallery image {{ $loop->iteration }} for {{ $news->title }}">
-                                    <x-initials-image
-                                        :src="$image"
-                                        :title="$news->title"
-                                        imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
-                                        fallbackClass="bg-emerald-700/90"
-                                        textClass="text-4xl font-bold text-white"
-                                    />
-                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                        <i class="fas fa-search-plus text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                    </div>
-                                </button>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
+    <main class="px-4 pb-16 pt-10 sm:px-6 lg:px-8 lg:pb-24 lg:pt-14">
+        <article class="mx-auto max-w-[760px]">
+            @if($news->video_url)
+                <div class="mb-10 aspect-video overflow-hidden bg-slate-950">
+                    <iframe src="{{ $news->video_url }}"
+                            title="Video for {{ $news->title }}"
+                            class="h-full w-full"
+                            frameborder="0"
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                </div>
+            @endif
 
-                        <!-- Tags -->
-                        @if($news->tags && count($news->tags) > 0)
-                        <div class="mb-12 pb-8 border-b border-gray-200">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-tags text-emerald-600 mr-2"></i>
-                                Tags
-                            </h3>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach($news->tags as $tag)
-                                <a href="{{ route('news', ['tag' => $tag]) }}" 
-                                   class="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-full transition-colors">
-                                    #{{ $tag }}
-                                </a>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
+            <div class="max-w-none text-[1.0625rem] leading-8 text-slate-700
+                        [&_p]:mb-6
+                        [&_h2]:font-editorial [&_h2]:mb-4 [&_h2]:mt-12 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:text-[#071a33]
+                        [&_h3]:font-editorial [&_h3]:mb-3 [&_h3]:mt-9 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:text-[#071a33]
+                        [&_h4]:mb-3 [&_h4]:mt-8 [&_h4]:text-xl [&_h4]:font-black [&_h4]:text-[#071a33]
+                        [&_a]:font-semibold [&_a]:text-orange-600 [&_a]:underline [&_a]:decoration-orange-300 [&_a]:underline-offset-4
+                        [&_strong]:font-black [&_strong]:text-[#071a33]
+                        [&_ul]:my-6 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6
+                        [&_ol]:my-6 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6
+                        [&_blockquote]:my-8 [&_blockquote]:border-l-4 [&_blockquote]:border-orange-500 [&_blockquote]:bg-white [&_blockquote]:px-6 [&_blockquote]:py-4 [&_blockquote]:font-editorial [&_blockquote]:text-xl [&_blockquote]:italic [&_blockquote]:text-[#071a33]
+                        [&_img]:my-8 [&_img]:h-auto [&_img]:w-full
+                        [&_figure]:my-8 [&_figcaption]:mt-2 [&_figcaption]:text-sm [&_figcaption]:text-slate-500">
+                {!! app(\App\Support\RichTextSanitizer::class)->sanitize($news->content) !!}
+            </div>
 
-                        @if($articleSummary || count($keyTakeaways) > 0 || count($articleFaqs) > 0)
-                            <section class="mb-12 border-y border-slate-200 py-6">
-                                <div class="space-y-4">
-                                    @if($articleSummary)
-                                        <details class="group rounded-2xl border border-emerald-100 bg-emerald-50">
-                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left">
-                                                <span class="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Summary</span>
-                                                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm transition-transform group-open:rotate-180">
-                                                    <i class="fas fa-chevron-down"></i>
-                                                </span>
-                                            </summary>
-                                            <div class="px-5 pb-5">
-                                                <p class="text-lg leading-relaxed text-slate-800">{{ $articleSummary }}</p>
-                                            </div>
-                                        </details>
-                                    @endif
-
-                                    @if(count($keyTakeaways) > 0)
-                                        <details class="group rounded-2xl border border-slate-200 bg-slate-50">
-                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left">
-                                                <span class="text-xl font-bold text-slate-900">Key Takeaways</span>
-                                                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition-transform group-open:rotate-180">
-                                                    <i class="fas fa-chevron-down"></i>
-                                                </span>
-                                            </summary>
-                                            <div class="px-5 pb-5">
-                                                <ul class="space-y-3">
-                                                    @foreach($keyTakeaways as $takeaway)
-                                                        <li class="flex gap-3 text-slate-700">
-                                                            <i class="fas fa-check-circle mt-1 text-emerald-600"></i>
-                                                            <span>{{ $takeaway }}</span>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </details>
-                                    @endif
-
-                                    @if(count($articleFaqs) > 0)
-                                        <details class="group rounded-2xl border border-slate-200 bg-white">
-                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left">
-                                                <span class="text-xl font-bold text-gray-900">Article FAQ</span>
-                                                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-50 text-slate-700 shadow-sm transition-transform group-open:rotate-180">
-                                                    <i class="fas fa-chevron-down"></i>
-                                                </span>
-                                            </summary>
-                                            <div class="space-y-4 px-5 pb-5">
-                                                @foreach($articleFaqs as $faq)
-                                                    <div class="rounded-xl bg-slate-50 p-5">
-                                                        <h3 class="font-bold text-slate-900">{{ $faq['question'] }}</h3>
-                                                        <p class="mt-2 text-sm leading-relaxed text-slate-700">{{ $faq['answer'] }}</p>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </details>
-                                    @endif
-                                </div>
-                            </section>
-                        @endif
-
-                        <!-- Engagement Section -->
-                        <div class="mb-12 pb-8 border-b border-gray-200">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4">How do you feel about this article?</h3>
-                            <div class="flex flex-wrap gap-3">
-                                @foreach(['love' => '❤️ Love it', 'fire' => '🔥 Hot take', 'wow' => '😮 Surprising', 'insightful' => '💡 Insightful'] as $type => $label)
-                                <button wire:click="toggleReaction('{{ $type }}')" 
-                                        class="px-6 py-3 rounded-lg font-semibold transition-all {{ isset($userReactions[$type]) ? 'bg-emerald-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700' }}">
-                                    {{ $label }}
-                                    @if(($reactions[$type] ?? 0) > 0)
-                                    <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-sm">{{ $reactions[$type] }}</span>
-                                    @endif
-                                </button>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Share Section -->
-                        <div class="mb-12 border-y border-gray-200 py-6 select-none">
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <h3 class="text-lg font-bold text-gray-900">Share this story</h3>
-                                <div class="flex flex-wrap gap-2">
-                                    <button wire:click="shareNews('x')"
-                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-black"
-                                        aria-label="Share on X">
-                                        <i class="fab fa-x-twitter"></i>
-                                    </button>
-                                    <button wire:click="shareNews('facebook')"
-                                            class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white transition-colors hover:bg-blue-700"
-                                            aria-label="Share on Facebook">
-                                        <i class="fab fa-facebook"></i>
-                                    </button>
-                                    <button wire:click="shareNews('instagram')"
-                                            class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-pink-500 text-white transition-colors hover:bg-pink-600"
-                                            aria-label="Share on Instagram">
-                                        <i class="fab fa-instagram"></i>
-                                    </button>
-                                    <button wire:click="shareNews('linkedin')"
-                                            class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-700 text-white transition-colors hover:bg-blue-800"
-                                            aria-label="Share on LinkedIn">
-                                        <i class="fab fa-linkedin"></i>
-                                    </button>
-                                    <button wire:click="shareNews('whatsapp')"
-                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-green-500 text-white transition-colors hover:bg-green-600"
-                                        aria-label="Share on WhatsApp">
-                                        <i class="fab fa-whatsapp"></i>
-                                    </button>
-                                    <button wire:click="shareNews('telegram')"
-                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-400 text-white transition-colors hover:bg-blue-500"
-                                        aria-label="Share on Telegram">
-                                        <i class="fab fa-telegram"></i>
-                                    </button>
-                                    <button wire:click="shareNews('reddit')"
-                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-orange-500 text-white transition-colors hover:bg-orange-600"
-                                        aria-label="Share on Reddit">
-                                        <i class="fab fa-reddit-alien"></i>
-                                    </button>
-                                    <button wire:click="shareNews('email')"
-                                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-gray-200 text-gray-800 transition-colors hover:bg-gray-300"
-                                        aria-label="Share by email">
-                                        <i class="fas fa-envelope"></i>
-                                    </button>
-                                    <button type="button" data-copy-link="{{ url()->current() }}"
-                                        class="inline-flex h-11 items-center space-x-2 rounded-full bg-gray-100 px-4 text-gray-800 transition-colors hover:bg-gray-200">
-                                        <i class="fas fa-link"></i><span data-copy-text>Copy link</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Author Bio -->
-                        <div class="mb-12">
-                            <div class="flex items-start space-x-6 p-6 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl">
-                                <div class="relative w-20 h-20 rounded-full overflow-hidden">
-                                    <x-initials-image
-                                        :src="$news->author->avatar ?? null"
-                                        :title="$news->author->name ?? ''"
-                                        imgClass="w-full h-full object-cover"
-                                        fallbackClass="bg-emerald-700/90"
-                                        textClass="text-xl font-bold text-white"
-                                    />
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-bold text-gray-900 mb-1">{{ $news->author->name }}</h3>
-                                    <p class="text-emerald-600 font-semibold mb-3">{{ $news->author->role_label ?? 'Author' }}</p>
-                                    <p class="text-gray-700">Dedicated to bringing you the latest news and stories from Glow Media.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Comments Section -->
+            @if($news->gallery && count($news->gallery) > 0)
+                <section class="mt-14 border-t border-slate-200 pt-8" aria-labelledby="photo-gallery-heading">
+                    <div class="mb-5 flex items-end justify-between">
                         <div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                <i class="fas fa-comments text-emerald-600 mr-3"></i>
-                                Comments ({{ $news->comments_count }})
-                            </h3>
-
-                            <!-- Comment Form -->
-                            <form wire:submit.prevent="submitComment" class="mb-8">
-                                <div class="bg-gray-50 rounded-xl p-6">
-                                    <textarea wire:model="comment" 
-                                              rows="4"
-                                              placeholder="Join the conversation..."
-                                              class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"></textarea>
-                                    @error('comment') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
-                                    
-                                    <div class="mt-4 flex justify-end">
-                                        <button type="submit" 
-                                                class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors">
-                                            <i class="fas fa-paper-plane mr-2"></i>Post Comment
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-
-                            <!-- Flash Messages -->
-                            @if (session()->has('success'))
-                            <div class="mb-6 p-4 bg-green-100 text-green-700 rounded-lg flex items-center flash-auto-dismiss">
-                                <i class="fas fa-check-circle mr-3"></i>
-                                {{ session('success') }}
-                            </div>
-                            @endif
-
-                            <!-- Comments List -->
-                            <div class="space-y-6">
-                                @forelse($news->comments()->approved()->get() as $comment)
-                                <div class="bg-gray-50 rounded-xl p-6">
-                                    <div class="flex items-start space-x-4">
-                                        <div class="relative w-12 h-12 rounded-full overflow-hidden">
-                                            <x-initials-image
-                                                :src="$comment->user?->avatar ?? null"
-                                                :title="$comment->user?->name ?? 'Anonymous'"
-                                                imgClass="w-full h-full object-cover"
-                                                fallbackClass="bg-emerald-700/90"
-                                                textClass="text-xs font-bold text-white"
-                                            />
-                                        </div>
-                                        <div class="flex-1">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <div>
-                                                    <h4 class="font-bold text-gray-900">
-                                                        {{ $comment->user?->name ?? 'Anonymous' }}
-                                                        @if($comment->is_pinned)
-                                                        <i class="fas fa-thumbtack text-emerald-600 ml-2" title="Pinned"></i>
-                                                        @endif
-                                                    </h4>
-                                                    <p class="text-sm text-gray-500">{{ $comment->created_at->diffForHumans() }}</p>
-                                                </div>
-                                            </div>
-                                            <p class="text-gray-700 leading-relaxed">{{ $comment->comment }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                @empty
-                                <div class="text-center py-12">
-                                    <i class="fas fa-comments text-6xl text-gray-300 mb-4"></i>
-                                    <p class="text-gray-600 text-lg">Be the first to comment on this article!</p>
-                                </div>
-                                @endforelse
-                            </div>
+                            <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">In pictures</p>
+                            <h2 id="photo-gallery-heading" class="font-editorial mt-1 text-2xl font-bold text-[#071a33]">Photo gallery</h2>
                         </div>
+                        <span class="text-sm text-slate-500">{{ count($news->gallery) }} photos</span>
                     </div>
-                </article>
 
-                <!-- Related News -->
-                @if($relatedNews->count() > 0)
-                <div class="mt-8">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Related Stories</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        @foreach($relatedNews as $related)
-                        <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
-                            <div class="h-48 overflow-hidden">
-                                <div class="relative h-full">
-                                    <x-initials-image
-                                        :src="$related->featured_image"
-                                        :title="$related->title"
-                                        imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
-                                        fallbackClass="bg-emerald-700/90"
-                                        textClass="text-3xl font-bold text-white"
-                                    />
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h4 class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
-                                    <a href="{{ route('news.show', $related->slug) }}">{{ $related->title }}</a>
-                                </h4>
-                                <p class="text-sm text-gray-600">{{ $related->read_time }}</p>
-                            </div>
-                        </article>
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        @foreach($news->gallery as $image)
+                            @php
+                                $galleryImageViewer = [
+                                    'src' => $image,
+                                    'title' => $news->title,
+                                    'label' => 'Gallery image ' . $loop->iteration,
+                                ];
+                            @endphp
+                            <button type="button"
+                                    @click='openImage(@json($galleryImageViewer))'
+                                    class="group relative aspect-square w-full cursor-zoom-in overflow-hidden bg-[#102b4e] text-left"
+                                    aria-label="Open gallery image {{ $loop->iteration }} for {{ $news->title }}">
+                                <x-initials-image
+                                    :src="$image"
+                                    :title="$news->title"
+                                    imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                    fallbackClass="bg-[#102b4e]"
+                                    textClass="text-3xl font-black text-white"
+                                />
+                                <span class="absolute inset-0 flex items-center justify-center bg-[#071a33]/0 text-white opacity-0 transition group-hover:bg-[#071a33]/40 group-hover:opacity-100">
+                                    <i class="fas fa-expand"></i>
+                                </span>
+                            </button>
                         @endforeach
                     </div>
+                </section>
+            @endif
+
+            @if($news->tags && count($news->tags) > 0)
+                <div class="mt-10 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-200 pt-6">
+                    <span class="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Filed under</span>
+                    @foreach($news->tags as $tag)
+                        <a href="{{ route('news', ['tag' => $tag]) }}"
+                           class="text-sm font-bold text-[#071a33] underline decoration-slate-300 underline-offset-4 transition hover:text-orange-600 hover:decoration-orange-500">
+                            #{{ $tag }}
+                        </a>
+                    @endforeach
                 </div>
-                @endif
-            </main>
+            @endif
 
-            <!-- Right Sidebar -->
-            <aside class="space-y-6">
-                <div class="sticky top-24 space-y-6">
-                    
-                    <!-- Quick Stats -->
-                    <div class="bg-white rounded-xl shadow-lg p-6">
-                        <h3 class="font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-chart-line text-emerald-600 mr-2"></i>
-                            Engagement
-                        </h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-600">Views</span>
-                                <span class="font-bold text-gray-900">{{ number_format($news->views) }}</span>
-                            </div>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-600">Shares</span>
-                                <span class="font-bold text-gray-900">{{ number_format($news->shares) }}</span>
-                            </div>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-600">Comments</span>
-                                <span class="font-bold text-gray-900">{{ $news->comments_count }}</span>
-                            </div>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-600">Reactions</span>
-                                <span class="font-bold text-gray-900">{{ array_sum($reactions) }}</span>
-                            </div>
+            <section class="mt-10 border-y border-slate-200 py-7" aria-labelledby="article-reactions-heading">
+                <div class="flex flex-col gap-6">
+                    <div>
+                        <h2 id="article-reactions-heading" class="text-sm font-black uppercase tracking-[0.16em] text-[#071a33]">
+                            Your reaction
+                        </h2>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            @foreach(['love' => ['❤️', 'Love'], 'fire' => ['🔥', 'Hot'], 'wow' => ['😮', 'Wow'], 'insightful' => ['💡', 'Useful']] as $type => $reaction)
+                                <button type="button"
+                                        wire:click="toggleReaction('{{ $type }}')"
+                                        class="inline-flex h-10 items-center gap-2 border px-3 text-sm font-bold transition {{ isset($userReactions[$type]) ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-slate-300 bg-white text-slate-700 hover:border-orange-400' }}">
+                                    <span aria-hidden="true">{{ $reaction[0] }}</span>
+                                    <span>{{ $reaction[1] }}</span>
+                                    <span class="text-xs text-slate-400">{{ $reactions[$type] ?? 0 }}</span>
+                                </button>
+                            @endforeach
                         </div>
                     </div>
 
-                    <!-- Quick Actions -->
-                    <div class="bg-white rounded-xl shadow-lg p-6">
-                        <h3 class="font-bold text-gray-900 mb-4">Quick Actions</h3>
-                        <div class="space-y-2">
-                            <button wire:click="toggleBookmark" 
-                                    class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center">
-                                <i class="fas fa-bookmark {{ $isBookmarked ? 'text-yellow-600' : 'text-gray-400' }} mr-3"></i>
-                                <span>{{ $isBookmarked ? 'Saved' : 'Save for Later' }}</span>
-                            </button>
-                            <button class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center">
-                                <i class="fas fa-print text-gray-400 mr-3"></i>
-                                <span>Print Article</span>
-                            </button>
-                            <button class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center">
-                                <i class="fas fa-flag text-gray-400 mr-3"></i>
-                                <span>Report Issue</span>
-                            </button>
-                        </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="mr-1 text-sm font-bold text-slate-500">Share</span>
+                        <button type="button"
+                                wire:click="shareNews('x')"
+                                class="inline-flex h-10 w-10 items-center justify-center bg-[#071a33] text-white transition hover:bg-orange-500 hover:text-[#071a33]"
+                                aria-label="Share on X">
+                            <i class="fab fa-x-twitter"></i>
+                        </button>
+                        <button type="button"
+                                wire:click="shareNews('facebook')"
+                                class="inline-flex h-10 w-10 items-center justify-center border border-slate-300 bg-white text-[#071a33] transition hover:border-orange-500 hover:text-orange-600"
+                                aria-label="Share on Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button type="button"
+                                wire:click="shareNews('whatsapp')"
+                                class="inline-flex h-10 w-10 items-center justify-center border border-slate-300 bg-white text-[#071a33] transition hover:border-orange-500 hover:text-orange-600"
+                                aria-label="Share on WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+                        <button type="button"
+                                data-copy-link="{{ url()->current() }}"
+                                class="inline-flex h-10 items-center gap-2 border border-slate-300 bg-white px-3 text-sm font-bold text-[#071a33] transition hover:border-orange-500 hover:text-orange-600">
+                            <i class="fas fa-link"></i>
+                            <span data-copy-text>Copy link</span>
+                        </button>
                     </div>
+                </div>
+            </section>
 
-                    <!-- Newsletter -->
-                    <div class="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-xl shadow-lg p-6 text-white">
-                        <i class="fas fa-envelope-open-text text-3xl mb-3"></i>
-                        <h3 class="font-bold text-lg mb-2">Stay Updated</h3>
-                        <p class="text-emerald-100 text-sm mb-4">
-                            Get breaking news delivered to your inbox
-                        </p>
-                        <form class="space-y-3">
-                            <input type="email" placeholder="Your email" 
-                                   class="w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none">
-                            <button class="w-full px-4 py-2 bg-white text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition-colors">
-                                Subscribe
-                            </button>
-                        </form>
+            <aside class="mt-10 border-l-4 border-orange-500 bg-white px-5 py-5 sm:px-6" aria-label="About the author">
+                <div class="flex items-center gap-4">
+                    <div class="relative h-12 w-12 shrink-0 overflow-hidden bg-[#102b4e]">
+                        <x-initials-image
+                            :src="$news->author?->avatar"
+                            :title="$news->author?->name ?? 'Glow FM Newsroom'"
+                            imgClass="h-full w-full object-cover"
+                            fallbackClass="bg-[#102b4e]"
+                            textClass="text-sm font-black text-white"
+                        />
+                    </div>
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-[0.14em] text-orange-600">Written by</p>
+                        <h2 class="mt-1 font-black text-[#071a33]">{{ $news->author?->name ?? 'Glow FM Newsroom' }}</h2>
+                        <p class="mt-1 text-sm text-slate-500">{{ $news->author?->role_label ?? 'Glow FM Newsroom' }}</p>
                     </div>
                 </div>
             </aside>
-        </div>
-    </div>
 
-    <div x-cloak x-show="imageViewerOpen" x-transition.opacity class="fixed inset-0 z-[90]" role="dialog" aria-modal="true" aria-label="Full news image">
-        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" @click="closeImage()"></div>
+            @if($articleSummary || count($keyTakeaways) > 0 || count($articleFaqs) > 0)
+                <section class="mt-14 border-t-2 border-[#071a33] pt-7" aria-labelledby="article-guide-heading">
+                    <div class="mb-5">
+                        <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">Story guide</p>
+                        <h2 id="article-guide-heading" class="font-editorial mt-1 text-2xl font-bold text-[#071a33]">Understand this story</h2>
+                    </div>
+
+                    <div class="divide-y divide-slate-200 border-y border-slate-200">
+                        @if($articleSummary)
+                            <details class="group" open>
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left">
+                                    <span class="font-black text-[#071a33]">Summary</span>
+                                    <i class="fas fa-chevron-down text-xs text-orange-500 transition group-open:rotate-180"></i>
+                                </summary>
+                                <div class="pb-6">
+                                    <p class="text-base leading-7 text-slate-700">{{ $articleSummary }}</p>
+                                </div>
+                            </details>
+                        @endif
+
+                        @if(count($keyTakeaways) > 0)
+                            <details class="group">
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left">
+                                    <span class="font-black text-[#071a33]">Key takeaways</span>
+                                    <i class="fas fa-chevron-down text-xs text-orange-500 transition group-open:rotate-180"></i>
+                                </summary>
+                                <div class="pb-6">
+                                    <ul class="space-y-3">
+                                        @foreach($keyTakeaways as $takeaway)
+                                            <li class="flex gap-3 text-slate-700">
+                                                <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500"></span>
+                                                <span class="leading-7">{{ $takeaway }}</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </details>
+                        @endif
+
+                        @if(count($articleFaqs) > 0)
+                            <details class="group">
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left">
+                                    <span class="font-black text-[#071a33]">Article FAQ</span>
+                                    <i class="fas fa-chevron-down text-xs text-orange-500 transition group-open:rotate-180"></i>
+                                </summary>
+                                <div class="space-y-5 pb-6">
+                                    @foreach($articleFaqs as $faq)
+                                        <div>
+                                            <h3 class="font-bold text-[#071a33]">{{ $faq['question'] }}</h3>
+                                            <p class="mt-2 text-sm leading-6 text-slate-600">{{ $faq['answer'] }}</p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </details>
+                        @endif
+                    </div>
+                </section>
+            @endif
+        </article>
+
+        <section class="mx-auto mt-16 max-w-[760px] border-t-2 border-[#071a33] pt-7" aria-labelledby="comments-heading">
+            <div class="flex items-end justify-between">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">Join the conversation</p>
+                    <h2 id="comments-heading" class="font-editorial mt-1 text-2xl font-bold text-[#071a33]">
+                        Comments <span class="text-slate-400">({{ $news->comments_count }})</span>
+                    </h2>
+                </div>
+            </div>
+
+            @if(session()->has('success'))
+                <div class="flash-auto-dismiss mt-6 border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if(session()->has('error'))
+                <div class="flash-auto-dismiss mt-6 border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <form wire:submit.prevent="submitComment" class="mt-7">
+                <label for="news-comment" class="mb-2 block text-sm font-bold text-[#071a33]">Add your comment</label>
+                <textarea id="news-comment"
+                          wire:model="comment"
+                          rows="4"
+                          placeholder="What do you think about this story?"
+                          class="w-full border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"></textarea>
+                @error('comment')
+                    <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                @enderror
+                <div class="mt-3 flex justify-end">
+                    <button type="submit"
+                            wire:loading.attr="disabled"
+                            wire:target="submitComment"
+                            class="bg-[#071a33] px-5 py-3 text-sm font-black text-white transition hover:bg-orange-500 hover:text-[#071a33] disabled:cursor-wait disabled:opacity-60">
+                        Post comment
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-10 divide-y divide-slate-200 border-t border-slate-200">
+                @forelse($news->comments()->approved()->get() as $approvedComment)
+                    <article class="flex gap-4 py-6">
+                        <div class="relative h-10 w-10 shrink-0 overflow-hidden bg-[#102b4e]">
+                            <x-initials-image
+                                :src="$approvedComment->user?->avatar"
+                                :title="$approvedComment->user?->name ?? 'Anonymous'"
+                                imgClass="h-full w-full object-cover"
+                                fallbackClass="bg-[#102b4e]"
+                                textClass="text-xs font-black text-white"
+                            />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                <h3 class="font-black text-[#071a33]">
+                                    {{ $approvedComment->user?->name ?? 'Anonymous' }}
+                                    @if($approvedComment->is_pinned)
+                                        <i class="fas fa-thumbtack ml-1 text-xs text-orange-500" title="Pinned"></i>
+                                    @endif
+                                </h3>
+                                <time class="text-xs text-slate-400">{{ $approvedComment->created_at->diffForHumans() }}</time>
+                            </div>
+                            <p class="mt-2 leading-7 text-slate-700">{{ $approvedComment->comment }}</p>
+                        </div>
+                    </article>
+                @empty
+                    <div class="py-10 text-center text-slate-500">
+                        No comments yet. Start the conversation.
+                    </div>
+                @endforelse
+            </div>
+        </section>
+
+        @if($relatedNews->count() > 0)
+            <section class="mx-auto mt-16 max-w-7xl border-t-2 border-[#071a33] pt-7" aria-labelledby="related-news-heading">
+                <div class="mb-6 flex items-end justify-between">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">Keep reading</p>
+                        <h2 id="related-news-heading" class="font-editorial mt-1 text-2xl font-bold text-[#071a33]">Related stories</h2>
+                    </div>
+                    <a href="{{ route('news') }}" class="hidden text-sm font-bold text-[#071a33] transition hover:text-orange-600 sm:inline">
+                        More news <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+
+                <div class="grid gap-6 md:grid-cols-3">
+                    @foreach($relatedNews as $related)
+                        <article class="group border-b border-slate-200 pb-5">
+                            <a href="{{ route('news.show', $related->slug) }}"
+                               class="mb-4 block aspect-[16/10] overflow-hidden bg-[#102b4e]"
+                               aria-label="Read {{ $related->title }}">
+                                <x-initials-image
+                                    :src="$related->featured_image"
+                                    :title="$related->title"
+                                    imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                    fallbackClass="bg-[#102b4e]"
+                                    textClass="text-3xl font-black text-white"
+                                />
+                            </a>
+                            <p class="text-xs font-black uppercase tracking-[0.14em] text-orange-600">
+                                {{ $related->category?->name ?? 'News' }}
+                            </p>
+                            <h3 class="font-editorial mt-2 text-lg font-bold leading-snug text-[#071a33]">
+                                <a href="{{ route('news.show', $related->slug) }}" class="transition hover:text-orange-600">
+                                    {{ $related->title }}
+                                </a>
+                            </h3>
+                            <p class="mt-3 text-xs text-slate-500">{{ $related->read_time }}</p>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+    </main>
+
+    <div x-cloak
+         x-show="imageViewerOpen"
+         x-transition.opacity
+         class="fixed inset-0 z-[90]"
+         role="dialog"
+         aria-modal="true"
+         aria-label="Full news image">
+        <div class="absolute inset-0 bg-slate-950/95 backdrop-blur-sm" @click="closeImage()"></div>
 
         <div class="relative flex min-h-screen items-center justify-center p-4 md:p-8" @click.self="closeImage()">
             <div class="relative w-full max-w-6xl">
                 <button type="button"
                         @click="closeImage()"
-                        class="absolute right-3 top-3 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/80 text-white transition hover:bg-black"
+                        class="absolute right-3 top-3 z-10 inline-flex h-11 w-11 items-center justify-center bg-[#071a33] text-white transition hover:bg-orange-500 hover:text-[#071a33]"
                         aria-label="Close full image">
                     <i class="fas fa-times"></i>
                 </button>
 
-                <div class="overflow-hidden rounded-xl bg-slate-950 shadow-2xl">
+                <div class="overflow-hidden bg-slate-950">
                     <img :src="activeImage ? activeImage.src : ''"
                          :alt="activeImage ? activeImage.title : ''"
                          class="max-h-[82vh] w-full object-contain">
                 </div>
 
                 <div class="mt-3 flex flex-col gap-1 text-white sm:flex-row sm:items-center sm:justify-between">
-                    <p class="text-sm font-semibold text-white/80" x-text="activeImage ? activeImage.label : ''"></p>
+                    <p class="text-sm font-semibold text-white/70" x-text="activeImage ? activeImage.label : ''"></p>
                     <p class="text-base font-bold" x-text="activeImage ? activeImage.title : ''"></p>
                 </div>
             </div>
         </div>
     </div>
+
 </div>
-
-<script>
-    (function () {
-        function setupQualifiedViewTracking() {
-            let qualifiedRecorded = false;
-
-            const recordQualified = () => {
-                if (qualifiedRecorded) return;
-                qualifiedRecorded = true;
-                @this.call('recordQualifiedView');
-            };
-
-            const onScroll = () => {
-                const doc = document.documentElement;
-                const scrollTop = window.scrollY || doc.scrollTop;
-                const scrollHeight = doc.scrollHeight - window.innerHeight;
-                if (scrollHeight <= 0) return;
-                const percent = (scrollTop / scrollHeight) * 100;
-                if (percent >= 25) {
-                    recordQualified();
-                }
-            };
-
-            setTimeout(recordQualified, 10000);
-            window.addEventListener('scroll', onScroll, { passive: true });
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setupQualifiedViewTracking, { once: true });
-        } else {
-            setupQualifiedViewTracking();
-        }
-
-        document.addEventListener('livewire:navigated', setupQualifiedViewTracking);
-    })();
-</script>

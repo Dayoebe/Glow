@@ -1,116 +1,178 @@
-<div>
+<div class="min-h-screen bg-glow-ivory text-slate-950">
     @normalizeArray($featuredHero)
-    @php
-        $glowPosterName = 'Glow FM';
-        $glowPosterLogo = asset('glowfm logo.jpeg');
-    @endphp
-    <!-- Page Header -->
-    <section
-        class="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white py-20 overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0"
-                style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
-            </div>
-        </div>
 
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="max-w-4xl mx-auto text-center">
-                <h1 class="text-5xl md:text-6xl font-bold mb-6">News & Updates</h1>
-                <p class="text-xl md:text-2xl text-emerald-100 leading-relaxed">
-                    Stay informed with the latest news, stories, and updates from Glow FM and the music world
-                </p>
+    @php
+        $hasActiveFilters = filled($searchQuery) || $selectedCategory !== 'all' || filled($tag) || $sortBy !== 'latest';
+        $breakingStory = $breakingNews->first();
+    @endphp
+
+    <header class="border-b border-white/10 bg-glow-midnight text-white">
+        <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+            <div class="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+                <div class="max-w-3xl">
+                    <div class="mb-4 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.22em] text-orange-400">
+                        <span class="h-px w-8 bg-orange-500"></span>
+                        Glow FM Newsroom
+                    </div>
+                    <h1 class="font-editorial text-4xl font-bold tracking-tight sm:text-5xl">News &amp; Updates</h1>
+                    <p class="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+                        The latest stories from Ondo State, across Nigeria, and the conversations shaping our community.
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3 border-l border-white/15 pl-4 text-sm text-slate-300">
+                    <i class="far fa-calendar text-orange-400"></i>
+                    <span>{{ now()->format('l, F j, Y') }}</span>
+                </div>
             </div>
+
+            @if($breakingStory)
+                <a href="{{ route('news.show', $breakingStory->slug) }}"
+                   class="mt-8 flex items-center gap-3 border-t border-white/10 pt-5 text-sm transition hover:text-orange-300">
+                    <span class="shrink-0 bg-red-600 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-white">
+                        Breaking
+                    </span>
+                    <span class="line-clamp-1 font-semibold">{{ $breakingStory->title }}</span>
+                    <i class="fas fa-arrow-right ml-auto text-xs text-orange-400"></i>
+                </a>
+            @endif
+        </div>
+    </header>
+
+    <section class="border-b border-slate-200 bg-white" aria-label="News filters">
+        <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <nav class="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:pb-0" aria-label="News categories">
+                    @foreach($categories as $category)
+                        @continueIfNotArray($category)
+                        <button type="button"
+                                wire:click="$set('selectedCategory', '{{ $category['slug'] }}')"
+                                wire:key="news-category-{{ $category['slug'] }}"
+                                class="shrink-0 border-b-2 px-3 py-2 text-sm font-semibold transition {{ $selectedCategory === $category['slug'] ? 'border-orange-500 text-[#071a33]' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-900' }}">
+                            {{ $category['name'] }}
+                            <span class="ml-1 text-xs font-normal text-slate-400">{{ $category['count'] }}</span>
+                        </button>
+                    @endforeach
+                </nav>
+
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <label class="relative block sm:w-72">
+                        <span class="sr-only">Search news</span>
+                        <i class="fas fa-search pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                        <input type="search"
+                               wire:model.live.debounce.400ms="searchQuery"
+                               placeholder="Search the newsroom"
+                               class="h-11 w-full border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100">
+                    </label>
+
+                    <label class="relative block">
+                        <span class="sr-only">Sort stories</span>
+                        <select wire:model.live="sortBy"
+                                class="h-11 min-w-36 border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100">
+                            <option value="latest">Latest</option>
+                            <option value="popular">Most viewed</option>
+                            <option value="trending">Trending</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            @if($hasActiveFilters)
+                <div class="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4 text-sm">
+                    <span class="text-slate-500">
+                        {{ $newsArticles->total() }} {{ \Illuminate\Support\Str::plural('result', $newsArticles->total()) }}
+                        @if($tag)
+                            tagged <strong class="text-slate-900">#{{ $tag }}</strong>
+                        @endif
+                    </span>
+                    <button type="button"
+                            wire:click="$set('searchQuery', ''); $set('selectedCategory', 'all'); $set('tag', ''); $set('sortBy', 'latest')"
+                            class="font-bold text-orange-600 transition hover:text-orange-700">
+                        Clear filters
+                    </button>
+                </div>
+            @endif
         </div>
     </section>
 
-    <!-- Featured News -->
-    @if($featuredHero)
-        <section class="py-12 bg-white">
-            <div class="container mx-auto px-4">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Hero -->
-                    <div class="lg:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl overflow-hidden shadow-2xl">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                            <div class="relative h-80 lg:h-auto">
-                                <a href="{{ route('news.show', $featuredHero['slug']) }}" class="block h-full"
-                                    aria-label="Read {{ $featuredHero['title'] }}">
-                                    <x-initials-image
-                                        :src="$featuredHero['featured_image'] ?? null"
-                                        :title="$featuredHero['title'] ?? ''"
-                                        imgClass="w-full h-full object-cover"
-                                        fallbackClass="bg-emerald-700/90"
-                                        textClass="text-4xl font-bold text-white"
-                                    />
-                                </a>
-                                <div class="absolute top-6 left-6">
-                                    <span class="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-full shadow-lg">
-                                        <i class="fas fa-star mr-1"></i> HERO
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-8 lg:p-10 text-white flex flex-col justify-center">
-                                <div class="flex items-center space-x-4 mb-4">
-                                    <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
-                                        {{ $featuredHero['category']['name'] }}
-                                    </span>
-                                    <span class="text-emerald-300 text-sm">
-                                        <i class="fas fa-clock mr-1"></i> {{ $featuredHero['read_time'] }}
-                                    </span>
-                                    <span class="text-emerald-300 text-sm">
-                                        <i class="fas fa-eye mr-1"></i> {{ number_format($featuredHero['views']) }} views
-                                    </span>
-                                </div>
-                                <h2 class="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
-                                    <a href="{{ route('news.show', $featuredHero['slug']) }}" class="hover:text-emerald-200 transition-colors">
-                                        {{ $featuredHero['title'] }}
-                                    </a>
-                                </h2>
-                                <p class="text-gray-300 text-lg mb-6 leading-relaxed">{{ $featuredHero['excerpt'] }}</p>
-                                <a href="/news/{{ $featuredHero['slug'] }}"
-                                    class="inline-flex items-center space-x-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full transition-all duration-300 w-fit">
-                                    <span>Read Full Story</span>
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </div>
-                        </div>
+    @if($featuredHero && !$hasActiveFilters)
+        <section class="bg-white">
+            <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+                <div class="mb-6 flex items-end justify-between border-b border-slate-200 pb-4">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">Editor&rsquo;s selection</p>
+                        <h2 class="font-editorial mt-1 text-2xl font-bold tracking-tight text-[#071a33]">Top stories</h2>
                     </div>
+                    <span class="hidden text-sm text-slate-500 sm:block">What matters now</span>
+                </div>
 
-                    <!-- Secondary -->
-                    <div class="space-y-6">
+                <div class="grid gap-7 lg:grid-cols-12">
+                    <article class="group lg:col-span-8">
+                        <a href="{{ route('news.show', $featuredHero['slug']) }}"
+                           class="relative block aspect-[16/9] overflow-hidden bg-[#102b4e]"
+                           aria-label="Read {{ $featuredHero['title'] }}">
+                            <x-initials-image
+                                :src="$featuredHero['featured_image'] ?? null"
+                                :title="$featuredHero['title'] ?? ''"
+                                imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+                                fallbackClass="bg-[#102b4e]"
+                                textClass="text-5xl font-black text-white"
+                                loading="eager"
+                                fetchpriority="high"
+                                width="1600"
+                                height="900"
+                                sizes="(min-width: 1024px) 64vw, 92vw"
+                            />
+                            <span class="absolute inset-0 bg-gradient-to-t from-[#071a33]/80 via-transparent to-transparent"></span>
+                            <span class="absolute bottom-5 left-5 bg-orange-500 px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-[#071a33] sm:bottom-6 sm:left-6">
+                                {{ $featuredHero['category']['name'] }}
+                            </span>
+                        </a>
+
+                        <div class="pt-5">
+                            <div class="mb-3 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                <span>{{ \Carbon\Carbon::parse($featuredHero['published_at'])->format('M j, Y') }}</span>
+                                <span class="h-1 w-1 rounded-full bg-orange-500"></span>
+                                <span>{{ $featuredHero['read_time'] }}</span>
+                            </div>
+                            <h3 class="font-editorial max-w-4xl text-3xl font-bold leading-[1.12] tracking-tight text-[#071a33] sm:text-4xl">
+                                <a href="{{ route('news.show', $featuredHero['slug']) }}"
+                                   class="decoration-orange-500 decoration-2 underline-offset-4 transition hover:underline">
+                                    {{ $featuredHero['title'] }}
+                                </a>
+                            </h3>
+                            @if($featuredHero['excerpt'])
+                                <p class="mt-4 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg">
+                                    {{ $featuredHero['excerpt'] }}
+                                </p>
+                            @endif
+                        </div>
+                    </article>
+
+                    <div class="divide-y divide-slate-200 border-y border-slate-200 lg:col-span-4 lg:border-b-0 lg:border-t-0 lg:border-l lg:pl-7">
                         @foreach($featuredSecondary as $secondary)
                             @continueIfNotArray($secondary)
-                            <article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group border border-gray-100">
-                                <div class="relative h-44 overflow-hidden">
-                                    <a href="{{ route('news.show', $secondary['slug']) }}" class="block h-full"
-                                        aria-label="Read {{ $secondary['title'] }}">
-                                        <x-initials-image
-                                            :src="$secondary['featured_image'] ?? null"
-                                            :title="$secondary['title'] ?? ''"
-                                            imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                            fallbackClass="bg-emerald-700/90"
-                                            textClass="text-3xl font-bold text-white"
-                                        />
+                            <article class="group py-6 first:pt-0 lg:first:pt-0">
+                                <a href="{{ route('news.show', $secondary['slug']) }}"
+                                   class="mb-4 block aspect-[16/9] overflow-hidden bg-[#102b4e]"
+                                   aria-label="Read {{ $secondary['title'] }}">
+                                    <x-initials-image
+                                        :src="$secondary['featured_image'] ?? null"
+                                        :title="$secondary['title'] ?? ''"
+                                        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                        fallbackClass="bg-[#102b4e]"
+                                        textClass="text-3xl font-black text-white"
+                                    />
+                                </a>
+                                <p class="mb-2 text-xs font-black uppercase tracking-[0.14em] text-orange-600">
+                                    {{ $secondary['category']['name'] }}
+                                </p>
+                                <h3 class="font-editorial text-xl font-bold leading-snug text-[#071a33]">
+                                    <a href="{{ route('news.show', $secondary['slug']) }}" class="transition hover:text-orange-600">
+                                        {{ $secondary['title'] }}
                                     </a>
-                                    <div class="absolute top-3 left-3">
-                                        <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
-                                            SECONDARY
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="p-5">
-                                    <div class="flex items-center space-x-3 text-xs text-gray-500 mb-2">
-                                        <span class="px-2 py-1 bg-emerald-50 text-emerald-700 rounded-full">
-                                            {{ $secondary['category']['name'] }}
-                                        </span>
-                                        <span><i class="fas fa-clock mr-1"></i>{{ $secondary['read_time'] }}</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                                        <a href="{{ route('news.show', $secondary['slug']) }}" class="hover:text-emerald-600 transition-colors">
-                                            {{ $secondary['title'] }}
-                                        </a>
-                                    </h3>
-                                    <p class="text-sm text-gray-600 line-clamp-2">{{ $secondary['excerpt'] }}</p>
-                                </div>
+                                </h3>
+                                <p class="mt-3 text-sm text-slate-500">{{ $secondary['read_time'] }}</p>
                             </article>
                         @endforeach
                     </div>
@@ -119,313 +181,126 @@
         </section>
     @endif
 
-    <!-- Main Content Area -->
-    <section class="py-12 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <x-ad-slot placement="news" />
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+        <x-ad-slot placement="news" />
 
-                <!-- Sidebar -->
-                <aside class="lg:col-span-1 space-y-8">
-
-                    <!-- Search -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-search text-emerald-600 mr-2"></i>
-                            Search News
-                        </h3>
-                        <div class="relative">
-                            <input type="text" wire:model.live.debounce.500ms="searchQuery"
-                                placeholder="Search articles..."
-                                class="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-emerald-500 transition-colors">
-                            <i
-                                class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        </div>
-                    </div>
-
-                    <!-- Categories -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-folder text-emerald-600 mr-2"></i>
-                            Categories
-                        </h3>
-                        <div class="space-y-2">
-                            @foreach($categories as $category)
-                                @continueIfNotArray($category)
-                                <button wire:click="$set('selectedCategory', '{{ $category['slug'] }}')"
-                                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ $selectedCategory === $category['slug'] ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">
-                                    <span class="flex items-center space-x-2">
-                                        <i class="{{ $category['icon'] }} text-{{ $category['color'] }}-600"></i>
-                                        <span>{{ $category['name'] }}</span>
-                                    </span>
-                                    <span class="text-sm bg-gray-100 px-2 py-1 rounded-full">{{ $category['count'] }}</span>
-                                </button>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    @if(count($featuredSidebar) > 0)
-                        <div class="bg-white rounded-2xl shadow-lg p-6">
-                            <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-star text-emerald-600 mr-2"></i>
-                                Featured Picks
-                            </h3>
-                            <div class="space-y-4">
-                                @foreach($featuredSidebar as $sidebarItem)
-                                    @continueIfNotArray($sidebarItem)
-                                    <a href="{{ route('news.show', $sidebarItem['slug']) }}" class="flex items-start space-x-3 group">
-                                        <div class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                                            <x-initials-image
-                                                :src="$sidebarItem['featured_image'] ?? null"
-                                                :title="$sidebarItem['title'] ?? ''"
-                                                imgClass="w-full h-full object-cover"
-                                                fallbackClass="bg-emerald-700/90"
-                                                textClass="text-xl font-bold text-white"
-                                            />
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="text-sm font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
-                                                {{ $sidebarItem['title'] }}
-                                            </h4>
-                                            <p class="text-xs text-gray-500 mt-1">
-                                                <i class="fas fa-clock mr-1"></i> {{ $sidebarItem['read_time'] }}
-                                            </p>
-                                        </div>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    <!-- Trending News -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-fire text-red-600 mr-2"></i>
-                            Trending Now
-                        </h3>
-                        <div class="space-y-4">
-                            @foreach($trendingNews as $index => $trending)
-                                @continueIfNotArray($trending)
-                                <a href="/news/{{ $trending['id'] }}" class="flex items-start space-x-3 group">
-                                    <span
-                                        class="flex-shrink-0 w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold text-sm">
-                                        {{ $index + 1 }}
-                                    </span>
-                                    <div class="flex-1">
-                                        <h4
-                                            class="text-sm font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
-                                            {{ $trending['title'] }}
-                                        </h4>
-                                        <p class="text-xs text-gray-500 mt-1">
-                                            <i class="fas fa-eye mr-1"></i> {{ number_format($trending['views']) }} views
-                                        </p>
-                                    </div>
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- Popular Tags -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-tags text-emerald-600 mr-2"></i>
-                            Popular Tags
-                        </h3>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($popularTags as $tag)
-                                <a href="{{ route('news', ['tag' => $tag]) }}"
-                                    class="px-3 py-1.5 bg-gray-100 hover:bg-emerald-100 text-gray-700 hover:text-emerald-700 text-sm rounded-full transition-colors">
-                                    #{{ $tag }}
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- Newsletter Signup -->
-                    <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl shadow-lg p-6 text-white">
-                        <div class="text-center">
-                            <i class="fas fa-envelope-open-text text-4xl mb-4"></i>
-                            <h3 class="text-xl font-bold mb-2">Stay Updated</h3>
-                            <p class="text-emerald-100 text-sm mb-4">
-                                Subscribe to get the latest news delivered to your inbox
-                            </p>
-                            <form class="space-y-3">
-                                <input type="email" placeholder="Your email"
-                                    class="w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white">
-                                <button
-                                    class="w-full px-4 py-2 bg-white text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition-colors">
-                                    Subscribe
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                </aside>
-
-                <!-- News Grid -->
-                <div class="lg:col-span-3">
-
-                    <!-- Filter Info -->
-                    <div
-                        class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900">
-                                @if($selectedCategory === 'all')
-                                    All News
-                                @else
-                                    {{ data_get(collect($categories)->firstWhere('slug', $selectedCategory), 'name', 'News') }}
-                                @endif
-                            </h2>
-                            <p class="text-gray-600 mt-1">{{ $newsArticles->total() }} articles found</p>
-                            @if($tag)
-                                <div class="mt-2">
-                                    <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">
-                                        <i class="fas fa-tag text-[10px]"></i>
-                                        #{{ $tag }}
-                                    </span>
-                                </div>
+        <div class="mt-8 grid gap-12 lg:grid-cols-[minmax(0,1fr)_19rem]">
+            <section aria-labelledby="latest-news-heading">
+                <div class="flex items-end justify-between border-b-2 border-[#071a33] pb-3">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
+                            {{ $hasActiveFilters ? 'News search' : 'From the newsroom' }}
+                        </p>
+                        <h2 id="latest-news-heading" class="font-editorial mt-1 text-2xl font-bold tracking-tight text-[#071a33]">
+                            @if($selectedCategory === 'all')
+                                Latest news
+                            @else
+                                {{ data_get(collect($categories)->firstWhere('slug', $selectedCategory), 'name', 'News') }}
                             @endif
-                        </div>
-
-                        @if($searchQuery || $selectedCategory !== 'all' || $tag)
-                            <button wire:click="$set('searchQuery', ''); $set('selectedCategory', 'all'); $set('tag', '')"
-                                class="flex items-center space-x-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">
-                                <i class="fas fa-times"></i>
-                                <span>Clear Filters</span>
-                            </button>
-                        @endif
+                        </h2>
                     </div>
-
-                    <!-- News Articles Grid -->
-                    @if(count($newsArticles) > 0)
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            @foreach($newsArticles as $article)
-                                @continueIfNotArray($article)
-                                <article
-                                    class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                                    <!-- Image -->
-                                    <div class="relative h-56 overflow-hidden">
-                                        <a href="{{ route('news.show', $article['slug']) }}" class="block h-full"
-                                            aria-label="Read {{ $article['title'] }}">
-                                            <x-initials-image
-                                                :src="$article['featured_image'] ?? null"
-                                                :title="$article['title'] ?? ''"
-                                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                                fallbackClass="bg-emerald-700/90"
-                                                textClass="text-3xl font-bold text-white"
-                                            />
-                                        </a>
-                                        <div class="absolute top-4 left-4">
-                                            <span
-                                                class="px-3 py-1 bg-{{ $article['category']['slug'] === 'station-news' ? 'blue' : ($article['category']['slug'] === 'music' ? 'purple' : ($article['category']['slug'] === 'interviews' ? 'amber' : 'pink')) }}-600 text-white text-xs font-semibold rounded-full">
-                                                {{ $article['category']['name'] }}
-                                            </span>
-                                        </div>
-                                        <div class="absolute bottom-4 right-4 flex items-center space-x-2">
-                                            <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                                                <i class="fas fa-eye mr-1"></i> {{ number_format($article['views']) }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Content -->
-                                    <div class="p-6">
-                                        <!-- Meta Info -->
-                                        <div class="flex items-center space-x-4 text-sm text-gray-500 mb-3">
-                                            <span class="flex items-center space-x-1">
-                                                <i class="fas fa-calendar text-xs"></i>
-                                                <span>{{ \Carbon\Carbon::parse($article['published_at'])->format('M d, Y') }}</span>
-                                            </span>
-                                            <span class="flex items-center space-x-1">
-                                                <i class="fas fa-clock text-xs"></i>
-                                                <span>{{ $article['read_time'] }}</span>
-                                            </span>
-                                        </div>
-
-                                        <!-- Title -->
-                                        <h3
-                                            class="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors">
-                                            <a href="{{ route('news.show', $article['slug']) }}">{{ $article['title'] }}</a>
-                                        </h3>
-
-                                        <!-- Excerpt -->
-                                        <p class="text-gray-600 mb-4 line-clamp-3">{{ $article['excerpt'] }}</p>
-
-                                        <!-- Author & Actions -->
-                                        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                                            <div class="flex items-center space-x-3">
-                                                <a href="{{ url('/') }}">
-                                                    <img src="{{ $glowPosterLogo }}"
-                                                        alt="{{ $glowPosterName }}" class="w-10 h-10 rounded-full object-cover">
-                                                </a>
-                                                <div>
-                                                    <a href="{{ url('/') }}" class="text-sm font-semibold text-gray-900 hover:text-emerald-600 transition-colors">
-                                                        {{ $glowPosterName }}</a>
-                                                    <p class="text-xs text-gray-500">{{ $glowPosterName }}</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="flex items-center space-x-3 text-gray-500">
-                                                <button class="hover:text-red-500 transition-colors">
-                                                    <i class="fas fa-heart"></i>
-                                                    <span class="text-xs ml-1">{{ $article['likes'] }}</span>
-                                                </button>
-                                                <button class="hover:text-emerald-600 transition-colors">
-                                                    <i class="fas fa-comment"></i>
-                                                    <span class="text-xs ml-1">{{ $article['comments_count'] }}</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </article>
-                            @endforeach
-                        </div>
-
-                        <!-- Pagination Placeholder -->
-                        <div class="mt-12 flex justify-center">
-                            {{ $newsArticles->links() }}
-                        </div>
-                    @else
-                        <!-- No Results -->
-                        <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
-                            <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">No articles found</h3>
-                            <p class="text-gray-600 mb-6">Try adjusting your search or filters</p>
-                            <button wire:click="$set('searchQuery', ''); $set('selectedCategory', 'all'); $set('tag', '')"
-                                class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full transition-colors">
-                                Clear All Filters
-                            </button>
-                        </div>
-                    @endif
+                    <p class="hidden text-sm text-slate-500 sm:block">
+                        {{ $newsArticles->total() }} {{ \Illuminate\Support\Str::plural('story', $newsArticles->total()) }}
+                    </p>
                 </div>
 
-            </div>
-        </div>
-    </section>
+                <div wire:loading.delay class="w-full border-b border-slate-200 py-4 text-sm font-semibold text-orange-600">
+                    <i class="fas fa-circle-notch mr-2 animate-spin"></i>Updating stories
+                </div>
 
-    <!-- Newsletter CTA -->
-    <section class="py-20 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white">
-        <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto text-center">
-                <i class="fas fa-newspaper text-6xl mb-6 opacity-80"></i>
-                <h2 class="text-4xl md:text-5xl font-bold mb-6">Never Miss an Update</h2>
-                <p class="text-xl text-emerald-100 mb-8 leading-relaxed">
-                    Subscribe to our newsletter and get the latest news, interviews, and exclusive content delivered
-                    straight to your inbox.
-                </p>
-                <form
-                    class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 max-w-xl mx-auto">
-                    <input type="email" placeholder="Enter your email address"
-                        class="w-full sm:flex-1 px-6 py-4 rounded-full text-gray-900 focus:outline-none focus:ring-4 focus:ring-emerald-300">
-                    <button
-                        class="w-full sm:w-auto px-8 py-4 bg-white text-emerald-600 font-bold rounded-full hover:bg-emerald-50 transition-colors shadow-lg">
-                        Subscribe Now
-                    </button>
-                </form>
-                <p class="text-sm text-emerald-200 mt-4">
-                    <i class="fas fa-lock mr-1"></i> We respect your privacy. Unsubscribe anytime.
-                </p>
-            </div>
+                @if(count($newsArticles) > 0)
+                    <div class="divide-y divide-slate-200">
+                        @foreach($newsArticles as $article)
+                            @continueIfNotArray($article)
+                            <article class="group grid gap-5 py-7 sm:grid-cols-[13rem_minmax(0,1fr)]">
+                                <a href="{{ route('news.show', $article['slug']) }}"
+                                   class="block aspect-[16/10] overflow-hidden bg-[#102b4e] sm:aspect-[4/3]"
+                                   aria-label="Read {{ $article['title'] }}">
+                                    <x-initials-image
+                                        :src="$article['featured_image'] ?? null"
+                                        :title="$article['title'] ?? ''"
+                                        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
+                                        fallbackClass="bg-[#102b4e]"
+                                        textClass="text-3xl font-black text-white"
+                                    />
+                                </a>
+
+                                <div class="flex min-w-0 flex-col">
+                                    <p class="text-xs font-black uppercase tracking-[0.14em] text-orange-600">
+                                        {{ $article['category']['name'] }}
+                                    </p>
+                                    <h3 class="font-editorial mt-2 text-2xl font-bold leading-tight text-[#071a33]">
+                                        <a href="{{ route('news.show', $article['slug']) }}" class="transition hover:text-orange-600">
+                                            {{ $article['title'] }}
+                                        </a>
+                                    </h3>
+                                    @if($article['excerpt'])
+                                        <p class="mt-3 line-clamp-2 text-sm leading-6 text-slate-600 sm:text-base">
+                                            {{ $article['excerpt'] }}
+                                        </p>
+                                    @endif
+                                    <div class="mt-auto flex flex-wrap items-center gap-3 pt-4 text-xs font-medium text-slate-500">
+                                        <time datetime="{{ \Carbon\Carbon::parse($article['published_at'])->toDateString() }}">
+                                            {{ \Carbon\Carbon::parse($article['published_at'])->format('M j, Y') }}
+                                        </time>
+                                        <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                                        <span>{{ $article['read_time'] }}</span>
+                                        <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                                        <span>{{ number_format($article['views']) }} views</span>
+                                    </div>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-10 border-t border-slate-200 pt-8">
+                        {{ $newsArticles->links() }}
+                    </div>
+                @else
+                    <div class="border-b border-slate-200 py-20 text-center">
+                        <span class="mx-auto flex h-14 w-14 items-center justify-center bg-slate-100 text-xl text-slate-400">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <h3 class="mt-5 text-xl font-black text-[#071a33]">No stories matched your search</h3>
+                        <p class="mt-2 text-slate-500">Try another term or reset the newsroom filters.</p>
+                        <button type="button"
+                                wire:click="$set('searchQuery', ''); $set('selectedCategory', 'all'); $set('tag', ''); $set('sortBy', 'latest')"
+                                class="mt-6 border border-[#071a33] px-5 py-2.5 text-sm font-bold text-[#071a33] transition hover:bg-[#071a33] hover:text-white">
+                            Reset filters
+                        </button>
+                    </div>
+                @endif
+            </section>
+
+            @if($trendingNews->count() > 0)
+                <aside class="hidden lg:block" aria-labelledby="trending-news-heading">
+                    <div class="sticky top-24">
+                        <div class="border-b-2 border-orange-500 pb-3">
+                            <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">Most read</p>
+                            <h2 id="trending-news-heading" class="font-editorial mt-1 text-xl font-bold text-[#071a33]">Trending now</h2>
+                        </div>
+
+                        <ol class="divide-y divide-slate-200">
+                            @foreach($trendingNews as $index => $trending)
+                                <li class="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 py-5">
+                                    <span class="text-2xl font-black leading-none text-slate-300">
+                                        {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}
+                                    </span>
+                                    <div>
+                                        <a href="{{ route('news.show', $trending->slug) }}"
+                                           class="font-bold leading-snug text-[#071a33] transition hover:text-orange-600">
+                                            {{ $trending->title }}
+                                        </a>
+                                        <p class="mt-2 text-xs text-slate-500">
+                                            {{ number_format($trending->views) }} views
+                                        </p>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ol>
+                    </div>
+                </aside>
+            @endif
         </div>
-    </section>
+    </main>
 </div>

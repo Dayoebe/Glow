@@ -149,7 +149,8 @@ class NewsDetail extends Component
 
     public function getRelatedNewsProperty()
     {
-        return News::published()
+        return News::with('category')
+            ->published()
             ->where('category_id', $this->news->category_id)
             ->where('id', '!=', $this->news->id)
             ->latest('published_at')

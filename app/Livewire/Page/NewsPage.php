@@ -63,6 +63,24 @@ class NewsPage extends Component
             $query->whereJsonContains('tags', $this->tag);
         }
 
+        if (
+            $this->selectedCategory === 'all'
+            && empty($this->searchQuery)
+            && empty($this->tag)
+            && $this->sortBy === 'latest'
+        ) {
+            $featuredIds = collect([$this->featuredHero['id'] ?? null])
+                ->merge($this->featuredSecondary->pluck('id'))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            if ($featuredIds !== []) {
+                $query->whereNotIn('id', $featuredIds);
+            }
+        }
+
         switch ($this->sortBy) {
             case 'popular':
                 $query->orderBy('views', 'desc');
@@ -198,17 +216,48 @@ class NewsPage extends Component
 
     public function render()
     {
-        $description = 'Latest news and updates from Glow 99.1 FM Akure, covering Ondo State, Nigerian politics, public affairs, community updates, entertainment, sports, health, and youth-focused stories.';
         $newsArticles = $this->newsArticles;
+        $currentPage = $newsArticles->currentPage();
+        $currentCategory = $this->selectedCategory !== 'all'
+            ? $this->categories->firstWhere('slug', $this->selectedCategory)
+            : null;
+        $hasInvalidCategory = $this->selectedCategory !== 'all' && !$currentCategory;
+        $hasNonIndexableFilters = filled($this->searchQuery)
+            || filled($this->tag)
+            || $this->sortBy !== 'latest'
+            || $this->view !== 'grid'
+            || $hasInvalidCategory;
+
+        $canonicalQuery = [];
+        if ($currentCategory) {
+            $canonicalQuery['selectedCategory'] = $currentCategory->slug;
+        }
+        if (!$hasNonIndexableFilters && $currentPage > 1) {
+            $canonicalQuery['page'] = $currentPage;
+        }
+
+        $canonical = Seo::canonicalUrl(route('news', [], false), $canonicalQuery);
+        $pageLabel = $currentPage > 1 && !$hasNonIndexableFilters ? ' - Page ' . $currentPage : '';
+        $landingTitle = $currentCategory
+            ? $currentCategory->name . ' News - Glow 99.1 FM'
+            : 'Glow 99.1 FM News - Ondo State And Nigerian Updates';
+        $description = $currentCategory
+            ? Seo::text(
+                $currentCategory->description
+                    ?: "Latest {$currentCategory->name} news, reports, and updates from Glow 99.1 FM in Akure, Ondo State, Nigeria.",
+                165
+            )
+            : 'Latest news and updates from Glow 99.1 FM Akure, covering Ondo State, Nigerian politics, public affairs, community updates, entertainment, sports, health, and youth-focused stories.';
+
         $newsItems = $newsArticles->getCollection()
             ->take(40)
             ->values()
             ->map(fn ($news, $index) => [
                 '@type' => 'ListItem',
-                'position' => $index + 1,
-                'name' => $news['title'] ?? '',
-                'url' => route('news.show', $news['slug'] ?? ''),
-                'description' => Seo::text($news['excerpt'] ?? '', 140),
+                'position' => ($newsArticles->firstItem() ?? 1) + $index,
+                'name' => $news->title,
+                'url' => Seo::absoluteUrl(route('news.show', $news->slug)),
+                'description' => Seo::text($news->excerpt, 140),
             ])
             ->all();
 
@@ -216,7 +265,6 @@ class NewsPage extends Component
             'newsArticles' => $newsArticles,
             'featuredHero' => $this->featuredHero,
             'featuredSecondary' => $this->featuredSecondary,
-            'featuredSidebar' => $this->featuredSidebar,
             'breakingNews' => $this->breakingNews,
             'trendingNews' => $this->trendingNews,
             'categories' => $this->categories->map(function ($cat) {
@@ -234,29 +282,35 @@ class NewsPage extends Component
                 'icon' => 'fas fa-newspaper',
                 'color' => 'emerald',
             ])->toArray(),
-            'popularTags' => $this->popularTags,
         ])->layout('layouts.app', [
-            'title' => 'News & Updates - Glow 99.1 FM',
-            'meta_title' => 'Glow 99.1 FM News - Ondo State And Nigerian Updates',
+            'title' => $landingTitle . $pageLabel,
+            'meta_title' => $landingTitle . $pageLabel,
             'meta_description' => $description,
-            'canonical_url' => route('news'),
+            'canonical_url' => $canonical,
+            'meta_robots' => $hasNonIndexableFilters
+                ? config('seo.filtered_robots', 'noindex, follow, noarchive')
+                : null,
             'structured_data' => Seo::siteGraph([
-                'title' => 'Glow 99.1 FM News',
+                'title' => $landingTitle . $pageLabel,
                 'description' => $description,
-                'url' => route('news'),
+                'url' => $canonical,
+                'type' => 'CollectionPage',
+                'mainEntity' => ['@id' => $canonical . '#news-list'],
                 'breadcrumbs' => [
                     ['name' => 'Home', 'url' => route('home')],
                     ['name' => 'News', 'url' => route('news')],
+                    ...($currentCategory ? [[
+                        'name' => $currentCategory->name,
+                        'url' => $canonical,
+                    ]] : []),
                 ],
                 'extra' => [
                     [
-                        '@type' => 'CollectionPage',
-                        '@id' => route('news') . '#collection',
-                        'name' => 'Glow 99.1 FM News',
-                        'hasPart' => [
-                            '@type' => 'ItemList',
-                            'itemListElement' => $newsItems,
-                        ],
+                        '@type' => 'ItemList',
+                        '@id' => $canonical . '#news-list',
+                        'name' => $landingTitle,
+                        'numberOfItems' => count($newsItems),
+                        'itemListElement' => $newsItems,
                     ],
                 ],
             ]),
