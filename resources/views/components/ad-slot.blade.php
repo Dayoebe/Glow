@@ -14,7 +14,8 @@
         @else
             @if($ad->image_url)
                 <a href="{{ $ad->link_url ?? '#' }}" {{ $ad->link_url ? 'target=_blank rel=noopener' : '' }}>
-                    <img src="{{ $ad->image_url }}" alt="{{ $ad->name }}" class="w-full object-cover">
+                    <img src="{{ $ad->image_url }}" alt="{{ $ad->name }}" loading="lazy" decoding="async"
+                        class="w-full object-cover">
                 </a>
             @endif
             @if($ad->button_text)

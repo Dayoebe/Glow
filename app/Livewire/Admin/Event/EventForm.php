@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Event;
 use App\Models\Event\Event;
 use App\Models\Event\EventCategory;
 use App\Support\CloudinaryUploader;
+use App\Support\RichTextSanitizer;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
@@ -159,6 +160,8 @@ class EventForm extends Component
                 $this->published_at = now()->format('Y-m-d\TH:i');
             }
         }
+
+        $this->content = app(RichTextSanitizer::class)->sanitize($this->content);
 
         $this->validate();
 

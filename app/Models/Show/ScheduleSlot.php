@@ -55,23 +55,42 @@ class ScheduleSlot extends Model
         return $query->where('is_recurring', true);
     }
 
+    public function scopeOverlappingDates($query, $startDate, $endDate = null)
+    {
+        $rangeStart = Carbon::parse($startDate)->toDateString();
+        $rangeEnd = Carbon::parse($endDate ?? $startDate)->toDateString();
+
+        return $query
+            ->where(function ($query) use ($rangeEnd) {
+                $query->whereNull('start_date')
+                    ->orWhereDate('start_date', '<=', $rangeEnd);
+            })
+            ->where(function ($query) use ($rangeStart) {
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $rangeStart);
+            });
+    }
+
     public function isActiveOn($date)
     {
-        $date = Carbon::parse($date);
-        
-        // Check if within date range
-        if ($this->start_date && $date->lt($this->start_date)) return false;
-        if ($this->end_date && $date->gt($this->end_date)) return false;
-        
-        // Check if date is in exceptions
-        if ($this->exceptions && in_array($date->format('Y-m-d'), $this->exceptions)) {
+        $date = Carbon::parse($date)->startOfDay();
+        $dateString = $date->toDateString();
+
+        if ($this->status !== 'active') {
             return false;
         }
-        
+
+        // Check if within date range
+        if ($this->start_date && $dateString < $this->start_date->toDateString()) return false;
+        if ($this->end_date && $dateString > $this->end_date->toDateString()) return false;
+
+        // Check if date is in exceptions
+        if ($this->exceptions && in_array($dateString, $this->exceptions, true)) {
+            return false;
+        }
+
         // Check day of week
-        if (strtolower($date->format('l')) !== $this->day_of_week) return false;
-        
-        return $this->status === 'active';
+        return strtolower($date->format('l')) === strtolower((string) $this->day_of_week);
     }
 
     public function hasConflictWith($startTime, $endTime, $dayOfWeek)
@@ -94,5 +113,3 @@ class ScheduleSlot extends Model
                Carbon::parse($this->end_time)->format('g:i A');
     }
 }
-
-
