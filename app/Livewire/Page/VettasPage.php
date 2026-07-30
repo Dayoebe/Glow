@@ -333,7 +333,7 @@ class VettasPage extends Component
             'title' => 'Vettas - Glow FM',
             'meta_title' => 'Vettas - Glow FM',
             'meta_description' => $metaDescription,
-            'meta_image' => $this->featuredPhotos->first()?->image_path,
+            'meta_image' => $this->featuredPhotos->first()?->public_image_url,
         ]);
     }
 

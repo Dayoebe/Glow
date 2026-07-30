@@ -3,6 +3,7 @@
 namespace App\Models\Vettas;
 
 use App\Models\User;
+use App\Support\PublicImage;
 use Database\Factories\Vettas\VettasPhotoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -115,5 +116,10 @@ class VettasPhoto extends Model
         }
 
         return $this->published_at?->format('M d, Y');
+    }
+
+    public function getPublicImageUrlAttribute(): string
+    {
+        return PublicImage::url($this->image_path) ?? '';
     }
 }

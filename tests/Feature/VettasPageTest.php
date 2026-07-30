@@ -62,4 +62,19 @@ class VettasPageTest extends TestCase
             ->assertSee('Backstage Energy')
             ->assertDontSee('Event Spotlight');
     }
+
+    public function test_vettas_page_does_not_request_a_missing_local_image(): void
+    {
+        $photo = VettasPhoto::factory()->create([
+            'title' => 'Missing Gallery Image',
+            'image_path' => '/storage/uploads/vettas/gallery/missing.jpg',
+            'is_published' => true,
+            'published_at' => now()->subMinute(),
+        ]);
+
+        $this->get(route('vettas.index'))
+            ->assertOk()
+            ->assertSee($photo->title)
+            ->assertDontSee('uploads/vettas/gallery/missing.jpg', false);
+    }
 }
