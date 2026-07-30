@@ -6,11 +6,12 @@
         <atom:link href="{{ \App\Support\Seo::absoluteUrl(route('news.feed')) }}" rel="self" type="application/rss+xml" />
         <description>Latest public news articles from {{ $station['name'] }} in Akure, Ondo State, Nigeria.</description>
         <language>en-ng</language>
-        <lastBuildDate>{{ now()->toRfc2822String() }}</lastBuildDate>
+        @if ($lastBuildDate)
+            <lastBuildDate>{{ $lastBuildDate->toRfc2822String() }}</lastBuildDate>
+        @endif
         @foreach ($items as $item)
             @php
                 $url = \App\Support\Seo::absoluteUrl(route('news.show', $item->slug));
-                $image = \App\Support\Seo::absoluteUrl($item->featured_image);
                 $description = $item->excerpt ?: \App\Support\Seo::text($item->content, 300);
             @endphp
             <item>
@@ -21,8 +22,8 @@
                 <pubDate>{{ optional($item->published_at)->toRfc2822String() }}</pubDate>
                 <category>{{ $item->category?->name ?? 'News' }}</category>
                 <author>{{ $station['email'] }} ({{ $item->author?->name ?? $station['name'] }})</author>
-                @if ($image)
-                    <media:content url="{{ $image }}" medium="image" />
+                @if ($item->feed_image_url)
+                    <media:content url="{{ $item->feed_image_url }}" medium="image" />
                 @endif
             </item>
         @endforeach

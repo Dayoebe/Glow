@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\News;
 use App\Models\News\News;
 use App\Models\News\NewsCategory;
 use App\Support\CloudinaryUploader;
+use App\Support\RichTextSanitizer;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
@@ -144,6 +145,8 @@ class NewsForm extends Component
             session()->flash('error', 'Use the news approval actions to make articles public.');
             return null;
         }
+
+        $this->content = app(RichTextSanitizer::class)->sanitize($this->content);
 
         $this->validate();
 
