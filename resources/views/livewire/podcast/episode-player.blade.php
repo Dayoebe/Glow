@@ -1,495 +1,557 @@
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-glow-ivory text-glow-ink">
+    <header class="border-b border-white/10 bg-glow-midnight text-white">
+        <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+            <nav class="mb-8 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-400"
+                 aria-label="Breadcrumb">
+                <a href="{{ route('podcasts.index') }}" class="transition hover:text-glow-amber">Podcasts</a>
+                <i class="fas fa-chevron-right text-[8px] text-slate-600" aria-hidden="true"></i>
+                <a href="{{ route('podcasts.show', $episode->show->slug) }}" class="transition hover:text-glow-amber">
+                    {{ $episode->show->title }}
+                </a>
+                <i class="fas fa-chevron-right text-[8px] text-slate-600" aria-hidden="true"></i>
+                <span class="text-white">Episode</span>
+            </nav>
 
-    <!-- Episode Header -->
-    <section class="relative bg-linear-to-br from-purple-900 via-purple-800 to-indigo-900 text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="max-w-5xl mx-auto">
-                <!-- Breadcrumb -->
-                <nav class="flex items-center space-x-2 text-sm text-purple-200 mb-6">
-                    <a href="{{ route('podcasts.index') }}" class="hover:text-white">Podcasts</a>
-                    <span>›</span>
-                    <a href="{{ route('podcasts.show', $episode->show->slug) }}" class="hover:text-white">
-                        {{ $episode->show->title }}
-                    </a>
-                    <span>›</span>
-                    <span class="text-white">Episode</span>
-                </nav>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Episode Cover -->
-                    <div class="md:col-span-1">
-                        <img src="{{ $episode->cover_image ?? $episode->show->cover_image }}"
-                            alt="{{ $episode->title }}" class="w-full rounded-xl shadow-2xl">
+            <div class="grid items-center gap-8 md:grid-cols-[17rem_minmax(0,1fr)] lg:gap-12">
+                <div class="mx-auto w-full max-w-[17rem] md:mx-0">
+                    <div class="aspect-square overflow-hidden border border-white/15 bg-glow-navy shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+                        <x-initials-image
+                            :src="$episode->cover_image ?? $episode->show->cover_image"
+                            :title="$episode->title"
+                            imgClass="h-full w-full object-cover"
+                            fallbackClass="bg-glow-navy"
+                            textClass="text-5xl font-black text-white"
+                        />
                     </div>
+                </div>
 
-                    <!-- Episode Info -->
-                    <div class="md:col-span-2">
-                        <div class="flex items-center space-x-3 mb-3">
-                            @if($episode->season_number)
-                                <span class="px-3 py-1 bg-purple-600 text-white font-bold rounded-full text-sm">
-                                    S{{ $episode->season_number }} E{{ $episode->episode_number }}
-                                </span>
-                            @endif
-                            <span class="px-3 py-1 bg-white/20 text-white font-semibold rounded-full text-sm">
-                                {{ ucfirst($episode->episode_type) }}
-                            </span>
-                            @if($episode->explicit)
-                                <span class="px-3 py-1 bg-red-600 text-white font-bold rounded-full text-sm">EXPLICIT</span>
-                            @endif
-                        </div>
-
-                        <h1 class="text-3xl md:text-4xl font-bold mb-4">{{ $episode->title }}</h1>
-
-                        <p class="text-purple-100 text-lg mb-6 leading-relaxed">{{ $episode->description }}</p>
-
-                        <div class="flex flex-wrap items-center gap-4 text-sm mb-6">
-                            <span><i
-                                    class="fas fa-calendar mr-1"></i>{{ $episode->published_at->format('M d, Y') }}</span>
-                            <span><i class="fas fa-clock mr-1"></i>{{ $episode->formatted_duration }}</span>
-                            <span><i class="fas fa-headphones mr-1"></i>{{ number_format($episode->plays) }}
-                                plays</span>
-                            <span><i class="fas fa-download mr-1"></i>{{ number_format($episode->downloads) }}</span>
-                        </div>
-
-                        @if($episode->guests && count($episode->guests) > 0)
-                            <div class="mb-6">
-                                <p class="text-sm text-purple-200 mb-2">Featured Guests:</p>
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach($episode->guests as $guest)
-                                        <span class="px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                                            {{ $guest }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            </div>
+                <div class="min-w-0">
+                    <div class="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-black uppercase tracking-[0.15em]">
+                        <span class="border-l-4 border-glow-orange pl-3 text-glow-amber">Glow FM Podcasts</span>
+                        @if($episode->season_number)
+                            <span class="text-slate-300">S{{ $episode->season_number }} E{{ $episode->episode_number }}</span>
+                        @endif
+                        <span class="text-slate-300">{{ ucfirst($episode->episode_type) }}</span>
+                        @if($episode->explicit)
+                            <span class="border border-red-400/60 px-2 py-0.5 text-red-300">Explicit</span>
                         @endif
                     </div>
+
+                    <p class="text-sm font-bold text-glow-amber">
+                        <a href="{{ route('podcasts.show', $episode->show->slug) }}" class="transition hover:text-white">
+                            {{ $episode->show->title }}
+                        </a>
+                    </p>
+                    <h1 class="font-editorial mt-3 max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+                        {{ $episode->title }}
+                    </h1>
+
+                    @if($episode->description)
+                        <p class="mt-5 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
+                            {{ $episode->description }}
+                        </p>
+                    @endif
+
+                    <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-300">
+                        <time datetime="{{ $episode->published_at?->toAtomString() }}">
+                            {{ $episode->published_at->format('M j, Y') }}
+                        </time>
+                        <span class="h-1 w-1 rounded-full bg-glow-orange"></span>
+                        <span>{{ $episode->formatted_duration }}</span>
+                        <span class="h-1 w-1 rounded-full bg-glow-orange"></span>
+                        <span>{{ number_format($episode->plays) }} plays</span>
+                        <span class="h-1 w-1 rounded-full bg-glow-orange"></span>
+                        <span>{{ number_format($episode->downloads) }} downloads</span>
+                    </div>
+
+                    @if($episode->guests && count($episode->guests) > 0)
+                        <p class="mt-5 text-sm leading-6 text-slate-300">
+                            <span class="font-black uppercase tracking-[0.12em] text-white">Guests</span>
+                            <span class="mx-2 text-glow-orange">/</span>
+                            {{ implode(', ', $episode->guests) }}
+                        </p>
+                    @endif
                 </div>
             </div>
         </div>
-    </section>
+    </header>
 
-    @if($episode->audio_file)
-        <!-- Audio Player -->
-        <section class="py-8 bg-white border-b sticky top-0 z-40 shadow-md">
-            <div class="container mx-auto px-4">
-                <div class="max-w-5xl mx-auto">
-                    <div id="audioPlayerContainer">
-                        <audio id="podcastPlayer" class="w-full" controls controlsList="nodownload">
-                            <source src="{{ $episode->audio_file }}" type="audio/{{ $episode->audio_format ?? 'mpeg' }}">
+    @if($episode->has_playable_audio)
+        <section class="sticky top-[calc(env(safe-area-inset-top)+4.5rem)] z-40 border-b border-slate-200 bg-glow-paper/95 shadow-[0_12px_32px_rgba(7,22,47,0.09)] backdrop-blur-xl lg:top-[6.75rem]"
+                 aria-label="Episode audio player">
+            <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+                <div class="grid items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:gap-5">
+                    <div class="min-w-0" wire:ignore>
+                        <audio id="podcastPlayer"
+                               class="h-11 w-full"
+                               controls
+                               preload="metadata"
+                               controlsList="nodownload">
+                            <source src="{{ $episode->public_audio_url }}" type="audio/{{ $episode->audio_format ?? 'mpeg' }}">
                             Your browser does not support the audio element.
                         </audio>
                     </div>
 
-                    <!-- Player Controls -->
-                    <div class="mt-4 flex flex-wrap items-center justify-between gap-4">
-                        <div class="flex items-center space-x-4">
-                            <button wire:click="trackDownload"
-                                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
-                                <i class="fas fa-download mr-2"></i>Download
-                            </button>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <a href="{{ $episode->public_audio_url }}"
+                           download
+                           target="_blank"
+                           rel="noopener"
+                           wire:click="trackDownload"
+                           class="inline-flex h-10 items-center gap-2 bg-glow-orange px-4 text-sm font-black text-white transition hover:bg-glow-coral">
+                            <i class="fas fa-download text-xs" aria-hidden="true"></i>
+                            Download
+                        </a>
 
-                            <div class="relative group">
-                                <button
-                                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors">
-                                    <i class="fas fa-share-alt mr-2"></i>Share
+                        <details class="group relative">
+                            <summary class="inline-flex h-10 cursor-pointer list-none items-center gap-2 border border-slate-300 bg-white px-4 text-sm font-black text-glow-ink transition hover:border-glow-orange hover:text-glow-orange [&::-webkit-details-marker]:hidden">
+                                <i class="fas fa-share-nodes text-xs" aria-hidden="true"></i>
+                                Share
+                                <i class="fas fa-chevron-down text-[9px] transition group-open:rotate-180" aria-hidden="true"></i>
+                            </summary>
+                            <div class="absolute right-0 z-50 mt-2 grid w-64 grid-cols-2 border border-slate-200 bg-white p-2 shadow-[0_20px_50px_rgba(7,22,47,0.18)] sm:left-0 sm:right-auto">
+                                <button type="button" wire:click="shareEpisode('x')"
+                                        class="flex items-center gap-2 px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                    <i class="fab fa-x-twitter w-4" aria-hidden="true"></i>X
                                 </button>
-                                <div
-                                    class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                                    <button wire:click="shareEpisode('x')"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-100 rounded-t-lg flex items-center">
-                                        <i class="fab fa-x-twitter text-gray-900 mr-2"></i>X
-                                    </button>
-                                    <button wire:click="shareEpisode('facebook')"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center">
-                                        <i class="fab fa-facebook text-blue-600 mr-2"></i>Facebook
-                                    </button>
-                                    <button wire:click="shareEpisode('linkedin')"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center">
-                                        <i class="fab fa-linkedin text-blue-700 mr-2"></i>LinkedIn
-                                    </button>
-                                    <button wire:click="shareEpisode('whatsapp')"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center">
-                                        <i class="fab fa-whatsapp text-green-500 mr-2"></i>WhatsApp
-                                    </button>
-                                    <button wire:click="shareEpisode('telegram')"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center">
-                                        <i class="fab fa-telegram text-blue-400 mr-2"></i>Telegram
-                                    </button>
-                                    <button wire:click="shareEpisode('reddit')"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center">
-                                        <i class="fab fa-reddit-alien text-orange-500 mr-2"></i>Reddit
-                                    </button>
-                                    <button wire:click="shareEpisode('email')"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center">
-                                        <i class="fas fa-envelope text-gray-600 mr-2"></i>Email
-                                    </button>
-                                    <button type="button" data-copy-link="{{ url()->current() }}"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-100 rounded-b-lg flex items-center">
-                                        <i class="fas fa-link text-gray-600 mr-2"></i><span data-copy-text>Copy link</span>
-                                    </button>
-                                </div>
+                                <button type="button" wire:click="shareEpisode('facebook')"
+                                        class="flex items-center gap-2 px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                    <i class="fab fa-facebook-f w-4" aria-hidden="true"></i>Facebook
+                                </button>
+                                <button type="button" wire:click="shareEpisode('linkedin')"
+                                        class="flex items-center gap-2 px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                    <i class="fab fa-linkedin-in w-4" aria-hidden="true"></i>LinkedIn
+                                </button>
+                                <button type="button" wire:click="shareEpisode('whatsapp')"
+                                        class="flex items-center gap-2 px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                    <i class="fab fa-whatsapp w-4" aria-hidden="true"></i>WhatsApp
+                                </button>
+                                <button type="button" wire:click="shareEpisode('telegram')"
+                                        class="flex items-center gap-2 px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                    <i class="fab fa-telegram w-4" aria-hidden="true"></i>Telegram
+                                </button>
+                                <button type="button" wire:click="shareEpisode('reddit')"
+                                        class="flex items-center gap-2 px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                    <i class="fab fa-reddit-alien w-4" aria-hidden="true"></i>Reddit
+                                </button>
+                                <button type="button" wire:click="shareEpisode('email')"
+                                        class="flex items-center gap-2 px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                    <i class="fas fa-envelope w-4" aria-hidden="true"></i>Email
+                                </button>
+                                <button type="button"
+                                        data-copy-link="{{ url()->current() }}"
+                                        class="flex items-center gap-2 px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                    <i class="fas fa-link w-4" aria-hidden="true"></i><span data-copy-text>Copy link</span>
+                                </button>
                             </div>
-                        </div>
+                        </details>
 
-                        <div class="text-sm text-gray-600">
-                            <i class="fas fa-file-audio mr-1"></i>
-                            {{ $episode->file_size_formatted }} • {{ strtoupper($episode->audio_format ?? 'MP3') }}
-                        </div>
+                        <span class="ml-auto text-xs font-semibold text-slate-500 md:ml-1">
+                            {{ $episode->file_size_formatted }} · {{ strtoupper($episode->audio_format ?? 'MP3') }}
+                        </span>
                     </div>
-
-                    @if (session()->has('success'))
-                        <div class="mt-4 p-3 bg-green-100 text-green-700 rounded-lg flash-auto-dismiss">
-                            {{ session('success') }}
-                        </div>
-                    @endif
                 </div>
             </div>
         </section>
     @endif
 
-<!-- Video Player (if video exists) -->
-@if($episode->has_video)
-<section class="py-8 bg-gray-100">
-    <div class="container mx-auto px-4">
-        <div class="max-w-5xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <i class="fas fa-video text-purple-600 mr-3"></i>
-                Watch Video
-            </h2>
-            
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+    @if(session()->has('success'))
+        <div class="flash-auto-dismiss mx-auto mt-5 max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+                {{ session('success') }}
+            </div>
+        </div>
+    @endif
+
+    @if($episode->has_video)
+        <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16" aria-labelledby="episode-video-heading">
+            <div class="mb-6 border-b-2 border-glow-ink pb-4">
+                <p class="public-kicker">Watch</p>
+                <h2 id="episode-video-heading" class="font-editorial mt-1 text-3xl font-bold text-glow-ink">Episode video</h2>
+            </div>
+
+            <div class="overflow-hidden bg-slate-950">
                 @if($episode->video_type === 'youtube' && $episode->youtube_video_id)
-                    <!-- YouTube Embed -->
-                    <div class="relative pb-[56.25%]">
+                    <div class="relative aspect-video">
                         <button type="button"
-                            class="absolute inset-0 z-10 flex items-center justify-center bg-black/60 text-white"
-                            data-video-overlay>
-                            <span class="inline-flex items-center px-5 py-3 bg-purple-600 hover:bg-purple-700 rounded-full font-semibold">
-                                <i class="fas fa-play mr-2"></i>Start Video
+                                class="absolute inset-0 z-10 flex items-center justify-center bg-glow-ink/75 text-white transition hover:bg-glow-ink/65"
+                                data-video-overlay>
+                            <span class="inline-flex h-14 items-center gap-3 bg-glow-orange px-6 font-black text-white">
+                                <i class="fas fa-play" aria-hidden="true"></i>Start video
                             </span>
                         </button>
-                        <iframe
-                            class="absolute top-0 left-0 w-full h-full hidden"
-                            src="about:blank"
-                            data-src="https://www.youtube.com/embed/{{ $episode->youtube_video_id }}"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen
-                            data-video-iframe>
-                        </iframe>
+                        <iframe class="absolute inset-0 hidden h-full w-full"
+                                src="about:blank"
+                                data-src="https://www.youtube.com/embed/{{ $episode->youtube_video_id }}"
+                                title="Video for {{ $episode->title }}"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                                data-video-iframe></iframe>
                     </div>
                 @elseif($episode->video_type === 'vimeo')
-                    <!-- Vimeo Embed -->
-                    <div class="relative pb-[56.25%]">
+                    <div class="relative aspect-video">
                         <button type="button"
-                            class="absolute inset-0 z-10 flex items-center justify-center bg-black/60 text-white"
-                            data-video-overlay>
-                            <span class="inline-flex items-center px-5 py-3 bg-purple-600 hover:bg-purple-700 rounded-full font-semibold">
-                                <i class="fas fa-play mr-2"></i>Start Video
+                                class="absolute inset-0 z-10 flex items-center justify-center bg-glow-ink/75 text-white transition hover:bg-glow-ink/65"
+                                data-video-overlay>
+                            <span class="inline-flex h-14 items-center gap-3 bg-glow-orange px-6 font-black text-white">
+                                <i class="fas fa-play" aria-hidden="true"></i>Start video
                             </span>
                         </button>
-                        <iframe
-                            class="absolute top-0 left-0 w-full h-full hidden"
-                            src="about:blank"
-                            data-src="{{ str_replace('vimeo.com/', 'player.vimeo.com/video/', $episode->video_url) }}"
-                            frameborder="0"
-                            allow="autoplay; fullscreen; picture-in-picture"
-                            allowfullscreen
-                            data-video-iframe>
-                        </iframe>
+                        <iframe class="absolute inset-0 hidden h-full w-full"
+                                src="about:blank"
+                                data-src="{{ str_replace('vimeo.com/', 'player.vimeo.com/video/', $episode->video_url) }}"
+                                title="Video for {{ $episode->title }}"
+                                frameborder="0"
+                                allow="autoplay; fullscreen; picture-in-picture"
+                                allowfullscreen
+                                data-video-iframe></iframe>
                     </div>
                 @elseif($episode->video_type === 'upload')
-                    <!-- Uploaded Video -->
-                    <video id="podcastVideoPlayer" class="w-full" controls>
+                    <video id="podcastVideoPlayer" class="aspect-video w-full" controls preload="metadata">
                         <source src="{{ $episode->video_url }}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
                 @else
-                    <!-- Other Video Link -->
-                    <div class="p-8 text-center">
-                        <i class="fas fa-external-link-alt text-4xl text-purple-600 mb-4"></i>
-                        <p class="text-gray-700 mb-4">Video available on external platform</p>
-                        <a href="{{ $episode->video_url }}" target="_blank" data-video-external
-                           class="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
-                            <i class="fas fa-play mr-2"></i>Watch Video
+                    <div class="px-6 py-16 text-center text-white">
+                        <i class="fas fa-arrow-up-right-from-square text-3xl text-glow-orange" aria-hidden="true"></i>
+                        <p class="mt-4 text-slate-300">This episode video is hosted on an external platform.</p>
+                        <a href="{{ $episode->video_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           data-video-external
+                           class="mt-6 inline-flex h-12 items-center gap-2 bg-glow-orange px-6 font-black text-white transition hover:bg-glow-coral">
+                            <i class="fas fa-play text-xs" aria-hidden="true"></i>Watch video
                         </a>
                     </div>
                 @endif
             </div>
-        </div>
-    </div>
-</section>
-@endif
+        </section>
+    @endif
 
-<!-- Platform Links (if any exist) -->
-@if(!empty($episode->platform_links))
-<section class="py-8 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="max-w-5xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <i class="fas fa-headphones text-purple-600 mr-3"></i>
-                Listen On Other Platforms
-            </h2>
-            
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                @foreach($episode->platform_links as $platform => $url)
-                <a href="{{ $url }}" target="_blank" 
-                   class="bg-white border-2 border-gray-200 hover:border-purple-600 rounded-xl p-6 text-center transition-all duration-300 group">
-                    <div class="mb-3">
-                        @switch($platform)
-                            @case('spotify')
-                                <i class="fab fa-spotify text-4xl text-green-500 group-hover:scale-110 transition-transform"></i>
-                                @break
-                            @case('apple')
-                                <i class="fab fa-apple text-4xl text-gray-700 group-hover:scale-110 transition-transform"></i>
-                                @break
-                            @case('youtube_music')
-                                <i class="fab fa-youtube text-4xl text-red-500 group-hover:scale-110 transition-transform"></i>
-                                @break
-                            @case('audiomack')
-                                <i class="fas fa-music text-4xl text-orange-500 group-hover:scale-110 transition-transform"></i>
-                                @break
-                            @case('soundcloud')
-                                <i class="fab fa-soundcloud text-4xl text-orange-600 group-hover:scale-110 transition-transform"></i>
-                                @break
-                            @default
-                                <i class="fas fa-podcast text-4xl text-purple-600 group-hover:scale-110 transition-transform"></i>
-                        @endswitch
+    @if(!empty($episode->platform_links))
+        <section class="border-y border-slate-200 bg-white" aria-labelledby="episode-platforms-heading">
+            <div class="mx-auto max-w-7xl px-4 py-9 sm:px-6 lg:px-8">
+                <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <p class="public-kicker">Choose your app</p>
+                        <h2 id="episode-platforms-heading" class="font-editorial mt-1 text-2xl font-bold text-glow-ink">
+                            Listen on other platforms
+                        </h2>
                     </div>
-                    <p class="text-sm font-semibold text-gray-900">{{ ucfirst(str_replace('_', ' ', $platform)) }}</p>
-                </a>
-                @endforeach
-            </div>
-        </div>
-    </div>
-</section>
-@endif
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 py-12">
-        <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <!-- Main Column -->
-            <div class="lg:col-span-2 space-y-8">
-
-                <!-- Show Notes -->
-                @if($episode->show_notes)
-                    <section class="bg-white rounded-xl shadow-md p-8">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                            <i class="fas fa-sticky-note text-purple-600 mr-3"></i>
-                            Show Notes
-                        </h2>
-                        <div class="prose prose-lg max-w-none">
-                            {!! nl2br(e($episode->show_notes)) !!}
-                        </div>
-                    </section>
-                @endif
-
-                <!-- Chapters -->
-                @if($episode->chapters && count($episode->chapters) > 0)
-                    <section class="bg-white rounded-xl shadow-md p-8">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                            <i class="fas fa-list-ol text-purple-600 mr-3"></i>
-                            Chapters
-                        </h2>
-                        <div class="space-y-3">
-                            @foreach($episode->chapters as $chapter)
-                                @continueIfNotArray($chapter)
-                                <div class="flex items-start space-x-3 p-3 hover:bg-purple-50 rounded-lg cursor-pointer transition-colors"
-                                    onclick="document.getElementById('podcastPlayer').currentTime = {{ $chapter['time'] }}">
-                                    <span
-                                        class="font-mono text-sm text-purple-600 font-semibold">{{ gmdate('H:i:s', $chapter['time']) }}</span>
-                                    <p class="flex-1 text-gray-700">{{ $chapter['title'] }}</p>
-                                </div>
-                            @endforeach
-                        </div>
-                    </section>
-                @endif
-
-                <!-- Transcript -->
-                @if($episode->transcript && count($episode->transcript) > 0)
-                    <section class="bg-white rounded-xl shadow-md p-8">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                            <i class="fas fa-file-alt text-purple-600 mr-3"></i>
-                            Transcript
-                        </h2>
-                        <div class="space-y-4 max-h-96 overflow-y-auto">
-                            @foreach($episode->transcript as $line)
-                                @continueIfNotArray($line)
-                                <div class="flex items-start space-x-3">
-                                    @if(isset($line['time']))
-                                        <span class="font-mono text-xs text-gray-500">{{ gmdate('H:i:s', $line['time']) }}</span>
-                                    @endif
-                                    <p class="flex-1 text-gray-700">{{ $line['text'] }}</p>
-                                </div>
-                            @endforeach
-                        </div>
-                    </section>
-                @endif
-
-                <!-- Comments Section -->
-                <section class="bg-white rounded-xl shadow-md p-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                        <i class="fas fa-comments text-purple-600 mr-3"></i>
-                        Comments ({{ $episode->comments->count() }})
-                    </h2>
-
-                    <!-- Comment Form -->
-                    <form wire:submit.prevent="submitComment" class="mb-8">
-                        <div class="bg-purple-50 rounded-xl p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <label class="font-semibold text-gray-900">Leave a Comment</label>
-                                @if($commentTimestamp)
-                                    <button type="button" wire:click="$set('commentTimestamp', null)"
-                                        class="text-sm text-purple-600 hover:text-purple-700">
-                                        <i class="fas fa-times mr-1"></i>Clear timestamp
-                                    </button>
-                                @endif
-                            </div>
-
-                            @if($commentTimestamp)
-                                <div class="mb-3 text-sm text-purple-600">
-                                    <i class="fas fa-clock mr-1"></i>
-                                    Comment will be posted at {{ gmdate('H:i:s', $commentTimestamp) }}
-                                </div>
-                            @endif
-
-                            <textarea wire:model="comment" rows="4"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                                placeholder="Share your thoughts..."></textarea>
-                            @error('comment') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
-
-                            <div class="mt-4 flex items-center justify-between">
-                                @if($episode->audio_file)
-                                    <button type="button" onclick="addTimestamp()"
-                                        class="text-sm text-purple-600 hover:text-purple-700 font-semibold">
-                                        <i class="fas fa-clock mr-1"></i>Add Current Timestamp
-                                    </button>
-                                @else
-                                    <span class="text-sm text-gray-400">Timestamps available for audio only.</span>
-                                @endif
-                                <button type="submit"
-                                    class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
-                                    <i class="fas fa-paper-plane mr-2"></i>Post Comment
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
-                    <!-- Comments List -->
-                    <div class="space-y-6">
-                        @forelse($episode->comments as $comment)
-                            <div class="bg-gray-50 rounded-xl p-6">
-                                <div class="flex items-start space-x-4">
-                                    <img src="{{ $comment->user?->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($comment->user?->name ?? 'Anonymous') }}"
-                                        class="w-12 h-12 rounded-full">
-                                    <div class="flex-1">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <div>
-                                                <h4 class="font-bold text-gray-900">{{ $comment->user?->name ?? 'Anonymous' }}</h4>
-                                                <p class="text-sm text-gray-500">
-                                                    {{ $comment->created_at->diffForHumans() }}
-                                                    @if($comment->timestamp)
-                                                        <span class="ml-2">
-                                                            <i
-                                                                class="fas fa-clock mr-1"></i>{{ gmdate('H:i:s', $comment->timestamp) }}
-                                                        </span>
-                                                    @endif
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <p class="text-gray-700 mb-3">{{ $comment->comment }}</p>
-
-                                        @if($comment->replies->count() > 0)
-                                            <div class="mt-4 pl-4 border-l-2 border-purple-200 space-y-4">
-                                                @foreach($comment->replies as $reply)
-                                                    <div class="flex items-start space-x-3">
-                                                        <img src="{{ $reply->user?->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($reply->user?->name ?? 'Anonymous') }}"
-                                                            class="w-10 h-10 rounded-full">
-                                                        <div class="flex-1">
-                                                            <h5 class="font-semibold text-gray-900">{{ $reply->user?->name ?? 'Anonymous' }}</h5>
-                                                            <p class="text-xs text-gray-500 mb-1">
-                                                                {{ $reply->created_at->diffForHumans() }}</p>
-                                                            <p class="text-gray-700">{{ $reply->comment }}</p>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-center py-8">
-                                <i class="fas fa-comments text-4xl text-gray-300 mb-3"></i>
-                                <p class="text-gray-600">No comments yet. Be the first to share your thoughts!</p>
-                            </div>
-                        @endforelse
-                    </div>
-                </section>
-
-            </div>
-
-            <!-- Sidebar -->
-            <div class="space-y-6">
-
-                <!-- About Show -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="font-bold text-gray-900 mb-4">About This Show</h3>
-                    <a href="{{ route('podcasts.show', $episode->show->slug) }}" class="block mb-4">
-                        <img src="{{ $episode->show->cover_image }}"
-                            class="w-full rounded-lg hover:opacity-90 transition-opacity">
-                    </a>
-                    <h4 class="text-lg font-bold text-gray-900 mb-2">
-                        <a href="{{ route('podcasts.show', $episode->show->slug) }}" class="hover:text-purple-600">
-                            {{ $episode->show->title }}
-                        </a>
-                    </h4>
-                    <p class="text-sm text-gray-600 mb-3">{{ Str::limit($episode->show->description, 150) }}</p>
-                    <div class="text-xs text-gray-500 space-y-1">
-                        <p><i class="fas fa-microphone mr-1"></i>{{ $episode->show->host_name }}</p>
-                        <p><i class="fas fa-list mr-1"></i>{{ $episode->show->total_episodes }} episodes</p>
-                        <p><i class="fas fa-users mr-1"></i>{{ number_format($episode->show->subscribers) }} subscribers
-                        </p>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($episode->platform_links as $platform => $url)
+                            @continue(blank($url))
+                            <a href="{{ $url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="group inline-flex h-11 items-center gap-2.5 border border-slate-300 bg-white px-4 text-sm font-black text-glow-ink transition hover:border-glow-orange hover:text-glow-orange">
+                                @switch($platform)
+                                    @case('spotify')
+                                        <i class="fab fa-spotify text-lg text-green-500" aria-hidden="true"></i>
+                                        @break
+                                    @case('apple')
+                                        <i class="fab fa-apple text-lg" aria-hidden="true"></i>
+                                        @break
+                                    @case('youtube_music')
+                                        <i class="fab fa-youtube text-lg text-red-500" aria-hidden="true"></i>
+                                        @break
+                                    @case('audiomack')
+                                        <i class="fas fa-music text-lg text-orange-500" aria-hidden="true"></i>
+                                        @break
+                                    @case('soundcloud')
+                                        <i class="fab fa-soundcloud text-lg text-orange-600" aria-hidden="true"></i>
+                                        @break
+                                    @default
+                                        <i class="fas fa-podcast text-lg text-glow-orange" aria-hidden="true"></i>
+                                @endswitch
+                                {{ ucfirst(str_replace('_', ' ', $platform)) }}
+                                <i class="fas fa-arrow-up-right-from-square ml-1 text-[9px] text-slate-400 transition group-hover:text-glow-orange" aria-hidden="true"></i>
+                            </a>
+                        @endforeach
                     </div>
                 </div>
+            </div>
+        </section>
+    @endif
 
-                <!-- More Episodes -->
-                @if($relatedEpisodes->count() > 0)
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="font-bold text-gray-900 mb-4">More Episodes</h3>
-                        <div class="space-y-4">
-                            @foreach($relatedEpisodes as $related)
-                                <a href="{{ route('podcasts.episode', [$episode->show->slug, $related->slug]) }}"
-                                    class="block group">
-                                    <div class="flex items-start space-x-3">
-                                        <img src="{{ $related->cover_image ?? $episode->show->cover_image }}"
-                                            class="w-16 h-16 rounded-lg object-cover">
-                                        <div class="flex-1 min-w-0">
-                                            <h4
-                                                class="text-sm font-semibold text-gray-900 group-hover:text-purple-600 line-clamp-2 transition-colors">
-                                                {{ $related->title }}
-                                            </h4>
-                                            <p class="text-xs text-gray-500 mt-1">{{ $related->formatted_duration }}</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            @endforeach
+    <main class="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8 lg:py-16">
+        <div class="min-w-0 space-y-14">
+            @if($episode->show_notes)
+                <section class="border-t-2 border-glow-ink pt-7" aria-labelledby="show-notes-heading">
+                    <p class="public-kicker">About this episode</p>
+                    <h2 id="show-notes-heading" class="font-editorial mt-1 text-3xl font-bold text-glow-ink">Show notes</h2>
+                    <div class="mt-6 text-[1.0625rem] leading-8 text-slate-700">
+                        {!! nl2br(e($episode->show_notes)) !!}
+                    </div>
+                </section>
+            @endif
+
+            @if($episode->chapters && count($episode->chapters) > 0)
+                <section class="border-t-2 border-glow-ink pt-7" aria-labelledby="episode-chapters-heading">
+                    <p class="public-kicker">Jump to a moment</p>
+                    <h2 id="episode-chapters-heading" class="font-editorial mt-1 text-3xl font-bold text-glow-ink">Chapters</h2>
+
+                    <div class="mt-6 divide-y divide-slate-200 border-y border-slate-200">
+                        @foreach($episode->chapters as $chapter)
+                            @continueIfNotArray($chapter)
+                            <button type="button"
+                                    onclick="const player = document.getElementById('podcastPlayer'); if (player) { player.currentTime = {{ (int) $chapter['time'] }}; player.play(); }"
+                                    class="group grid w-full grid-cols-[5rem_minmax(0,1fr)_auto] items-center gap-4 py-4 text-left transition hover:text-glow-orange"
+                                    aria-label="Play {{ $chapter['title'] }} from {{ gmdate('H:i:s', $chapter['time']) }}">
+                                <span class="font-mono text-xs font-bold text-glow-orange">{{ gmdate('H:i:s', $chapter['time']) }}</span>
+                                <span class="font-bold text-glow-ink transition group-hover:text-glow-orange">{{ $chapter['title'] }}</span>
+                                <i class="fas fa-play text-xs text-slate-300 transition group-hover:text-glow-orange" aria-hidden="true"></i>
+                            </button>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            @if($episode->transcript && count($episode->transcript) > 0)
+                <section class="border-t-2 border-glow-ink pt-7" aria-labelledby="episode-transcript-heading">
+                    <p class="public-kicker">Read along</p>
+                    <h2 id="episode-transcript-heading" class="font-editorial mt-1 text-3xl font-bold text-glow-ink">Transcript</h2>
+
+                    <div class="mt-6 max-h-[34rem] space-y-5 overflow-y-auto border-y border-slate-200 bg-white px-5 py-6 sm:px-6">
+                        @foreach($episode->transcript as $line)
+                            @continueIfNotArray($line)
+                            <div class="grid gap-2 sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-4">
+                                @if(isset($line['time']))
+                                    <span class="font-mono text-xs font-bold text-glow-orange">{{ gmdate('H:i:s', $line['time']) }}</span>
+                                @else
+                                    <span class="hidden sm:block"></span>
+                                @endif
+                                <p class="leading-7 text-slate-700">{{ $line['text'] }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            <section id="episode-discussion" class="border-t-2 border-glow-ink pt-7" aria-labelledby="episode-comments-heading">
+                <p class="public-kicker">Listener discussion</p>
+                <h2 id="episode-comments-heading" class="font-editorial mt-1 text-3xl font-bold text-glow-ink">
+                    Comments <span class="text-slate-400">({{ $episode->comments->count() }})</span>
+                </h2>
+
+                <form id="episode-comment-form" wire:submit.prevent="submitComment" class="mt-7 border border-slate-200 bg-white p-5 sm:p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <label for="episode-comment" class="font-black text-glow-ink">
+                            {{ $replyTo ? 'Write your reply' : 'Join the conversation' }}
+                        </label>
+                        <div class="flex flex-wrap items-center gap-3">
+                            @if($replyTo)
+                                <button type="button"
+                                        wire:click="$set('replyTo', null)"
+                                        class="text-sm font-bold text-slate-500 transition hover:text-glow-orange">
+                                    Cancel reply
+                                </button>
+                            @endif
+                            @if($commentTimestamp)
+                                <button type="button"
+                                        wire:click="$set('commentTimestamp', null)"
+                                        class="text-sm font-bold text-slate-500 transition hover:text-glow-orange">
+                                    Clear timestamp
+                                </button>
+                            @endif
                         </div>
                     </div>
-                @endif
 
-            </div>
+                    @if($replyTo)
+                        <p class="mt-3 border-l-2 border-glow-orange pl-3 text-sm text-slate-600">
+                            Your response will be added to this comment thread.
+                        </p>
+                    @endif
+
+                    @if($commentTimestamp)
+                        <p class="mt-3 text-sm font-semibold text-glow-orange">
+                            <i class="fas fa-clock mr-1" aria-hidden="true"></i>
+                            Timestamp: {{ gmdate('H:i:s', $commentTimestamp) }}
+                        </p>
+                    @endif
+
+                    <textarea id="episode-comment"
+                              wire:model="comment"
+                              rows="4"
+                              class="mt-4 w-full resize-none border border-slate-300 bg-glow-paper px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-glow-orange focus:ring-2 focus:ring-orange-100"
+                              placeholder="{{ $replyTo ? 'Write a thoughtful reply...' : 'Share your thoughts about this episode...' }}"></textarea>
+                    @error('comment')
+                        <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                    @enderror
+
+                    <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        @if($episode->has_playable_audio)
+                            <button type="button"
+                                    onclick="addTimestamp()"
+                                    class="text-left text-sm font-bold text-glow-orange transition hover:text-glow-coral">
+                                <i class="fas fa-clock mr-1" aria-hidden="true"></i>Add current timestamp
+                            </button>
+                        @else
+                            <span class="text-sm text-slate-400">Timestamps are available for audio episodes.</span>
+                        @endif
+
+                        <button type="submit"
+                                wire:loading.attr="disabled"
+                                wire:target="submitComment"
+                                class="bg-glow-ink px-5 py-3 text-sm font-black text-white transition hover:bg-glow-orange disabled:cursor-wait disabled:opacity-60">
+                            {{ $replyTo ? 'Post reply' : 'Post comment' }}
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-8 divide-y divide-slate-200 border-t border-slate-200">
+                    @forelse($episode->comments as $episodeComment)
+                        <article class="py-7">
+                            <div class="flex gap-4">
+                                <img src="{{ $episodeComment->user?->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($episodeComment->user?->name ?? 'Anonymous') }}"
+                                     alt="{{ $episodeComment->user?->name ?? 'Anonymous' }}"
+                                     class="h-11 w-11 shrink-0 bg-glow-navy object-cover">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-wrap items-baseline justify-between gap-2">
+                                        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                            <h3 class="font-black text-glow-ink">{{ $episodeComment->user?->name ?? 'Anonymous' }}</h3>
+                                            <time class="text-xs text-slate-400">{{ $episodeComment->created_at->diffForHumans() }}</time>
+                                        </div>
+                                        <button type="button"
+                                                wire:click="setReplyTo({{ $episodeComment->id }})"
+                                                onclick="setTimeout(() => document.getElementById('episode-comment-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120)"
+                                                class="text-xs font-black uppercase tracking-[0.12em] text-slate-500 transition hover:text-glow-orange">
+                                            Reply
+                                        </button>
+                                    </div>
+
+                                    @if($episodeComment->timestamp)
+                                        <button type="button"
+                                                onclick="const player = document.getElementById('podcastPlayer'); if (player) { player.currentTime = {{ (int) $episodeComment->timestamp }}; player.play(); }"
+                                                class="mt-2 inline-flex items-center gap-1.5 font-mono text-xs font-bold text-glow-orange">
+                                            <i class="fas fa-play text-[9px]" aria-hidden="true"></i>{{ gmdate('H:i:s', $episodeComment->timestamp) }}
+                                        </button>
+                                    @endif
+
+                                    <p class="mt-3 leading-7 text-slate-700">{{ $episodeComment->comment }}</p>
+
+                                    @if($episodeComment->replies->count() > 0)
+                                        <div class="mt-6 space-y-5 border-l-2 border-orange-200 pl-4 sm:pl-6">
+                                            @foreach($episodeComment->replies as $reply)
+                                                <div class="flex gap-3">
+                                                    <img src="{{ $reply->user?->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($reply->user?->name ?? 'Anonymous') }}"
+                                                         alt="{{ $reply->user?->name ?? 'Anonymous' }}"
+                                                         class="h-9 w-9 shrink-0 bg-glow-navy object-cover">
+                                                    <div class="min-w-0 flex-1">
+                                                        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                                            <h4 class="text-sm font-black text-glow-ink">{{ $reply->user?->name ?? 'Anonymous' }}</h4>
+                                                            <time class="text-xs text-slate-400">{{ $reply->created_at->diffForHumans() }}</time>
+                                                        </div>
+                                                        @if($reply->timestamp)
+                                                            <button type="button"
+                                                                    onclick="const player = document.getElementById('podcastPlayer'); if (player) { player.currentTime = {{ (int) $reply->timestamp }}; player.play(); }"
+                                                                    class="mt-1 font-mono text-xs font-bold text-glow-orange">
+                                                                {{ gmdate('H:i:s', $reply->timestamp) }}
+                                                            </button>
+                                                        @endif
+                                                        <p class="mt-2 text-sm leading-6 text-slate-700">{{ $reply->comment }}</p>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="py-12 text-center text-slate-500">
+                            No comments yet. Be the first to share your thoughts.
+                        </div>
+                    @endforelse
+                </div>
+            </section>
         </div>
-    </div>
 
-    @if($episode->audio_file || $episode->has_video)
-        <!-- JavaScript for Player -->
+        <aside class="space-y-10">
+            <section class="border-t-2 border-glow-orange pt-5" aria-labelledby="about-podcast-show-heading">
+                <p class="public-kicker">From the series</p>
+                <h2 id="about-podcast-show-heading" class="font-editorial mt-1 text-2xl font-bold text-glow-ink">About this show</h2>
+
+                <a href="{{ route('podcasts.show', $episode->show->slug) }}"
+                   class="group mt-5 block"
+                   aria-label="View {{ $episode->show->title }}">
+                    <div class="aspect-square overflow-hidden bg-glow-navy">
+                        <x-initials-image
+                            :src="$episode->show->cover_image"
+                            :title="$episode->show->title"
+                            imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+                            fallbackClass="bg-glow-navy"
+                            textClass="text-4xl font-black text-white"
+                        />
+                    </div>
+                </a>
+
+                <h3 class="font-editorial mt-4 text-xl font-bold text-glow-ink">
+                    <a href="{{ route('podcasts.show', $episode->show->slug) }}" class="transition hover:text-glow-orange">
+                        {{ $episode->show->title }}
+                    </a>
+                </h3>
+                @if($episode->show->description)
+                    <p class="mt-3 text-sm leading-6 text-slate-600">{{ Str::limit($episode->show->description, 150) }}</p>
+                @endif
+                <dl class="mt-4 space-y-2 border-t border-slate-200 pt-4 text-sm">
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-slate-500">Host</dt>
+                        <dd class="text-right font-bold text-glow-ink">{{ $episode->show->host_name }}</dd>
+                    </div>
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-slate-500">Episodes</dt>
+                        <dd class="font-bold text-glow-ink">{{ $episode->show->total_episodes }}</dd>
+                    </div>
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-slate-500">Subscribers</dt>
+                        <dd class="font-bold text-glow-ink">{{ number_format($episode->show->subscribers) }}</dd>
+                    </div>
+                </dl>
+            </section>
+
+            @if($relatedEpisodes->count() > 0)
+                <section class="border-t-2 border-glow-ink pt-5" aria-labelledby="related-episodes-heading">
+                    <p class="public-kicker">Keep listening</p>
+                    <h2 id="related-episodes-heading" class="font-editorial mt-1 text-2xl font-bold text-glow-ink">More episodes</h2>
+
+                    <div class="mt-5 divide-y divide-slate-200 border-y border-slate-200">
+                        @foreach($relatedEpisodes as $related)
+                            <a href="{{ route('podcasts.episode', [$episode->show->slug, $related->slug]) }}"
+                               class="group grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3 py-4">
+                                <div class="aspect-square overflow-hidden bg-glow-navy">
+                                    <x-initials-image
+                                        :src="$related->cover_image ?? $episode->show->cover_image"
+                                        :title="$related->title"
+                                        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                        fallbackClass="bg-glow-navy"
+                                        textClass="text-lg font-black text-white"
+                                    />
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="line-clamp-2 text-sm font-black leading-snug text-glow-ink transition group-hover:text-glow-orange">
+                                        {{ $related->title }}
+                                    </h3>
+                                    <p class="mt-2 text-xs text-slate-500">{{ $related->formatted_duration }}</p>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+        </aside>
+    </main>
+
+    @if($episode->has_playable_audio || $episode->has_video)
         <script>
             (function () {
                 let lastTracked = 0;
                 let qualifiedRecorded = false;
                 let rawRecorded = false;
+                const lifecycle = new AbortController();
+                const listenerOptions = { signal: lifecycle.signal };
 
                 const recordQualifiedPlay = () => {
                     if (qualifiedRecorded) return;
@@ -507,7 +569,7 @@
                 if (player) {
                     player.addEventListener('play', function () {
                         recordRawPlay();
-                    });
+                    }, listenerOptions);
 
                     player.addEventListener('timeupdate', function () {
                         const currentTime = Math.floor(player.currentTime);
@@ -517,18 +579,16 @@
                             recordQualifiedPlay();
                         }
 
-                        // Track progress every 30 seconds
                         if (currentTime > 0 && currentTime % 30 === 0 && currentTime !== lastTracked) {
                             @this.call('updateProgress', currentTime, duration);
                             lastTracked = currentTime;
                         }
-                    });
+                    }, listenerOptions);
 
-                    // Resume from last position
                     @if($currentPosition > 0)
                         player.addEventListener('loadedmetadata', function () {
                             player.currentTime = {{ $currentPosition }};
-                        });
+                        }, listenerOptions);
                     @endif
                 }
 
@@ -536,7 +596,7 @@
                 if (videoPlayer) {
                     videoPlayer.addEventListener('play', function () {
                         recordRawPlay();
-                    });
+                    }, listenerOptions);
 
                     videoPlayer.addEventListener('timeupdate', function () {
                         const currentTime = Math.floor(videoPlayer.currentTime);
@@ -550,7 +610,7 @@
                             @this.call('updateProgress', currentTime, duration);
                             lastTracked = currentTime;
                         }
-                    });
+                    }, listenerOptions);
                 }
 
                 const overlay = document.querySelector('[data-video-overlay]');
@@ -565,7 +625,7 @@
                         iframe.classList.remove('hidden');
                         recordRawPlay();
                         recordQualifiedPlay();
-                    }, { once: true });
+                    }, { once: true, signal: lifecycle.signal });
                 }
 
                 const externalVideo = document.querySelector('[data-video-external]');
@@ -573,16 +633,25 @@
                     externalVideo.addEventListener('click', function () {
                         recordRawPlay();
                         recordQualifiedPlay();
-                    }, { once: true });
+                    }, { once: true, signal: lifecycle.signal });
                 }
 
-                window.addTimestamp = function () {
+                const addTimestamp = function () {
                     if (!player) return;
                     const currentTime = Math.floor(player.currentTime);
                     @this.call('setCommentTime', currentTime);
                 };
+
+                window.addTimestamp = addTimestamp;
+
+                document.addEventListener('livewire:navigating', function () {
+                    lifecycle.abort();
+
+                    if (window.addTimestamp === addTimestamp) {
+                        delete window.addTimestamp;
+                    }
+                }, { once: true });
             })();
         </script>
     @endif
-
 </div>

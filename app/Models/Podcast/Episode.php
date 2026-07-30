@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Episode extends Model
@@ -252,6 +253,57 @@ class Episode extends Model
     public function getHasVideoAttribute()
     {
         return !empty($this->video_url);
+    }
+
+    public function getHasPlayableAudioAttribute(): bool
+    {
+        $source = trim((string) $this->audio_file);
+
+        if ($source === '') {
+            return false;
+        }
+
+        $host = strtolower((string) parse_url($source, PHP_URL_HOST));
+        $platformHosts = [
+            'open.spotify.com',
+            'spotify.com',
+            'music.apple.com',
+            'podcasts.apple.com',
+            'youtube.com',
+            'www.youtube.com',
+            'youtu.be',
+            'soundcloud.com',
+            'www.soundcloud.com',
+            'audiomack.com',
+            'www.audiomack.com',
+        ];
+
+        if ($host !== '' && in_array($host, $platformHosts, true)) {
+            return false;
+        }
+
+        if (!Str::startsWith($source, ['https://', 'http://', '//', 'data:', 'blob:'])) {
+            $storagePath = preg_replace('#^/?storage/#', '', $source);
+
+            return is_string($storagePath)
+                && $storagePath !== ''
+                && Storage::disk('public')->exists($storagePath);
+        }
+
+        return true;
+    }
+
+    public function getPublicAudioUrlAttribute(): ?string
+    {
+        if (!$this->has_playable_audio) {
+            return null;
+        }
+
+        $source = trim((string) $this->audio_file);
+
+        return Str::startsWith($source, ['https://', 'http://', '//', 'data:', 'blob:'])
+            ? $source
+            : asset(ltrim($source, '/'));
     }
 
     // Get all available platform links

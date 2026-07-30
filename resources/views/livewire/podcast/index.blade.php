@@ -1,249 +1,251 @@
-<div class="min-h-screen bg-gray-50">
-    
-    <!-- Hero Section -->
-    <section class="relative bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 text-white py-20 overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0"
-                style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+<div class="min-h-screen bg-[#f6f2e9] text-[#0b1830]">
+    <section class="relative overflow-hidden bg-[#07172f] text-white">
+        <div class="absolute inset-y-0 right-0 hidden w-2/5 border-l border-white/10 lg:block" aria-hidden="true">
+            <div class="absolute inset-0 opacity-20"
+                style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.35) 1px, transparent 0); background-size: 24px 24px;">
             </div>
         </div>
 
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="max-w-4xl mx-auto text-center">
-                <i class="fas fa-podcast text-6xl mb-6 opacity-80"></i>
-                <h1 class="text-5xl md:text-6xl font-bold mb-6">Glow FM Podcasts</h1>
-                <p class="text-xl md:text-2xl text-purple-100 leading-relaxed">
-                    Listen to exclusive shows, interviews, and behind-the-scenes content from your favorite station
+        <div class="relative mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1fr_22rem] lg:px-10 lg:py-24">
+            <div class="max-w-3xl">
+                <p class="mb-5 text-xs font-bold uppercase tracking-[0.24em] text-[#ff8a2a]">Glow audio</p>
+                <h1 class="font-display text-5xl font-semibold leading-[0.96] tracking-tight sm:text-6xl lg:text-7xl">
+                    Stories made to stay with you.
+                </h1>
+                <p class="mt-7 max-w-2xl text-lg leading-8 text-slate-300">
+                    Hear original conversations, interviews, culture, public affairs and the voices shaping Akure and Ondo State.
                 </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Featured Shows -->
-    @if($featuredShows->count() > 0)
-    <section class="py-12 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-3xl font-bold text-gray-900">
-                    <i class="fas fa-star text-yellow-500 mr-2"></i>
-                    Featured Shows
-                </h2>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                @foreach($featuredShows as $show)
-                <a href="{{ route('podcasts.show', $show->slug) }}" 
-                   class="group bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                    <div class="relative h-64">
-                        <img src="{{ $show->cover_image }}" alt="{{ $show->title }}" 
-                             class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                        <div class="absolute bottom-4 left-4 right-4">
-                            <span class="px-3 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">
-                                {{ ucfirst($show->category) }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $show->title }}</h3>
-                        <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ $show->description }}</p>
-                        <div class="flex items-center justify-between text-sm text-gray-500">
-                            <span><i class="fas fa-microphone mr-1"></i>{{ $show->host_name }}</span>
-                            <span><i class="fas fa-headphones mr-1"></i>{{ number_format($show->total_plays) }}</span>
-                        </div>
-                    </div>
-                </a>
-                @endforeach
-            </div>
-        </div>
-    </section>
-    @endif
-
-    <!-- Latest Episodes -->
-    @if($latestEpisodes->count() > 0)
-    <section class="py-12 bg-gray-100">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-3xl font-bold text-gray-900">
-                    <i class="fas fa-clock text-purple-600 mr-2"></i>
-                    Latest Episodes
-                </h2>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($latestEpisodes as $episode)
-                <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                    <div class="relative h-48">
-                        <img src="{{ $episode->cover_image ?? $episode->show->cover_image }}" 
-                             alt="{{ $episode->title }}"
-                             class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <a href="{{ route('podcasts.episode', [$episode->show->slug, $episode->slug]) }}" 
-                               class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl transform scale-75 group-hover:scale-100 transition-transform">
-                                <i class="fas fa-play ml-1"></i>
-                            </a>
-                        </div>
-                        <div class="absolute top-3 right-3">
-                            <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                                {{ $episode->formatted_duration }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="p-5">
-                        <p class="text-xs text-purple-600 font-semibold mb-2">{{ $episode->show->title }}</p>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
-                            {{ $episode->title }}
-                        </h3>
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $episode->description }}</p>
-                        <div class="flex items-center justify-between text-xs text-gray-500">
-                            <span><i class="fas fa-calendar mr-1"></i>{{ $episode->published_at->format('M d, Y') }}</span>
-                            <span><i class="fas fa-headphones mr-1"></i>{{ number_format($episode->plays) }}</span>
-                        </div>
-                    </div>
-                </article>
-                @endforeach
-            </div>
-        </div>
-    </section>
-    @endif
-
-    <!-- All Shows Section -->
-    <section class="py-12 bg-white">
-        <div class="container mx-auto px-4">
-            
-            <!-- Filters -->
-            <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-                <h2 class="text-3xl font-bold text-gray-900">All Podcast Shows</h2>
-                
-                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                    <!-- Search -->
-                    <div class="relative">
-                        <input type="text" wire:model.live.debounce.300ms="searchQuery"
-                               placeholder="Search podcasts..."
-                               class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    </div>
-
-                    <!-- Category Filter -->
-                    <select wire:model.live="selectedCategory"
-                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        @foreach($categories as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                <div class="mt-9 flex flex-wrap gap-3">
+                    <a href="#latest-episodes"
+                        class="inline-flex items-center gap-3 bg-[#f36b21] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#ff7d32] focus:outline-none focus:ring-2 focus:ring-white">
+                        <i class="fas fa-play text-xs" aria-hidden="true"></i>
+                        Start listening
+                    </a>
+                    <a href="{{ route('podcasts.feed') }}"
+                        class="inline-flex items-center gap-3 border border-white/30 px-6 py-3.5 text-sm font-bold text-white transition hover:border-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white">
+                        <i class="fas fa-rss text-xs" aria-hidden="true"></i>
+                        Podcast RSS
+                    </a>
                 </div>
             </div>
 
-            <!-- Shows Grid -->
-            @if($shows->count() > 0)
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                    @foreach($shows as $show)
-                    <a href="{{ route('podcasts.show', $show->slug) }}" 
-                       class="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100">
-                        <div class="relative h-48">
-                            <img src="{{ $show->cover_image }}" alt="{{ $show->title }}" 
-                                 class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300">
-                            <div class="absolute top-3 left-3">
-                                <span class="px-3 py-1 bg-{{ $show->category === 'music' ? 'purple' : ($show->category === 'talk' ? 'blue' : 'emerald') }}-600 text-white text-xs font-bold rounded-full">
+            <div class="self-end border-t border-white/20 pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">What you will hear</p>
+                <ul class="mt-5 space-y-4 text-sm text-slate-200">
+                    <li class="flex items-center gap-3"><span class="h-px w-6 bg-[#f36b21]"></span>News and public affairs</li>
+                    <li class="flex items-center gap-3"><span class="h-px w-6 bg-[#f36b21]"></span>Music and culture</li>
+                    <li class="flex items-center gap-3"><span class="h-px w-6 bg-[#f36b21]"></span>People and community</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    @if($featuredShows->isNotEmpty())
+        <section class="border-b border-[#0b1830]/10 bg-white py-14 lg:py-20">
+            <div class="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+                <div class="mb-8 flex items-end justify-between gap-6">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">Editor’s selection</p>
+                        <h2 class="font-display mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Featured podcasts</h2>
+                    </div>
+                    <span class="hidden text-sm text-slate-500 sm:block">{{ $featuredShows->count() }} selected series</span>
+                </div>
+
+                <div class="grid gap-px overflow-hidden border border-[#0b1830]/10 bg-[#0b1830]/10 md:grid-cols-3">
+                    @foreach($featuredShows as $show)
+                        <a href="{{ route('podcasts.show', $show->slug) }}"
+                            class="group flex h-full flex-col bg-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#f36b21]">
+                            <div class="relative aspect-square overflow-hidden bg-slate-100">
+                                <x-initials-image
+                                    :src="$show->cover_image"
+                                    :title="$show->title"
+                                    imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                    fallbackClass="bg-[#17375f]"
+                                    textClass="font-display text-5xl font-semibold text-white"
+                                />
+                            </div>
+                            <div class="flex flex-1 flex-col p-6">
+                                <p class="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-[#d95318]">
                                     {{ ucfirst($show->category) }}
+                                </p>
+                                <h3 class="font-display mt-2 text-2xl font-semibold leading-tight transition group-hover:text-[#d95318]">
+                                    {{ $show->title }}
+                                </h3>
+                                <p class="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">
+                                    {{ \Illuminate\Support\Str::limit(strip_tags($show->description), 135) }}
+                                </p>
+                                <div class="mt-auto flex items-center justify-between border-t border-[#0b1830]/10 pt-5 text-xs text-slate-500">
+                                    <span>{{ $show->host_name }}</span>
+                                    <span class="inline-flex items-center gap-2 font-bold text-[#0b1830]">
+                                        Explore <i class="fas fa-arrow-right text-[0.65rem]" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @if($latestEpisodes->isNotEmpty())
+        <section id="latest-episodes" class="scroll-mt-28 py-14 lg:py-20">
+            <div class="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+                <div class="grid gap-10 lg:grid-cols-[18rem_1fr]">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">Fresh from the studio</p>
+                        <h2 class="font-display mt-2 text-4xl font-semibold tracking-tight">Latest episodes</h2>
+                        <p class="mt-4 text-sm leading-6 text-slate-600">
+                            New conversations and catch-up listening, published by the Glow FM team.
+                        </p>
+                    </div>
+
+                    <div class="divide-y divide-[#0b1830]/10 border-y border-[#0b1830]/10">
+                        @foreach($latestEpisodes as $episode)
+                            <a href="{{ route('podcasts.episode', [$episode->show->slug, $episode->slug]) }}"
+                                class="group grid gap-5 py-6 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#f36b21] sm:grid-cols-[7.5rem_1fr_auto] sm:items-center">
+                                <div class="relative aspect-square overflow-hidden bg-slate-200">
+                                    <x-initials-image
+                                        :src="$episode->cover_image ?? $episode->show->cover_image"
+                                        :title="$episode->title"
+                                        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                                        fallbackClass="bg-[#17375f]"
+                                        textClass="font-display text-3xl font-semibold text-white"
+                                    />
+                                </div>
+                                <div>
+                                    <p class="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#d95318]">{{ $episode->show->title }}</p>
+                                    <h3 class="font-display mt-1 text-xl font-semibold leading-tight transition group-hover:text-[#d95318] sm:text-2xl">
+                                        {{ $episode->title }}
+                                    </h3>
+                                    <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+                                        {{ \Illuminate\Support\Str::limit(strip_tags($episode->description), 155) }}
+                                    </p>
+                                    <p class="mt-3 text-xs text-slate-500">
+                                        {{ $episode->published_at?->format('M j, Y') }} · {{ $episode->formatted_duration }}
+                                    </p>
+                                </div>
+                                <span class="inline-flex h-11 w-11 items-center justify-center justify-self-start rounded-full bg-[#0b1830] text-white transition group-hover:bg-[#f36b21] sm:justify-self-end"
+                                    aria-hidden="true">
+                                    <i class="fas fa-play ml-0.5 text-xs"></i>
                                 </span>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    <section class="border-y border-[#0b1830]/10 bg-white py-14 lg:py-20">
+        <div class="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+            <div class="mb-9 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">The full collection</p>
+                    <h2 class="font-display mt-2 text-4xl font-semibold tracking-tight">Find your next listen</h2>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-[18rem_13rem]">
+                    <label class="relative block">
+                        <span class="sr-only">Search podcast shows</span>
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-xs text-slate-400" aria-hidden="true"></i>
+                        <input type="search" wire:model.live.debounce.300ms="searchQuery"
+                            placeholder="Search podcast shows"
+                            class="w-full border border-[#0b1830]/20 bg-[#f6f2e9] py-3 pl-10 pr-4 text-sm text-[#0b1830] outline-none transition placeholder:text-slate-500 focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]">
+                    </label>
+                    <label>
+                        <span class="sr-only">Filter by category</span>
+                        <select wire:model.live="selectedCategory"
+                            class="w-full border border-[#0b1830]/20 bg-[#f6f2e9] px-4 py-3 text-sm text-[#0b1830] outline-none transition focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]">
+                            @foreach($categories as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            @if($shows->isNotEmpty())
+                <div class="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    @foreach($shows as $show)
+                        <a href="{{ route('podcasts.show', $show->slug) }}"
+                            class="group block focus:outline-none focus:ring-2 focus:ring-[#f36b21] focus:ring-offset-4">
+                            <div class="relative aspect-square overflow-hidden bg-slate-100">
+                                <x-initials-image
+                                    :src="$show->cover_image"
+                                    :title="$show->title"
+                                    imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                                    fallbackClass="bg-[#17375f]"
+                                    textClass="font-display text-4xl font-semibold text-white"
+                                />
+                                @if($show->explicit)
+                                    <span class="absolute right-3 top-3 bg-[#0b1830] px-2 py-1 text-[0.65rem] font-bold text-white">E</span>
+                                @endif
                             </div>
-                            @if($show->explicit)
-                            <div class="absolute top-3 right-3">
-                                <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded">E</span>
-                            </div>
-                            @endif
-                        </div>
-                        <div class="p-5">
-                            <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                            <p class="mt-5 text-[0.68rem] font-bold uppercase tracking-[0.17em] text-[#d95318]">
+                                {{ ucfirst($show->category) }}
+                            </p>
+                            <h3 class="font-display mt-1 text-xl font-semibold leading-tight transition group-hover:text-[#d95318]">
                                 {{ $show->title }}
                             </h3>
-                            <p class="text-sm text-gray-600 mb-3">
-                                <i class="fas fa-microphone mr-1 text-purple-600"></i>{{ $show->host_name }}
-                            </p>
-                            <div class="flex items-center justify-between text-xs text-gray-500">
-                                <span><i class="fas fa-list mr-1"></i>{{ $show->published_episodes_count }} episodes</span>
-                                <span><i class="fas fa-users mr-1"></i>{{ number_format($show->subscribers) }}</span>
-                            </div>
-                        </div>
-                    </a>
+                            <p class="mt-2 text-sm text-slate-600">{{ $show->host_name }}</p>
+                            <p class="mt-3 text-xs text-slate-500">{{ $show->published_episodes_count }} {{ \Illuminate\Support\Str::plural('episode', $show->published_episodes_count) }}</p>
+                        </a>
                     @endforeach
                 </div>
 
-                <!-- Pagination -->
-                <div class="mt-8">
+                <div class="mt-12 border-t border-[#0b1830]/10 pt-8">
                     {{ $shows->links() }}
                 </div>
             @else
-                <div class="text-center py-12">
-                    <i class="fas fa-podcast text-6xl text-gray-300 mb-4"></i>
-                    <p class="text-gray-600 text-lg">No podcasts found matching your criteria</p>
+                <div class="border border-dashed border-[#0b1830]/20 bg-[#f6f2e9] px-6 py-16 text-center">
+                    <i class="fas fa-headphones text-3xl text-slate-300" aria-hidden="true"></i>
+                    <h3 class="font-display mt-4 text-2xl font-semibold">No matching podcasts</h3>
+                    <p class="mt-2 text-sm text-slate-600">Try another title, topic or category.</p>
                 </div>
             @endif
         </div>
     </section>
 
-    <!-- Trending Episodes Sidebar -->
-    @if($trendingEpisodes->count() > 0)
-    <section class="py-12 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-gray-900 mb-8">
-                <i class="fas fa-fire text-orange-500 mr-2"></i>
-                Trending This Month
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                @foreach($trendingEpisodes as $index => $episode)
-                <article class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
-                    <div class="flex items-start space-x-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-lg flex items-center justify-center font-bold">
-                            {{ $index + 1 }}
-                        </span>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-bold text-gray-900 mb-1 line-clamp-2">
-                                <a href="{{ route('podcasts.episode', [$episode->show->slug, $episode->slug]) }}" class="hover:text-purple-600">
-                                    {{ $episode->title }}
-                                </a>
-                            </h4>
-                            <p class="text-xs text-gray-600 mb-2">{{ $episode->show->title }}</p>
-                            <div class="flex items-center text-xs text-gray-500">
-                                <i class="fas fa-headphones mr-1"></i>
-                                {{ number_format($episode->plays) }} plays
-                            </div>
-                        </div>
+    @if($trendingEpisodes->isNotEmpty())
+        <section class="py-14 lg:py-20">
+            <div class="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+                <div class="grid gap-10 lg:grid-cols-[18rem_1fr]">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">Listener chart</p>
+                        <h2 class="font-display mt-2 text-4xl font-semibold tracking-tight">Most played this month</h2>
                     </div>
-                </article>
-                @endforeach
-            </div>
-        </div>
-    </section>
-    @endif
-
-    <!-- CTA Section -->
-    <section class="py-20 bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 text-white">
-        <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto text-center">
-                <i class="fas fa-rss text-6xl mb-6 opacity-80"></i>
-                <h2 class="text-4xl md:text-5xl font-bold mb-6">Subscribe to Never Miss an Episode</h2>
-                <p class="text-xl text-purple-100 mb-8 leading-relaxed">
-                    Get notified when new episodes drop. Available on all major podcast platforms.
-                </p>
-                <div class="flex flex-wrap items-center justify-center gap-4">
-                    <a href="#" class="px-6 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors">
-                        <i class="fab fa-spotify mr-2"></i>Spotify
-                    </a>
-                    <a href="#" class="px-6 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors">
-                        <i class="fab fa-apple mr-2"></i>Apple Podcasts
-                    </a>
-                    <a href="#" class="px-6 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors">
-                        <i class="fab fa-google mr-2"></i>Google Podcasts
-                    </a>
-                    <a href="#" class="px-6 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors">
-                        <i class="fas fa-rss mr-2"></i>RSS Feed
-                    </a>
+                    <ol class="divide-y divide-[#0b1830]/10 border-y border-[#0b1830]/10">
+                        @foreach($trendingEpisodes as $index => $episode)
+                            <li>
+                                <a href="{{ route('podcasts.episode', [$episode->show->slug, $episode->slug]) }}"
+                                    class="group grid grid-cols-[2.5rem_1fr_auto] items-center gap-4 py-5 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#f36b21]">
+                                    <span class="font-display text-2xl text-[#d95318]">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                                    <span>
+                                        <strong class="block font-display text-lg font-semibold leading-tight transition group-hover:text-[#d95318]">{{ $episode->title }}</strong>
+                                        <small class="mt-1 block text-xs text-slate-500">{{ $episode->show->title }}</small>
+                                    </span>
+                                    <span class="hidden text-xs text-slate-500 sm:block">{{ number_format($episode->plays) }} plays</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ol>
                 </div>
             </div>
+        </section>
+    @endif
+
+    <section class="bg-[#f36b21] text-white">
+        <div class="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-12 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#07172f]">Take Glow with you</p>
+                <h2 class="font-display mt-2 text-3xl font-semibold">Follow every new episode.</h2>
+            </div>
+            <a href="{{ route('podcasts.feed') }}"
+                class="inline-flex items-center justify-center gap-3 self-start bg-[#07172f] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#112b50] focus:outline-none focus:ring-2 focus:ring-white md:self-auto">
+                <i class="fas fa-rss text-xs" aria-hidden="true"></i>
+                Open the RSS feed
+            </a>
         </div>
     </section>
-
 </div>

@@ -1,321 +1,306 @@
-<div class="min-h-screen bg-gray-50">
-    
-    <!-- Show Hero -->
-    <section class="relative bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white py-16">
-        <div class="absolute inset-0 opacity-20">
-            @if($show->cover_image)
-            <img src="{{ $show->cover_image }}" class="w-full h-full object-cover blur-xl">
-            @endif
+<div class="min-h-screen bg-[#f6f2e9] text-[#0b1830]">
+    <section class="bg-[#07172f] text-white">
+        <div class="mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10">
+            <nav class="flex flex-wrap items-center gap-2 text-xs text-slate-400" aria-label="Breadcrumb">
+                <a href="{{ route('podcasts.index') }}" class="transition hover:text-white">Podcasts</a>
+                <i class="fas fa-chevron-right text-[0.55rem]" aria-hidden="true"></i>
+                <span class="text-slate-200">{{ $show->title }}</span>
+            </nav>
         </div>
-        
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="max-w-6xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    
-                    <!-- Show Cover -->
-                    <div class="md:col-span-1">
-                        <div class="relative">
-                            <img src="{{ $show->cover_image }}" alt="{{ $show->title }}" 
-                                 class="w-full rounded-2xl shadow-2xl">
-                            @if($show->explicit)
-                            <div class="absolute top-4 right-4">
-                                <span class="px-3 py-1 bg-red-600 text-white font-bold rounded-lg">EXPLICIT</span>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
 
-                    <!-- Show Info -->
-                    <div class="md:col-span-2 flex flex-col justify-center">
-                        <div class="mb-4">
-                            <span class="px-4 py-2 bg-purple-600 text-white font-bold rounded-full text-sm">
-                                {{ ucfirst($show->category) }}
-                            </span>
-                        </div>
-                        
-                        <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ $show->title }}</h1>
-                        
-                        <p class="text-xl text-purple-100 mb-6 leading-relaxed">{{ $show->description }}</p>
-
-                        <!-- Host Info -->
-                        <div class="flex items-center space-x-4 mb-6">
-                            @if($show->host)
-                            <img src="{{ $show->host->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($show->host_name) }}" 
-                                 class="w-12 h-12 rounded-full border-2 border-purple-300">
-                            @endif
-                            <div>
-                                <p class="font-semibold">Hosted by {{ $show->host_name }}</p>
-                                <p class="text-sm text-purple-200">{{ ucfirst($show->frequency) }} episodes</p>
-                            </div>
-                        </div>
-
-                        <!-- Stats -->
-                        <div class="flex flex-wrap items-center gap-6 mb-6 text-sm">
-                            <div class="flex items-center space-x-2">
-                                <i class="fas fa-list"></i>
-                                <span>{{ $show->total_episodes }} Episodes</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i class="fas fa-users"></i>
-                                <span>{{ number_format($show->subscribers) }} Subscribers</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i class="fas fa-headphones"></i>
-                                <span>{{ number_format($show->total_plays) }} Plays</span>
-                            </div>
-                            @if($show->average_rating > 0)
-                            <div class="flex items-center space-x-2">
-                                <i class="fas fa-star text-yellow-400"></i>
-                                <span>{{ number_format($show->average_rating, 1) }} / 5</span>
-                            </div>
-                            @endif
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="flex flex-wrap items-center gap-4">
-                            <button wire:click="toggleSubscribe" 
-                                    class="px-8 py-3 {{ $isSubscribed ? 'bg-white text-purple-600' : 'bg-purple-600 text-white' }} font-bold rounded-lg hover:opacity-90 transition-opacity">
-                                <i class="fas {{ $isSubscribed ? 'fa-check' : 'fa-plus' }} mr-2"></i>
-                                {{ $isSubscribed ? 'Subscribed' : 'Subscribe' }}
-                            </button>
-                            
-                            @if(!$showReviewForm)
-                            <button wire:click="$set('showReviewForm', true)" 
-                                    class="px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-lg transition-colors">
-                                <i class="fas fa-star mr-2"></i>Rate Show
-                            </button>
-                            @endif
-
-                            <!-- Platform Links -->
-                            @if($show->spotify_url || $show->apple_url || $show->google_url)
-                            <div class="flex items-center space-x-3">
-                                @if($show->spotify_url)
-                                <a href="{{ $show->spotify_url }}" target="_blank" 
-                                   class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                                    <i class="fab fa-spotify"></i>
-                                </a>
-                                @endif
-                                @if($show->apple_url)
-                                <a href="{{ $show->apple_url }}" target="_blank" 
-                                   class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                                    <i class="fab fa-apple"></i>
-                                </a>
-                                @endif
-                                @if($show->google_url)
-                                <a href="{{ $show->google_url }}" target="_blank" 
-                                   class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                                    <i class="fab fa-google"></i>
-                                </a>
-                                @endif
-                            </div>
-                            @endif
-                        </div>
-
-                        <!-- Flash Messages -->
-                        @if (session()->has('success'))
-                        <div class="mt-4 p-3 bg-green-500 text-white rounded-lg flash-auto-dismiss">
-                            {{ session('success') }}
-                        </div>
-                        @endif
-                    </div>
+        <div class="mx-auto grid max-w-7xl gap-10 px-5 pb-16 sm:px-8 md:grid-cols-[17rem_1fr] lg:gap-16 lg:px-10 lg:pb-24">
+            <div class="relative self-start">
+                <div class="aspect-square overflow-hidden bg-white/5">
+                    <x-initials-image
+                        :src="$show->cover_image"
+                        :title="$show->title"
+                        imgClass="h-full w-full object-cover"
+                        fallbackClass="bg-[#17375f]"
+                        textClass="font-display text-6xl font-semibold text-white"
+                    />
                 </div>
+                @if($show->explicit)
+                    <span class="absolute right-3 top-3 bg-[#07172f] px-2.5 py-1 text-[0.65rem] font-bold tracking-wide text-white">EXPLICIT</span>
+                @endif
+            </div>
+
+            <div class="self-center">
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#ff8a2a]">{{ ucfirst($show->category) }} podcast</p>
+                <h1 class="font-display mt-3 max-w-4xl text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
+                    {{ $show->title }}
+                </h1>
+                <p class="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
+                    {{ \Illuminate\Support\Str::limit(strip_tags($show->description), 260) }}
+                </p>
+
+                <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-300">
+                    <span class="font-semibold text-white">Hosted by {{ $show->host_name }}</span>
+                    <span>{{ $show->total_episodes }} {{ \Illuminate\Support\Str::plural('episode', $show->total_episodes) }}</span>
+                    <span>{{ ucfirst($show->frequency) }}</span>
+                    @if($show->average_rating > 0)
+                        <span class="inline-flex items-center gap-2">
+                            <i class="fas fa-star text-[#ff8a2a]" aria-hidden="true"></i>
+                            {{ number_format($show->average_rating, 1) }}
+                        </span>
+                    @endif
+                </div>
+
+                <div class="mt-9 flex flex-wrap items-center gap-3">
+                    @if($episodes->isNotEmpty())
+                        <a href="{{ route('podcasts.episode', [$show->slug, $episodes->first()->slug]) }}"
+                            class="inline-flex items-center gap-3 bg-[#f36b21] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#ff7d32] focus:outline-none focus:ring-2 focus:ring-white">
+                            <i class="fas fa-play text-xs" aria-hidden="true"></i>
+                            Play latest episode
+                        </a>
+                    @endif
+
+                    <button type="button" wire:click="toggleSubscribe"
+                        class="inline-flex items-center gap-3 border border-white/30 px-6 py-3.5 text-sm font-bold text-white transition hover:border-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white">
+                        <i class="fas {{ $isSubscribed ? 'fa-check' : 'fa-plus' }} text-xs" aria-hidden="true"></i>
+                        {{ $isSubscribed ? 'Following' : 'Follow show' }}
+                    </button>
+
+                    @if($show->spotify_url || $show->apple_url || $show->google_url || $show->rss_feed_url)
+                        <div class="flex items-center gap-1 border-l border-white/20 pl-3">
+                            @if($show->spotify_url)
+                                <a href="{{ $show->spotify_url }}" target="_blank" rel="noopener noreferrer"
+                                    class="inline-flex h-11 w-11 items-center justify-center text-slate-300 transition hover:bg-white/10 hover:text-white"
+                                    aria-label="Listen on Spotify"><i class="fab fa-spotify" aria-hidden="true"></i></a>
+                            @endif
+                            @if($show->apple_url)
+                                <a href="{{ $show->apple_url }}" target="_blank" rel="noopener noreferrer"
+                                    class="inline-flex h-11 w-11 items-center justify-center text-slate-300 transition hover:bg-white/10 hover:text-white"
+                                    aria-label="Listen on Apple Podcasts"><i class="fab fa-apple" aria-hidden="true"></i></a>
+                            @endif
+                            @if($show->google_url)
+                                <a href="{{ $show->google_url }}" target="_blank" rel="noopener noreferrer"
+                                    class="inline-flex h-11 w-11 items-center justify-center text-slate-300 transition hover:bg-white/10 hover:text-white"
+                                    aria-label="Listen on Google Podcasts"><i class="fab fa-google" aria-hidden="true"></i></a>
+                            @endif
+                            @if($show->rss_feed_url)
+                                <a href="{{ $show->rss_feed_url }}" target="_blank" rel="noopener noreferrer"
+                                    class="inline-flex h-11 w-11 items-center justify-center text-slate-300 transition hover:bg-white/10 hover:text-white"
+                                    aria-label="Open RSS feed"><i class="fas fa-rss" aria-hidden="true"></i></a>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                @if(session()->has('success'))
+                    <div class="flash-auto-dismiss mt-5 border border-emerald-300/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100" role="status">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if(session()->has('error'))
+                    <div class="flash-auto-dismiss mt-5 border border-red-300/30 bg-red-500/10 px-4 py-3 text-sm text-red-100" role="alert">
+                        {{ session('error') }}
+                    </div>
+                @endif
             </div>
         </div>
     </section>
 
-    <!-- Review Form -->
     @if($showReviewForm)
-    <section class="py-8 bg-white border-b">
-        <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto">
-                <form wire:submit.prevent="submitReview" class="bg-purple-50 rounded-xl p-6">
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Rate This Show</h3>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Your Rating</label>
-                        <div class="flex items-center space-x-2">
+        <section class="border-b border-[#0b1830]/10 bg-white py-10">
+            <div class="mx-auto max-w-3xl px-5 sm:px-8">
+                <form wire:submit.prevent="submitReview" class="border-l-4 border-[#f36b21] bg-[#f6f2e9] p-6 sm:p-8">
+                    <div class="flex items-start justify-between gap-6">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-[#d95318]">Listener feedback</p>
+                            <h2 class="font-display mt-2 text-2xl font-semibold">Rate this podcast</h2>
+                        </div>
+                        <button type="button" wire:click="$set('showReviewForm', false)"
+                            class="inline-flex h-9 w-9 items-center justify-center text-slate-500 transition hover:bg-white hover:text-[#0b1830]"
+                            aria-label="Close review form">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <fieldset class="mt-6">
+                        <legend class="text-sm font-semibold">Your rating</legend>
+                        <div class="mt-2 flex items-center gap-1">
                             @for($i = 1; $i <= 5; $i++)
-                            <button type="button" wire:click="$set('rating', {{ $i }})" 
-                                    class="text-3xl {{ $rating >= $i ? 'text-yellow-400' : 'text-gray-300' }} hover:text-yellow-400 transition-colors">
-                                <i class="fas fa-star"></i>
-                            </button>
+                                <button type="button" wire:click="$set('rating', {{ $i }})"
+                                    class="p-1 text-2xl transition {{ $rating >= $i ? 'text-[#f36b21]' : 'text-slate-300 hover:text-[#f36b21]' }}"
+                                    aria-label="{{ $i }} {{ \Illuminate\Support\Str::plural('star', $i) }}">
+                                    <i class="fas fa-star" aria-hidden="true"></i>
+                                </button>
                             @endfor
                         </div>
-                    </div>
+                    </fieldset>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Your Review (Optional)</label>
-                        <textarea wire:model="review" rows="4" 
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                  placeholder="Share your thoughts about this podcast..."></textarea>
-                    </div>
+                    <label class="mt-5 block">
+                        <span class="text-sm font-semibold">Your review <span class="font-normal text-slate-500">(optional)</span></span>
+                        <textarea wire:model="review" rows="4" maxlength="500"
+                            class="mt-2 w-full border border-[#0b1830]/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]"
+                            placeholder="What stood out to you?"></textarea>
+                        @error('review') <span class="mt-1 block text-xs text-red-600">{{ $message }}</span> @enderror
+                    </label>
 
-                    <div class="flex items-center space-x-3">
-                        <button type="submit" 
-                                class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
-                            Submit Review
+                    <div class="mt-5 flex flex-wrap gap-3">
+                        <button type="submit" class="bg-[#0b1830] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#18375f]">
+                            Submit review
                         </button>
-                        <button type="button" wire:click="$set('showReviewForm', false)" 
-                                class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors">
+                        <button type="button" wire:click="$set('showReviewForm', false)"
+                            class="border border-[#0b1830]/20 px-6 py-3 text-sm font-bold transition hover:border-[#0b1830]">
                             Cancel
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
-    </section>
+        </section>
     @endif
 
-    <!-- Episodes Section -->
-    <section class="py-12">
-        <div class="container mx-auto px-4">
-            <div class="max-w-6xl mx-auto">
-                
-                <!-- Filters -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 space-y-4 sm:space-y-0">
-                    <h2 class="text-3xl font-bold text-gray-900">Episodes</h2>
-                    
-                    <div class="flex flex-wrap items-center gap-3">
-                        <!-- Season Filter -->
-                        @if($seasons->count() > 0)
-                        <select wire:model.live="selectedSeason" 
-                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option value="all">All Seasons</option>
-                            @foreach($seasons as $season)
-                            <option value="{{ $season }}">Season {{ $season }}</option>
-                            @endforeach
-                        </select>
-                        @endif
+    <main class="py-14 lg:py-20">
+        <div class="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[1fr_19rem] lg:px-10">
+            <div>
+                <section>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">About the show</p>
+                    <h2 class="font-display mt-2 text-3xl font-semibold tracking-tight">The story behind the microphone</h2>
+                    <p class="mt-5 max-w-3xl whitespace-pre-line text-base leading-8 text-slate-700">{{ strip_tags($show->description) }}</p>
+                </section>
 
-                        <!-- Sort Filter -->
-                        <select wire:model.live="sortBy" 
-                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option value="latest">Latest First</option>
-                            <option value="oldest">Oldest First</option>
-                            <option value="popular">Most Popular</option>
-                        </select>
+                <section class="mt-14 border-t border-[#0b1830]/10 pt-10">
+                    <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">Catch up</p>
+                            <h2 class="font-display mt-2 text-3xl font-semibold tracking-tight">Episodes</h2>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            @if($seasons->isNotEmpty())
+                                <label>
+                                    <span class="sr-only">Season</span>
+                                    <select wire:model.live="selectedSeason"
+                                        class="border border-[#0b1830]/20 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]">
+                                        <option value="all">All seasons</option>
+                                        @foreach($seasons as $season)
+                                            <option value="{{ $season }}">Season {{ $season }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                            @endif
+                            <label>
+                                <span class="sr-only">Episode order</span>
+                                <select wire:model.live="sortBy"
+                                    class="border border-[#0b1830]/20 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]">
+                                    <option value="latest">Latest first</option>
+                                    <option value="oldest">Oldest first</option>
+                                    <option value="popular">Most played</option>
+                                </select>
+                            </label>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Episodes List -->
-                @if($episodes->count() > 0)
-                <div class="space-y-4">
-                    @foreach($episodes as $episode)
-                    <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 group">
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-0">
-                            
-                            <!-- Episode Cover -->
-                            <div class="md:col-span-3 relative h-48 md:h-auto">
-                                <img src="{{ $episode->cover_image ?? $show->cover_image }}" 
-                                     alt="{{ $episode->title }}"
-                                     class="w-full h-full object-cover">
-                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <a href="{{ route('podcasts.episode', [$show->slug, $episode->slug]) }}" 
-                                       class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl">
-                                        <i class="fas fa-play ml-1"></i>
+                    @if($episodes->isNotEmpty())
+                        <div class="mt-7 divide-y divide-[#0b1830]/10 border-y border-[#0b1830]/10">
+                            @foreach($episodes as $episode)
+                                <article class="group grid gap-5 py-6 sm:grid-cols-[8rem_1fr]">
+                                    <a href="{{ route('podcasts.episode', [$show->slug, $episode->slug]) }}"
+                                        class="relative aspect-square overflow-hidden bg-slate-200 focus:outline-none focus:ring-2 focus:ring-[#f36b21]">
+                                        <x-initials-image
+                                            :src="$episode->cover_image ?? $show->cover_image"
+                                            :title="$episode->title"
+                                            imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                                            fallbackClass="bg-[#17375f]"
+                                            textClass="font-display text-3xl font-semibold text-white"
+                                        />
+                                        <span class="absolute inset-0 flex items-center justify-center bg-[#07172f]/15 transition group-hover:bg-[#07172f]/35" aria-hidden="true">
+                                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#07172f]">
+                                                <i class="fas fa-play ml-0.5 text-xs"></i>
+                                            </span>
+                                        </span>
                                     </a>
-                                </div>
-                                <div class="absolute top-3 right-3">
-                                    <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                                        {{ $episode->formatted_duration }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Episode Info -->
-                            <div class="md:col-span-9 p-6">
-                                <div class="flex items-start justify-between mb-3">
-                                    <div class="flex-1">
-                                        <div class="flex items-center space-x-3 mb-2">
+                                    <div class="self-center">
+                                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.68rem] font-bold uppercase tracking-[0.13em] text-slate-500">
+                                            <span>{{ $episode->published_at?->format('M j, Y') }}</span>
                                             @if($episode->season_number)
-                                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded">
-                                                S{{ $episode->season_number }} E{{ $episode->episode_number }}
-                                            </span>
+                                                <span>S{{ $episode->season_number }} · E{{ $episode->episode_number }}</span>
                                             @endif
-                                            <span class="text-sm text-gray-500">
-                                                {{ $episode->published_at->format('M d, Y') }}
-                                            </span>
-                                            @if($episode->explicit)
-                                            <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">E</span>
-                                            @endif
+                                            <span>{{ $episode->formatted_duration }}</span>
                                         </div>
-                                        
-                                        <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
-                                            <a href="{{ route('podcasts.episode', [$show->slug, $episode->slug]) }}">
+                                        <h3 class="font-display mt-2 text-xl font-semibold leading-tight transition group-hover:text-[#d95318] sm:text-2xl">
+                                            <a href="{{ route('podcasts.episode', [$show->slug, $episode->slug]) }}"
+                                                class="focus:outline-none focus:underline">
                                                 {{ $episode->title }}
                                             </a>
                                         </h3>
-                                        
-                                        <p class="text-gray-600 mb-4 line-clamp-2">{{ $episode->description }}</p>
-
-                                        @if($episode->guests && count($episode->guests) > 0)
-                                        <div class="mb-3">
-                                            <span class="text-sm text-gray-500">
-                                                <i class="fas fa-user-friends mr-1"></i>
-                                                Guests: {{ implode(', ', $episode->guests) }}
-                                            </span>
-                                        </div>
-                                        @endif
-
-                                        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                                            <span><i class="fas fa-headphones mr-1"></i>{{ number_format($episode->plays) }} plays</span>
-                                            <span><i class="fas fa-download mr-1"></i>{{ number_format($episode->downloads) }} downloads</span>
-                                            <span><i class="fas fa-comments mr-1"></i>{{ $episode->comments->count() }} comments</span>
+                                        <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+                                            {{ \Illuminate\Support\Str::limit(strip_tags($episode->description), 175) }}
+                                        </p>
+                                        <div class="mt-3 flex flex-wrap gap-4 text-xs text-slate-500">
+                                            <span>{{ number_format($episode->plays) }} plays</span>
+                                            @if($episode->guests && count($episode->guests))
+                                                <span>With {{ implode(', ', array_slice($episode->guests, 0, 2)) }}</span>
+                                            @endif
                                         </div>
                                     </div>
-                                </div>
-                            </div>
+                                </article>
+                            @endforeach
                         </div>
-                    </article>
-                    @endforeach
-                </div>
-                @else
-                <div class="text-center py-12 bg-white rounded-xl">
-                    <i class="fas fa-podcast text-6xl text-gray-300 mb-4"></i>
-                    <p class="text-gray-600">No episodes available yet</p>
-                </div>
+                    @else
+                        <div class="mt-7 border border-dashed border-[#0b1830]/20 bg-white px-6 py-12 text-center">
+                            <h3 class="font-display text-2xl font-semibold">No episodes here yet</h3>
+                            <p class="mt-2 text-sm text-slate-600">Check back soon for the next release.</p>
+                        </div>
+                    @endif
+                </section>
+
+                @php($approvedReviews = $show->reviews->where('is_approved', true)->sortByDesc('created_at')->take(5))
+                @if($approvedReviews->isNotEmpty())
+                    <section class="mt-14 border-t border-[#0b1830]/10 pt-10">
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">From listeners</p>
+                        <h2 class="font-display mt-2 text-3xl font-semibold tracking-tight">Reviews</h2>
+                        <div class="mt-7 grid gap-px border border-[#0b1830]/10 bg-[#0b1830]/10 sm:grid-cols-2">
+                            @foreach($approvedReviews as $review)
+                                <article class="bg-white p-6">
+                                    <div class="flex items-center justify-between gap-4">
+                                        <p class="font-semibold">{{ $review->user?->name ?? 'Glow listener' }}</p>
+                                        <span class="text-xs text-slate-500">{{ $review->created_at->diffForHumans() }}</span>
+                                    </div>
+                                    <div class="mt-2 flex gap-1 text-xs text-[#f36b21]" aria-label="{{ $review->rating }} out of 5 stars">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <i class="fas fa-star {{ $i <= $review->rating ? '' : 'text-slate-200' }}" aria-hidden="true"></i>
+                                        @endfor
+                                    </div>
+                                    @if($review->review)
+                                        <p class="mt-4 text-sm leading-6 text-slate-600">{{ $review->review }}</p>
+                                    @endif
+                                </article>
+                            @endforeach
+                        </div>
+                    </section>
                 @endif
-
             </div>
-        </div>
-    </section>
 
-    <!-- Reviews Section -->
-    @if($show->reviews->where('is_approved', true)->count() > 0)
-    <section class="py-12 bg-gray-100">
-        <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto">
-                <h2 class="text-3xl font-bold text-gray-900 mb-8">Listener Reviews</h2>
-                
-                <div class="space-y-6">
-                    @foreach($show->reviews()->where('is_approved', true)->latest()->take(5)->get() as $review)
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <div class="flex items-start space-x-4">
-                            <img src="{{ $review->user?->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($review->user?->name ?? 'Anonymous') }}" 
-                                 class="w-12 h-12 rounded-full">
-                            <div class="flex-1">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div>
-                                        <h4 class="font-bold text-gray-900">{{ $review->user?->name ?? 'Anonymous' }}</h4>
-                                        <div class="flex items-center space-x-1 text-yellow-400">
-                                            @for($i = 1; $i <= 5; $i++)
-                                            <i class="fas fa-star {{ $i <= $review->rating ? '' : 'text-gray-300' }}"></i>
-                                            @endfor
-                                        </div>
-                                    </div>
-                                    <span class="text-sm text-gray-500">{{ $review->created_at->diffForHumans() }}</span>
-                                </div>
-                                @if($review->review)
-                                <p class="text-gray-700">{{ $review->review }}</p>
-                                @endif
-                            </div>
-                        </div>
+            <aside class="self-start border-t-4 border-[#f36b21] bg-white p-6 lg:sticky lg:top-28">
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-[#d95318]">Show details</p>
+                <dl class="mt-5 divide-y divide-[#0b1830]/10 text-sm">
+                    <div class="py-4">
+                        <dt class="text-xs uppercase tracking-wide text-slate-500">Host</dt>
+                        <dd class="mt-1 font-semibold">{{ $show->host_name }}</dd>
                     </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </section>
-    @endif
+                    <div class="py-4">
+                        <dt class="text-xs uppercase tracking-wide text-slate-500">Release pattern</dt>
+                        <dd class="mt-1 font-semibold">{{ ucfirst($show->frequency) }}</dd>
+                    </div>
+                    <div class="py-4">
+                        <dt class="text-xs uppercase tracking-wide text-slate-500">Language</dt>
+                        <dd class="mt-1 font-semibold">{{ ucfirst($show->language ?: 'English') }}</dd>
+                    </div>
+                    <div class="py-4">
+                        <dt class="text-xs uppercase tracking-wide text-slate-500">Total plays</dt>
+                        <dd class="mt-1 font-semibold">{{ number_format($show->total_plays) }}</dd>
+                    </div>
+                </dl>
 
+                @unless($showReviewForm)
+                    <button type="button" wire:click="$set('showReviewForm', true)"
+                        class="mt-5 inline-flex w-full items-center justify-center gap-2 border border-[#0b1830] px-5 py-3 text-sm font-bold transition hover:bg-[#0b1830] hover:text-white">
+                        <i class="fas fa-star text-xs text-[#f36b21]" aria-hidden="true"></i>
+                        Rate this show
+                    </button>
+                @endunless
+            </aside>
+        </div>
+    </main>
 </div>
