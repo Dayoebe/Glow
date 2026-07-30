@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Blog\Category;
 use App\Models\Blog\Post;
+use App\Support\RichTextSanitizer;
 use Illuminate\Http\Request;
 
 class BlogController extends Controller
 {
+    public function __construct(private readonly RichTextSanitizer $richTextSanitizer)
+    {
+    }
+
     public function index(Request $request)
     {
         $category = $request->query('category', 'all');
@@ -141,7 +146,7 @@ class BlogController extends Controller
                 'title' => $post->title,
                 'slug' => $post->slug,
                 'excerpt' => $post->excerpt,
-                'content' => $post->content,
+                'content' => $this->richTextSanitizer->sanitize($post->content),
                 'featured_image' => $post->featured_image,
                 'gallery' => $post->gallery,
                 'category' => $post->category ? [

@@ -173,7 +173,6 @@ class BlogDetail extends Component
             'x' => "https://x.com/intent/post?text={$textWithUrl}",
             'twitter' => "https://x.com/intent/post?text={$textWithUrl}",
             'facebook' => "https://m.facebook.com/sharer.php?u={$url}&quote={$encodedShareText}",
-            'instagram' => "https://www.instagram.com/",
             'linkedin' => "https://www.linkedin.com/sharing/share-offsite/?url={$url}",
             'whatsapp' => "https://wa.me/?text={$textWithUrl}",
             'telegram' => "https://t.me/share/url?url={$url}&text={$encodedShareText}",

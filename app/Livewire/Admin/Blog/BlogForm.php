@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Blog;
 use App\Models\Blog\Post;
 use App\Models\Blog\Category;
 use App\Support\CloudinaryUploader;
+use App\Support\RichTextSanitizer;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
@@ -154,6 +155,8 @@ class BlogForm extends Component
                 $this->published_at = now()->format('Y-m-d\TH:i');
             }
         }
+
+        $this->content = app(RichTextSanitizer::class)->sanitize($this->content);
 
         $this->validate();
 

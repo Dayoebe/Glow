@@ -51,6 +51,15 @@ class BlogPage extends Component
             $query->search($this->searchQuery);
         }
 
+        if (
+            $this->selectedCategory === 'all'
+            && empty($this->searchQuery)
+            && $this->sortBy === 'latest'
+            && $this->featuredPost
+        ) {
+            $query->whereKeyNot($this->featuredPost->getKey());
+        }
+
         switch ($this->sortBy) {
             case 'popular':
                 $query->orderBy('views', 'desc');
@@ -115,7 +124,6 @@ class BlogPage extends Component
             'featuredPost' => $this->featuredPost,
             'trendingPosts' => $this->trendingPosts,
             'categories' => $this->categories,
-            'popularTags' => $this->popularTags,
         ])->layout('layouts.app', ['title' => 'Blog - Glow FM']);
     }
 }
