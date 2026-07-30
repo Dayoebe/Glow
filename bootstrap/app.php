@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prependToGroup('web', \App\Http\Middleware\EnforceCanonicalUrl::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\SearchEngineHeaders::class);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminOnly::class,
             'admin_or_staff' => \App\Http\Middleware\AdminOrStaff::class,

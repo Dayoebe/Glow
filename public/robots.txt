@@ -2,28 +2,16 @@
 # Public pages, CSS, JavaScript, images, sitemaps, RSS feeds, news articles,
 # program pages, podcast pages, and schedule pages are crawlable.
 
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-# OpenAI search crawler used for surfacing and linking public web results.
-User-agent: OAI-SearchBot
-Allow: /
-
-# ChatGPT user-triggered browsing/fetching crawler. It should reach public pages
-# that a user asks ChatGPT to summarize, cite, or inspect.
-User-agent: ChatGPT-User
-Allow: /
-
 # GPTBot is OpenAI's training-related crawler. Keep this separate from
 # OAI-SearchBot. Change to "Allow: /" only if the site owner accepts training
 # related crawling.
 User-agent: GPTBot
 Disallow: /
 
+# Googlebot, Bingbot, OAI-SearchBot, ChatGPT-User and other compliant crawlers
+# inherit this public policy, including every private-path exclusion below.
 User-agent: *
+Allow: /
 Disallow: /admin/
 Disallow: /dashboard
 Disallow: /profile
@@ -43,4 +31,8 @@ Disallow: /api/auth/
 Disallow: /api/public/auth/
 Disallow: /api/public/library/
 
-Sitemap: https://glowfmradio.com/sitemap.xml
+Sitemap: https://www.glowfmradio.com/sitemap.xml
+
+# Optional machine-readable context for systems that choose to use it:
+# https://www.glowfmradio.com/llms.txt
+# https://www.glowfmradio.com/ai.txt

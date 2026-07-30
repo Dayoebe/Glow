@@ -46,4 +46,13 @@ return [
         'key' => env('FCM_SERVER_KEY'),
     ],
 
+    'google_site_tags' => [
+        'enabled' => env(
+            'GOOGLE_SITE_TAGS_ENABLED',
+            env('APP_ENV', 'production') === 'production'
+        ),
+        'analytics_id' => env('GOOGLE_ANALYTICS_ID', 'G-SEVJRFYBL8'),
+        'adsense_client' => env('GOOGLE_ADSENSE_CLIENT', 'ca-pub-3970534274644088'),
+    ],
+
 ];

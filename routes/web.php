@@ -30,11 +30,11 @@ use App\Livewire\Page\SchedulePage;
 use App\Livewire\Page\OapDirectory;
 use App\Livewire\Page\OapDetail;
 use App\Livewire\Page\StaffDirectory;
+use App\Livewire\Page\EditorialStandardsPage;
 use App\Livewire\Page\ContactSuccess;
 use App\Livewire\Page\ProfilePage;
 use App\Livewire\Page\UserSettingsPage;
 use App\Livewire\Page\StaffDetail;
-use App\Livewire\Page\StaffProfile;
 use App\Livewire\Admin\News\NewsForm;
 use App\Livewire\Admin\News\Categories as NewsCategories;
 use App\Livewire\Admin\News\NewsIndex as AdminNewsIndex;
@@ -93,47 +93,88 @@ use App\Livewire\Admin\Show\OapForm as AdminShowOapForm;
 use App\Livewire\Admin\Show\Reviews as AdminShowReviews;
 
 // Public Routes
-Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
-Route::get('/sitemap', [SitemapController::class, 'index'])->name('sitemap.legacy');
-Route::get('/sitemaps/pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
-Route::get('/sitemaps/news.xml', [SitemapController::class, 'news'])->name('sitemap.news');
-Route::get('/sitemaps/programs.xml', [SitemapController::class, 'programs'])->name('sitemap.programs');
-Route::get('/sitemaps/categories.xml', [SitemapController::class, 'categories'])->name('sitemap.categories');
-Route::get('/sitemaps/images.xml', [SitemapController::class, 'images'])->name('sitemap.images');
-Route::get('/sitemaps/videos.xml', [SitemapController::class, 'videos'])->name('sitemap.videos');
-Route::get('/robots.txt', function () {
-    return response()->file(public_path('robots.txt'), [
-        'Content-Type' => 'text/plain; charset=UTF-8',
-    ]);
-})->name('robots.txt');
-Route::get('/llms.txt', [AiDiscoveryController::class, 'llms'])->name('llms');
-Route::get('/llms-full.txt', [AiDiscoveryController::class, 'llmsFull'])->name('llms.full');
-Route::get('/ai.txt', [AiDiscoveryController::class, 'ai'])->name('ai.guidance');
-Route::get('/feed.xml', [FeedController::class, 'news'])->name('feed');
-Route::get('/rss.xml', [FeedController::class, 'news'])->name('rss');
-Route::get('/news/feed.xml', [FeedController::class, 'news'])->name('news.feed');
-Route::get('/podcasts/feed.xml', [FeedController::class, 'podcasts'])->name('podcasts.feed');
-Route::get('/shows/feed.xml', [FeedController::class, 'shows'])->name('shows.feed');
-Route::get('/ads.txt', function () {
-    return response()->file(public_path('ads.txt'), [
-        'Content-Type' => 'text/plain; charset=UTF-8',
-    ]);
-})->name('ads.txt');
+$statelessDiscoveryMiddleware = [
+    \Illuminate\Cookie\Middleware\EncryptCookies::class,
+    \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+];
+
+Route::withoutMiddleware($statelessDiscoveryMiddleware)->group(function () {
+    Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+    Route::redirect('/sitemap', '/sitemap.xml', 301)->name('sitemap.legacy');
+    Route::get('/sitemaps/pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
+    Route::get('/sitemaps/articles.xml', [SitemapController::class, 'articles'])->name('sitemap.articles');
+    Route::get('/sitemaps/news.xml', [SitemapController::class, 'news'])->name('sitemap.news');
+    Route::get('/sitemaps/programs.xml', [SitemapController::class, 'programs'])->name('sitemap.programs');
+    Route::get('/sitemaps/categories.xml', [SitemapController::class, 'categories'])->name('sitemap.categories');
+    Route::get('/sitemaps/images.xml', [SitemapController::class, 'images'])->name('sitemap.images');
+    Route::get('/sitemaps/videos.xml', [SitemapController::class, 'videos'])->name('sitemap.videos');
+    Route::get('/robots.txt', function () {
+        return response()->file(public_path('robots.txt'), [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=86400, s-maxage=86400',
+        ]);
+    })->name('robots.txt');
+    Route::get('/llms.txt', [AiDiscoveryController::class, 'llms'])->name('llms');
+    Route::get('/llms-full.txt', [AiDiscoveryController::class, 'llmsFull'])->name('llms.full');
+    Route::get('/ai.txt', [AiDiscoveryController::class, 'ai'])->name('ai.guidance');
+    Route::redirect('/feed.xml', '/news/feed.xml', 301)->name('feed');
+    Route::redirect('/rss.xml', '/news/feed.xml', 301)->name('rss');
+    Route::get('/news/feed.xml', [FeedController::class, 'news'])->name('news.feed');
+    Route::get('/podcasts/feed.xml', [FeedController::class, 'podcasts'])->name('podcasts.feed');
+    Route::get('/shows/feed.xml', [FeedController::class, 'shows'])->name('shows.feed');
+    Route::get('/ads.txt', function () {
+        return response()->file(public_path('ads.txt'), [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=86400, s-maxage=86400',
+        ]);
+    })->name('ads.txt');
+});
 Route::get('/', HomePage::class)->name('home');
 Route::get('/about', AboutPage::class)->name('about');
+Route::get('/editorial-standards', EditorialStandardsPage::class)->name('editorial.standards');
 Route::get('/contact', ContactPage::class)->name('contact');
 Route::get('/listen-live', ListenLivePage::class)->name('listen.live');
 Route::get('/advertise', AdvertisePage::class)->name('advertise');
 Route::get('/privacy-policy', PrivacyPolicy::class)->name('privacy.policy');
 Route::get('/contact/success', ContactSuccess::class)->name('contact.success');
-Route::get('/programs', ShowPage::class)->name('programs.index');
+Route::redirect('/programs', '/shows', 301)->name('programs.index');
 Route::get('/shows', ShowPage::class)->name('shows.index');
 Route::get('/shows/{slug}', ShowDetail::class)->name('shows.show');
 Route::get('/schedule', SchedulePage::class)->name('schedule');
 Route::get('/oaps', OapDirectory::class)->name('oaps.index');
 Route::get('/oaps/{slug}', OapDetail::class)->name('oaps.show');
 Route::get('/team', StaffDirectory::class)->name('staff.index');
-Route::get('/team/profile/{type}/{identifier}', StaffProfile::class)->name('staff.profile');
+Route::get('/team/profile/{type}/{identifier}', function (string $type, string $identifier) {
+    if ($type === 'staff') {
+        $staff = \App\Models\Staff\StaffMember::query()
+            ->where('is_active', true)
+            ->where('slug', $identifier)
+            ->firstOrFail();
+
+        return redirect()->route('staff.show', $staff->slug, 301);
+    }
+
+    if ($type === 'oap') {
+        $oap = \App\Models\Show\OAP::query()
+            ->active()
+            ->where('slug', $identifier)
+            ->firstOrFail();
+
+        return redirect()->route('oaps.show', $oap->slug, 301);
+    }
+
+    $staff = \App\Models\Staff\StaffMember::query()
+        ->where('is_active', true)
+        ->where('user_id', $identifier)
+        ->firstOrFail();
+
+    return redirect()->route('staff.show', $staff->slug, 301);
+})
+    ->whereIn('type', ['staff', 'oap', 'user'])
+    ->name('staff.profile');
 Route::get('/team/{slug}', StaffDetail::class)->name('staff.show');
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'store'])->name('newsletter.subscribe');
 Route::get('/newsletter/confirm/{token}', [NewsletterController::class, 'confirm'])->name('newsletter.confirm');
