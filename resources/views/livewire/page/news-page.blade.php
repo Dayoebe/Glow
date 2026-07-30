@@ -32,7 +32,8 @@
                     <div class="lg:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl overflow-hidden shadow-2xl">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
                             <div class="relative h-80 lg:h-auto">
-                                <a href="{{ route('news.show', $featuredHero['slug']) }}">
+                                <a href="{{ route('news.show', $featuredHero['slug']) }}" class="block h-full"
+                                    aria-label="Read {{ $featuredHero['title'] }}">
                                     <x-initials-image
                                         :src="$featuredHero['featured_image'] ?? null"
                                         :title="$featuredHero['title'] ?? ''"
@@ -80,7 +81,8 @@
                             @continueIfNotArray($secondary)
                             <article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group border border-gray-100">
                                 <div class="relative h-44 overflow-hidden">
-                                    <a href="{{ route('news.show', $secondary['slug']) }}">
+                                    <a href="{{ route('news.show', $secondary['slug']) }}" class="block h-full"
+                                        aria-label="Read {{ $secondary['title'] }}">
                                         <x-initials-image
                                             :src="$secondary['featured_image'] ?? null"
                                             :title="$secondary['title'] ?? ''"
@@ -303,7 +305,8 @@
                                     class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
                                     <!-- Image -->
                                     <div class="relative h-56 overflow-hidden">
-                                        <a href="{{ route('news.show', $article['slug']) }}">
+                                        <a href="{{ route('news.show', $article['slug']) }}" class="block h-full"
+                                            aria-label="Read {{ $article['title'] }}">
                                             <x-initials-image
                                                 :src="$article['featured_image'] ?? null"
                                                 :title="$article['title'] ?? ''"

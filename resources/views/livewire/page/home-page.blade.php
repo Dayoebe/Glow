@@ -224,13 +224,16 @@
                         @continueIfNotArray($news)
                         <article class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group">
                             <div class="relative h-56 overflow-hidden">
-                                <x-initials-image
-                                    :src="$news['image'] ?? null"
-                                    :title="$news['title'] ?? ''"
-                                    imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                    fallbackClass="bg-emerald-700/90"
-                                    textClass="text-3xl font-bold text-white"
-                                />
+                                <a href="{{ route('news.show', $news['slug']) }}" class="block h-full"
+                                    aria-label="Read {{ $news['title'] }}">
+                                    <x-initials-image
+                                        :src="$news['image'] ?? null"
+                                        :title="$news['title'] ?? ''"
+                                        imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                        fallbackClass="bg-emerald-700/90"
+                                        textClass="text-3xl font-bold text-white"
+                                    />
+                                </a>
                                 <div class="absolute top-4 left-4">
                                     <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
                                         {{ $news['category'] ?? 'News' }}
@@ -354,20 +357,23 @@
                     @if($mainFeatured)
                         <article class="group relative overflow-hidden rounded-3xl shadow-xl bg-white">
                             <div class="relative h-80">
-                                <x-initials-image
-                                    :src="$mainFeatured['image'] ?? null"
-                                    :title="$mainFeatured['title'] ?? ''"
-                                    imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                    fallbackClass="bg-emerald-700/90"
-                                    textClass="text-4xl font-bold text-white"
-                                />
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                                <div class="absolute bottom-6 left-6 right-6">
+                                <a href="{{ route('news.show', $mainFeatured['slug']) }}" class="block h-full"
+                                    aria-label="Read {{ $mainFeatured['title'] }}">
+                                    <x-initials-image
+                                        :src="$mainFeatured['image'] ?? null"
+                                        :title="$mainFeatured['title'] ?? ''"
+                                        imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                        fallbackClass="bg-emerald-700/90"
+                                        textClass="text-4xl font-bold text-white"
+                                    />
+                                </a>
+                                <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                                <div class="pointer-events-none absolute bottom-6 left-6 right-6">
                                     <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-white/90 text-emerald-700">
                                         {{ $mainFeatured['category'] ?? 'News' }}
                                     </span>
                                     <h4 class="text-2xl md:text-3xl font-bold text-white mt-3">
-                                        <a href="/news/{{ $mainFeatured['slug'] }}">{{ $mainFeatured['title'] }}</a>
+                                        <a href="{{ route('news.show', $mainFeatured['slug']) }}" class="pointer-events-auto">{{ $mainFeatured['title'] }}</a>
                                     </h4>
                                     <p class="text-sm text-white/80 mt-2 line-clamp-2">{{ $mainFeatured['excerpt'] }}</p>
                                 </div>
@@ -391,13 +397,16 @@
                                 @continueIfNotArray($news)
                                 <article class="group rounded-2xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300">
                                     <div class="relative h-48">
-                                        <x-initials-image
-                                            :src="$news['image'] ?? null"
-                                            :title="$news['title'] ?? ''"
-                                            imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                            fallbackClass="bg-slate-800"
-                                            textClass="text-2xl font-bold text-white"
-                                        />
+                                        <a href="{{ route('news.show', $news['slug']) }}" class="block h-full"
+                                            aria-label="Read {{ $news['title'] }}">
+                                            <x-initials-image
+                                                :src="$news['image'] ?? null"
+                                                :title="$news['title'] ?? ''"
+                                                imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                                fallbackClass="bg-slate-800"
+                                                textClass="text-2xl font-bold text-white"
+                                            />
+                                        </a>
                                         <span class="absolute top-4 left-4 px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
                                             {{ $news['category'] ?? 'News' }}
                                         </span>
@@ -458,13 +467,16 @@
                             @continueIfNotArray($news)
                             <article class="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300">
                                 <div class="relative h-48 overflow-hidden">
-                                    <x-initials-image
-                                        :src="$news['image'] ?? null"
-                                        :title="$news['title'] ?? ''"
-                                        imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                        fallbackClass="bg-emerald-700/80"
-                                        textClass="text-2xl font-bold text-white"
-                                    />
+                                    <a href="{{ route('news.show', $news['slug']) }}" class="block h-full"
+                                        aria-label="Read {{ $news['title'] }}">
+                                        <x-initials-image
+                                            :src="$news['image'] ?? null"
+                                            :title="$news['title'] ?? ''"
+                                            imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                            fallbackClass="bg-emerald-700/80"
+                                            textClass="text-2xl font-bold text-white"
+                                        />
+                                    </a>
                                     <div class="absolute top-4 left-4">
                                         <span class="px-3 py-1 bg-slate-900/80 text-white text-xs font-semibold rounded-full">
                                             {{ $news['category'] ?? 'News' }}
