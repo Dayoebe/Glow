@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\News\News;
 use App\Models\News\NewsCategory;
+use App\Support\RichTextSanitizer;
 use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
+    public function __construct(private readonly RichTextSanitizer $richTextSanitizer)
+    {
+    }
+
     public function index(Request $request)
     {
         $category = $request->query('category', 'all');
@@ -145,7 +150,7 @@ class NewsController extends Controller
                 'title' => $news->title,
                 'slug' => $news->slug,
                 'excerpt' => $news->excerpt,
-                'content' => $news->content,
+                'content' => $this->richTextSanitizer->sanitize($news->content),
                 'featured_image' => $news->featured_image,
                 'gallery' => $news->gallery,
                 'video_url' => $news->video_url,

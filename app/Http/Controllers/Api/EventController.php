@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Event\Event;
 use App\Models\Event\EventCategory;
+use App\Support\RichTextSanitizer;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
+    public function __construct(private readonly RichTextSanitizer $richTextSanitizer)
+    {
+    }
+
     public function index(Request $request)
     {
         $category = $request->query('category', 'all');
@@ -101,7 +106,7 @@ class EventController extends Controller
                 'slug' => $event->slug,
                 'title' => $event->title,
                 'excerpt' => $event->excerpt,
-                'content' => $event->content,
+                'content' => $this->richTextSanitizer->sanitize($event->content),
                 'featured_image' => $event->featured_image,
                 'gallery' => $event->gallery,
                 'category' => $event->category ? [

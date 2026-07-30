@@ -6,10 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Show\Category;
 use App\Models\Show\ScheduleSlot;
 use App\Models\Show\Show;
+use App\Support\RichTextSanitizer;
 use Illuminate\Http\Request;
 
 class ShowController extends Controller
 {
+    public function __construct(private readonly RichTextSanitizer $richTextSanitizer)
+    {
+    }
+
     public function index(Request $request)
     {
         $category = $request->query('category', 'all');
@@ -269,7 +274,7 @@ class ShowController extends Controller
             'slug' => $show->slug,
             'title' => $show->title,
             'description' => $show->description,
-            'full_description' => $show->full_description,
+            'full_description' => $this->richTextSanitizer->sanitizeWithLineBreaks($show->full_description),
             'cover_image' => $show->cover_image,
             'promotional_images' => $show->promotional_images,
             'format' => $show->format,
