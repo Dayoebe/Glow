@@ -1,115 +1,105 @@
-<div class="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500 rounded-full blur-3xl"></div>
-    </div>
-
-    <div class="relative max-w-md w-full">
-        <!-- Logo -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center space-x-2 mb-4">
-                <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-                    </svg>
-                </div>
-                <span class="text-2xl font-bold text-white">Glow FM</span>
-            </div>
-            <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-            <p class="text-gray-400">Sign in to your account to continue</p>
+<x-auth.shell
+    title="Welcome back"
+    subtitle="Sign in to continue to your saved stories, conversations and personalised Glow experience."
+    eyebrow="Listener sign in"
+    icon="fas fa-right-to-bracket"
+>
+    @if (session('status'))
+        <div class="mb-6 flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+            role="status">
+            <i class="fas fa-circle-check mt-0.5 text-green-600" aria-hidden="true"></i>
+            <span>{{ session('status') }}</span>
         </div>
+    @endif
 
-        <!-- Login Form -->
-        <div class="bg-slate-900 rounded-2xl border border-slate-800 p-8">
-            
-            <form wire:submit.prevent="login" class="space-y-6">
-                <!-- Email -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
-                        Email Address
-                    </label>
-                    <input 
-                        wire:model="email" 
-                        type="email" 
-                        id="email"
-                        class="w-full px-4 py-3 bg-slate-800 border @error('email') border-red-500 @else border-slate-700 @enderror rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                        placeholder="you@example.com"
-                        autocomplete="email">
-                    @error('email')
-                        <p class="mt-2 text-sm text-red-400 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i>
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <!-- Password -->
-                <div x-data="{ showPassword: false }">
-                    <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
-                        Password
-                    </label>
-                    <div class="relative">
-                        <input 
-                        wire:model="password" 
-                        :type="showPassword ? 'text' : 'password'"
-                        id="password"
-                        class="w-full pr-12 px-4 py-3 bg-slate-800 border @error('password') border-red-500 @else border-slate-700 @enderror rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                        placeholder="••••••••"
-                        autocomplete="current-password">
-                        <button type="button" @click="showPassword = !showPassword"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-400 transition-colors"
-                            aria-label="Toggle password visibility">
-                            <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-                        </button>
-                    </div>
-                    @error('password')
-                        <p class="mt-2 text-sm text-red-400 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i>
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <!-- Remember & Forgot -->
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center cursor-pointer">
-                        <input 
-                            wire:model="remember" 
-                            type="checkbox"
-                            class="w-4 h-4 bg-slate-800 border-slate-700 rounded text-orange-500 focus:ring-orange-500 focus:ring-offset-0">
-                        <span class="ml-2 text-sm text-gray-300">Remember me</span>
-                    </label>
-                    <a href="{{ route('password.request') }}" wire:navigate class="text-sm text-orange-500 hover:text-orange-400 transition">
-                        Forgot password?
-                    </a>
-                </div>
-
-                <!-- Submit Button -->
-                <button 
-                    type="submit"
-                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                    wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="login">Sign In</span>
-                    <span wire:loading wire:target="login" class="flex items-center justify-center">
-                        <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Signing In...
-                    </span>
-                </button>
-            </form>
-
-            <!-- Register Link -->
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-400">
-                    Don't have an account?
-                    <a href="{{ route('register') }}" wire:navigate
-                        class="text-orange-500 hover:text-orange-400 font-medium transition">
-                        Sign up
-                    </a>
+    <form wire:submit.prevent="login" class="space-y-5">
+        <div>
+            <label for="login-email" class="mb-2 block text-xs font-extrabold uppercase tracking-[0.1em] text-slate-600">
+                Email address
+            </label>
+            <input
+                wire:model="email"
+                type="email"
+                id="login-email"
+                class="h-12 w-full rounded-lg border bg-white px-4 text-sm text-[#07162f] shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-orange-100 @error('email') border-red-400 @else border-slate-300 @enderror"
+                placeholder="you@example.com"
+                autocomplete="email"
+                autofocus
+                @error('email') aria-invalid="true" aria-describedby="login-email-error" @enderror
+            >
+            @error('email')
+                <p id="login-email-error" class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                    <i class="fas fa-circle-exclamation text-[10px]" aria-hidden="true"></i>
+                    {{ $message }}
                 </p>
-            </div>
+            @enderror
         </div>
-    </div>
-</div>
+
+        <div x-data="{ showPassword: false }">
+            <label for="login-password" class="mb-2 block text-xs font-extrabold uppercase tracking-[0.1em] text-slate-600">
+                Password
+            </label>
+            <div class="relative">
+                <input
+                    wire:model="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    id="login-password"
+                    class="h-12 w-full rounded-lg border bg-white px-4 pr-12 text-sm text-[#07162f] shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-orange-100 @error('password') border-red-400 @else border-slate-300 @enderror"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    @error('password') aria-invalid="true" aria-describedby="login-password-error" @enderror
+                >
+                <button
+                    type="button"
+                    @click="showPassword = !showPassword"
+                    class="absolute right-1.5 top-1/2 flex h-9 w-10 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-orange-50 hover:text-[#f26a2e]"
+                    :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                >
+                    <i class="fas text-xs" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+                </button>
+            </div>
+            @error('password')
+                <p id="login-password-error" class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                    <i class="fas fa-circle-exclamation text-[10px]" aria-hidden="true"></i>
+                    {{ $message }}
+                </p>
+            @enderror
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <label class="flex cursor-pointer items-center gap-2.5 text-sm font-semibold text-slate-600">
+                <input
+                    wire:model="remember"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-[#f26a2e] accent-[#f26a2e] focus:ring-[#f26a2e]"
+                >
+                Remember me
+            </label>
+            <a href="{{ route('password.request') }}" wire:navigate
+                class="text-sm font-extrabold text-[#f26a2e] transition hover:text-[#fb5d55]">
+                Forgot password?
+            </a>
+        </div>
+
+        <button
+            type="submit"
+            class="flex h-12 w-full items-center justify-center rounded-lg bg-[#f26a2e] px-5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(242,106,46,0.24)] transition hover:bg-[#fb5d55] disabled:cursor-not-allowed disabled:opacity-60"
+            wire:loading.attr="disabled"
+            wire:target="login"
+        >
+            <span wire:loading.remove wire:target="login">Sign in</span>
+            <span wire:loading wire:target="login" class="flex items-center justify-center gap-2">
+                <i class="fas fa-circle-notch animate-spin text-xs" aria-hidden="true"></i>
+                Signing in...
+            </span>
+        </button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-slate-600">
+        New to Glow?
+        <a href="{{ route('register') }}" wire:navigate
+            class="ml-1 font-extrabold text-[#f26a2e] transition hover:text-[#fb5d55]">
+            Create an account
+        </a>
+    </p>
+</x-auth.shell>

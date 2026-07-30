@@ -1,117 +1,116 @@
-<div class="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-12">
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-500 rounded-full blur-3xl"></div>
-    </div>
+<x-auth.shell
+    title="Choose a new password"
+    subtitle="Create a secure password for your Glow account. Use at least six characters and confirm it below."
+    eyebrow="Secure your account"
+    icon="fas fa-shield-halved"
+>
+    @if (session('status'))
+        <div class="mb-6 flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+            role="status">
+            <i class="fas fa-circle-check mt-0.5 text-green-600" aria-hidden="true"></i>
+            <span>{{ session('status') }}</span>
+        </div>
+    @endif
 
-    <div class="relative max-w-md w-full">
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center space-x-2 mb-4">
-                <div class="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center">
-                    <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-                    </svg>
-                </div>
-                <span class="text-2xl font-bold text-white">Glow FM</span>
-            </div>
-            <h2 class="text-3xl font-bold text-white mb-2">Choose a new password</h2>
-            <p class="text-gray-400">Use a strong password to secure your account.</p>
+    <form wire:submit.prevent="resetPassword" class="space-y-5">
+        <div>
+            <label for="reset-email" class="mb-2 block text-xs font-extrabold uppercase tracking-[0.1em] text-slate-600">
+                Email address
+            </label>
+            <input
+                wire:model="email"
+                type="email"
+                id="reset-email"
+                class="h-12 w-full rounded-lg border bg-white px-4 text-sm text-[#07162f] shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-orange-100 @error('email') border-red-400 @else border-slate-300 @enderror"
+                placeholder="you@example.com"
+                autocomplete="email"
+                @error('email') aria-invalid="true" aria-describedby="reset-email-error" @enderror
+            >
+            @error('email')
+                <p id="reset-email-error" class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                    <i class="fas fa-circle-exclamation text-[10px]" aria-hidden="true"></i>
+                    {{ $message }}
+                </p>
+            @enderror
         </div>
 
-        <div class="bg-slate-900 rounded-2xl border border-slate-800 p-8">
-            @if (session('status'))
-                <div class="mb-6 rounded-lg bg-emerald-900/40 border border-emerald-700 px-4 py-3 text-sm text-emerald-200">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            <form wire:submit.prevent="resetPassword" class="space-y-5">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
-                        Email Address
-                    </label>
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div x-data="{ showPassword: false }">
+                <label for="reset-password" class="mb-2 block text-xs font-extrabold uppercase tracking-[0.1em] text-slate-600">
+                    New password
+                </label>
+                <div class="relative">
                     <input
-                        wire:model="email"
-                        type="email"
-                        id="email"
-                        class="w-full px-4 py-3 bg-slate-800 border @error('email') border-red-500 @else border-slate-700 @enderror rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                        placeholder="you@example.com"
-                        autocomplete="email">
-                    @error('email')
-                        <p class="mt-2 text-sm text-red-400 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i>
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <div x-data="{ showPassword: false }">
-                    <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
-                        New Password
-                    </label>
-                    <div class="relative">
-                        <input
                         wire:model="password"
                         :type="showPassword ? 'text' : 'password'"
-                        id="password"
-                        class="w-full pr-12 px-4 py-3 bg-slate-800 border @error('password') border-red-500 @else border-slate-700 @enderror rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                        placeholder="••••••••"
-                        autocomplete="new-password">
-                        <button type="button" @click="showPassword = !showPassword"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-400 transition-colors"
-                            aria-label="Toggle password visibility">
-                            <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-                        </button>
-                    </div>
-                    @error('password')
-                        <p class="mt-2 text-sm text-red-400 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i>
-                            {{ $message }}
-                        </p>
-                    @enderror
+                        id="reset-password"
+                        class="h-12 w-full rounded-lg border bg-white px-4 pr-11 text-sm text-[#07162f] shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-orange-100 @error('password') border-red-400 @else border-slate-300 @enderror"
+                        placeholder="At least 6 characters"
+                        autocomplete="new-password"
+                        autofocus
+                        @error('password') aria-invalid="true" aria-describedby="reset-password-error" @enderror
+                    >
+                    <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-orange-50 hover:text-[#f26a2e]"
+                        :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                    >
+                        <i class="fas text-xs" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+                    </button>
                 </div>
+                @error('password')
+                    <p id="reset-password-error" class="mt-2 flex items-start gap-1.5 text-xs font-semibold text-red-600">
+                        <i class="fas fa-circle-exclamation mt-0.5 text-[10px]" aria-hidden="true"></i>
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
 
-                <div x-data="{ showConfirm: false }">
-                    <label for="password_confirmation" class="block text-sm font-medium text-gray-300 mb-2">
-                        Confirm Password
-                    </label>
-                    <div class="relative">
-                        <input
+            <div x-data="{ showConfirm: false }">
+                <label for="reset-password-confirmation" class="mb-2 block text-xs font-extrabold uppercase tracking-[0.1em] text-slate-600">
+                    Confirm password
+                </label>
+                <div class="relative">
+                    <input
                         wire:model="password_confirmation"
                         :type="showConfirm ? 'text' : 'password'"
-                        id="password_confirmation"
-                        class="w-full pr-12 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                        placeholder="••••••••"
-                        autocomplete="new-password">
-                        <button type="button" @click="showConfirm = !showConfirm"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-400 transition-colors"
-                            aria-label="Toggle password confirmation visibility">
-                            <i class="fas" :class="showConfirm ? 'fa-eye-slash' : 'fa-eye'"></i>
-                        </button>
-                    </div>
+                        id="reset-password-confirmation"
+                        class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 pr-11 text-sm text-[#07162f] shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-orange-100"
+                        placeholder="Repeat password"
+                        autocomplete="new-password"
+                    >
+                    <button
+                        type="button"
+                        @click="showConfirm = !showConfirm"
+                        class="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-orange-50 hover:text-[#f26a2e]"
+                        :aria-label="showConfirm ? 'Hide password confirmation' : 'Show password confirmation'"
+                    >
+                        <i class="fas text-xs" :class="showConfirm ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+                    </button>
                 </div>
-
-                <button
-                    type="submit"
-                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-lg transition transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                    wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="resetPassword">Reset password</span>
-                    <span wire:loading wire:target="resetPassword" class="flex items-center justify-center">
-                        <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Resetting...
-                    </span>
-                </button>
-            </form>
-
-            <div class="mt-6 text-center">
-                <a href="{{ route('login') }}" wire:navigate
-                    class="text-emerald-500 hover:text-emerald-400 font-medium transition">
-                    Back to sign in
-                </a>
             </div>
         </div>
+
+        <button
+            type="submit"
+            class="flex h-12 w-full items-center justify-center rounded-lg bg-[#f26a2e] px-5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(242,106,46,0.24)] transition hover:bg-[#fb5d55] disabled:cursor-not-allowed disabled:opacity-60"
+            wire:loading.attr="disabled"
+            wire:target="resetPassword"
+        >
+            <span wire:loading.remove wire:target="resetPassword">Set new password</span>
+            <span wire:loading wire:target="resetPassword" class="flex items-center justify-center gap-2">
+                <i class="fas fa-circle-notch animate-spin text-xs" aria-hidden="true"></i>
+                Updating password...
+            </span>
+        </button>
+    </form>
+
+    <div class="mt-6 text-center">
+        <a href="{{ route('login') }}" wire:navigate
+            class="inline-flex items-center gap-2 text-sm font-extrabold text-[#07162f] transition hover:text-[#f26a2e]">
+            <i class="fas fa-arrow-left text-[10px]" aria-hidden="true"></i>
+            Back to sign in
+        </a>
     </div>
-</div>
+</x-auth.shell>

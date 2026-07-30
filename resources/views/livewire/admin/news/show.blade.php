@@ -123,7 +123,7 @@
             @endif
 
             <div class="prose prose-lg mt-8 max-w-none text-gray-800">
-                {!! $news->content !!}
+                {!! app(\App\Support\RichTextSanitizer::class)->sanitize($news->content) !!}
             </div>
 
             @if($news->gallery && count($news->gallery) > 0)
