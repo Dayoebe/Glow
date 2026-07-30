@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -18,11 +19,19 @@ return new class extends Migration
 
         DB::table('staff_members')
             ->whereNotNull('date_of_birth')
-            ->update([
-                'birth_month' => DB::raw('MONTH(date_of_birth)'),
-                'birth_day' => DB::raw('DAY(date_of_birth)'),
-                'birth_year' => DB::raw('YEAR(date_of_birth)'),
-            ]);
+            ->select(['id', 'date_of_birth'])
+            ->orderBy('id')
+            ->each(function (object $staff): void {
+                $birthDate = Carbon::parse($staff->date_of_birth);
+
+                DB::table('staff_members')
+                    ->where('id', $staff->id)
+                    ->update([
+                        'birth_month' => $birthDate->month,
+                        'birth_day' => $birthDate->day,
+                        'birth_year' => $birthDate->year,
+                    ]);
+            });
     }
 
     public function down(): void
