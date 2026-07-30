@@ -15,6 +15,7 @@ use App\Models\Show\OAP;
 use App\Models\Show\Category as ShowCategory;
 use App\Models\Show\Show as RadioShow;
 use App\Models\Staff\StaffMember;
+use App\Support\PublicImage;
 use App\Support\Seo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -24,12 +25,29 @@ class SitemapController extends Controller
     public function index()
     {
         $sections = [
-            ['loc' => Seo::absoluteUrl(route('sitemap.pages')), 'lastmod' => now()->toAtomString()],
-            ['loc' => Seo::absoluteUrl(route('sitemap.news')), 'lastmod' => $this->latestContentDate(News::published())],
-            ['loc' => Seo::absoluteUrl(route('sitemap.programs')), 'lastmod' => $this->latestContentDate(RadioShow::active())],
-            ['loc' => Seo::absoluteUrl(route('sitemap.categories')), 'lastmod' => now()->toAtomString()],
-            ['loc' => Seo::absoluteUrl(route('sitemap.images')), 'lastmod' => now()->toAtomString()],
-            ['loc' => Seo::absoluteUrl(route('sitemap.videos')), 'lastmod' => now()->toAtomString()],
+            ['loc' => Seo::absoluteUrl(route('sitemap.pages'))],
+            ['loc' => Seo::absoluteUrl(route('sitemap.articles')), 'lastmod' => $this->latestContentDate(News::published())],
+            ['loc' => Seo::absoluteUrl(route('sitemap.news')), 'lastmod' => $this->latestContentDate(News::published()->where('published_at', '>=', now()->subDays(2)))],
+            ['loc' => Seo::absoluteUrl(route('sitemap.programs')), 'lastmod' => $this->latestDate([
+                RadioShow::active(),
+                PodcastShow::active(),
+                PodcastEpisode::published(),
+            ])],
+            ['loc' => Seo::absoluteUrl(route('sitemap.categories')), 'lastmod' => $this->latestDate([
+                NewsCategory::active(),
+                ShowCategory::active(),
+                BlogCategory::active(),
+                EventCategory::active(),
+            ])],
+            ['loc' => Seo::absoluteUrl(route('sitemap.images')), 'lastmod' => $this->latestDate([
+                News::published(),
+                RadioShow::active(),
+                PodcastEpisode::published(),
+            ])],
+            ['loc' => Seo::absoluteUrl(route('sitemap.videos')), 'lastmod' => $this->latestDate([
+                News::published()->whereNotNull('video_url'),
+                PodcastEpisode::published()->whereNotNull('video_url'),
+            ])],
         ];
 
         return $this->xml(view('sitemap-index', ['sections' => $sections])->render());
@@ -45,6 +63,7 @@ class SitemapController extends Controller
                 ['loc' => Seo::absoluteUrl('/listen-live'), 'changefreq' => 'daily', 'priority' => '0.8'],
                 ['loc' => Seo::absoluteUrl('/advertise'), 'changefreq' => 'monthly', 'priority' => '0.6'],
                 ['loc' => Seo::absoluteUrl('/privacy-policy'), 'changefreq' => 'yearly', 'priority' => '0.3'],
+                ['loc' => Seo::absoluteUrl('/editorial-standards'), 'changefreq' => 'yearly', 'priority' => '0.6'],
                 ['loc' => Seo::absoluteUrl('/shows'), 'changefreq' => 'weekly', 'priority' => '0.8'],
                 ['loc' => Seo::absoluteUrl('/schedule'), 'changefreq' => 'weekly', 'priority' => '0.8'],
                 ['loc' => Seo::absoluteUrl('/oaps'), 'changefreq' => 'weekly', 'priority' => '0.6'],
@@ -115,9 +134,9 @@ class SitemapController extends Controller
         return $this->urlset($urls);
     }
 
-    public function news()
+    public function articles()
     {
-        $urls = Cache::remember($this->cacheKey('news'), now()->addMinutes(30), function () {
+        $urls = Cache::remember($this->cacheKey('articles'), now()->addMinutes(30), function () {
             return News::published()
                 ->get(['slug', 'published_at', 'updated_at'])
                 ->map(fn ($news) => [
@@ -130,6 +149,27 @@ class SitemapController extends Controller
         });
 
         return $this->urlset($urls);
+    }
+
+    public function news()
+    {
+        $urls = Cache::remember($this->cacheKey('news'), now()->addMinutes(5), function () {
+            return News::published()
+                ->where('published_at', '>=', now()->subDays(2))
+                ->latest('published_at')
+                ->get(['slug', 'title', 'published_at', 'updated_at'])
+                ->map(fn ($news) => [
+                    'loc' => route('news.show', $news->slug),
+                    'lastmod' => ($news->updated_at ?? $news->published_at)?->toAtomString(),
+                    'publication_name' => Seo::BRAND_NAME,
+                    'publication_language' => 'en',
+                    'publication_date' => $news->published_at?->toAtomString(),
+                    'title' => $news->title,
+                ])
+                ->values();
+        });
+
+        return $this->newsUrlset($urls);
     }
 
     public function programs()
@@ -199,7 +239,7 @@ class SitemapController extends Controller
             $shows = ShowCategory::active()
                 ->get(['slug', 'updated_at'])
                 ->map(fn ($category) => [
-                    'loc' => route('shows.index', ['category' => $category->slug]),
+                    'loc' => route('shows.index', ['selectedCategory' => $category->slug]),
                     'lastmod' => $category->updated_at?->toAtomString(),
                     'changefreq' => 'weekly',
                     'priority' => '0.5',
@@ -208,7 +248,7 @@ class SitemapController extends Controller
             $blogs = BlogCategory::active()
                 ->get(['slug', 'updated_at'])
                 ->map(fn ($category) => [
-                    'loc' => route('blog.index', ['category' => $category->slug]),
+                    'loc' => route('blog.index', ['selectedCategory' => $category->slug]),
                     'lastmod' => $category->updated_at?->toAtomString(),
                     'changefreq' => 'weekly',
                     'priority' => '0.4',
@@ -217,7 +257,7 @@ class SitemapController extends Controller
             $events = EventCategory::active()
                 ->get(['slug', 'updated_at'])
                 ->map(fn ($category) => [
-                    'loc' => route('events.index', ['category' => $category->slug]),
+                    'loc' => route('events.index', ['selectedCategory' => $category->slug]),
                     'lastmod' => $category->updated_at?->toAtomString(),
                     'changefreq' => 'weekly',
                     'priority' => '0.4',
@@ -244,7 +284,7 @@ class SitemapController extends Controller
                     'loc' => route('news.show', $item->slug),
                     'lastmod' => ($item->published_at ?? $item->updated_at)?->toAtomString(),
                     'images' => [[
-                        'loc' => Seo::absoluteUrl($item->featured_image),
+                        'loc' => Seo::absoluteUrl(PublicImage::url($item->featured_image)),
                         'title' => $item->title,
                     ]],
                 ]);
@@ -256,7 +296,7 @@ class SitemapController extends Controller
                     'loc' => route('shows.show', $item->slug),
                     'lastmod' => $item->updated_at?->toAtomString(),
                     'images' => [[
-                        'loc' => Seo::absoluteUrl($item->cover_image),
+                        'loc' => Seo::absoluteUrl(PublicImage::url($item->cover_image)),
                         'title' => $item->title,
                     ]],
                 ]);
@@ -279,7 +319,7 @@ class SitemapController extends Controller
                         'loc' => route('podcasts.episode', ['showSlug' => $item->show->slug, 'episodeSlug' => $item->slug]),
                         'lastmod' => ($item->published_at ?? $item->updated_at)?->toAtomString(),
                         'images' => [[
-                            'loc' => Seo::absoluteUrl($image),
+                            'loc' => Seo::absoluteUrl(PublicImage::url($image)),
                             'title' => $item->title,
                         ]],
                     ];
@@ -303,17 +343,24 @@ class SitemapController extends Controller
             $news = News::published()
                 ->whereNotNull('video_url')
                 ->get(['slug', 'title', 'excerpt', 'content', 'featured_image', 'video_url', 'published_at', 'updated_at'])
-                ->map(fn ($item) => [
-                    'loc' => route('news.show', $item->slug),
-                    'lastmod' => ($item->published_at ?? $item->updated_at)?->toAtomString(),
-                    'videos' => [[
-                        'title' => $item->title,
-                        'description' => $item->excerpt ?: Seo::text($item->content, 200),
-                        'thumbnail_loc' => Seo::absoluteUrl($item->featured_image),
-                        'content_loc' => Seo::absoluteUrl($item->video_url),
-                        'publication_date' => $item->published_at?->toAtomString(),
-                    ]],
-                ]);
+                ->map(function ($item) {
+                    $videoUrl = Seo::absoluteUrl($item->video_url);
+                    $isDirectMedia = $videoUrl
+                        && preg_match('/\.(?:mp4|m4v|webm|mov|ogv)(?:$|[?#])/i', $videoUrl) === 1;
+
+                    return [
+                        'loc' => route('news.show', $item->slug),
+                        'lastmod' => ($item->published_at ?? $item->updated_at)?->toAtomString(),
+                        'videos' => [[
+                            'title' => $item->title,
+                            'description' => $item->excerpt ?: Seo::text($item->content, 200),
+                            'thumbnail_loc' => Seo::absoluteUrl(PublicImage::url($item->featured_image)),
+                            'content_loc' => $isDirectMedia ? $videoUrl : null,
+                            'player_loc' => !$isDirectMedia && $videoUrl ? Seo::videoEmbedUrl($videoUrl) : null,
+                            'publication_date' => $item->published_at?->toAtomString(),
+                        ]],
+                    ];
+                });
 
             $podcasts = PodcastEpisode::published()
                 ->whereNotNull('video_url')
@@ -331,8 +378,13 @@ class SitemapController extends Controller
                         'videos' => [[
                             'title' => $item->title,
                             'description' => Seo::text($item->description, 200),
-                            'thumbnail_loc' => Seo::absoluteUrl($item->cover_image ?: $item->show->cover_image),
-                            'content_loc' => Seo::absoluteUrl($item->video_url),
+                            'thumbnail_loc' => Seo::absoluteUrl(PublicImage::url($item->cover_image ?: $item->show->cover_image)),
+                            'content_loc' => preg_match('/\.(?:mp4|m4v|webm|mov|ogv)(?:$|[?#])/i', (string) $item->video_url)
+                                ? Seo::absoluteUrl($item->video_url)
+                                : null,
+                            'player_loc' => preg_match('/\.(?:mp4|m4v|webm|mov|ogv)(?:$|[?#])/i', (string) $item->video_url)
+                                ? null
+                                : Seo::videoEmbedUrl(Seo::absoluteUrl($item->video_url)),
                             'publication_date' => $item->published_at?->toAtomString(),
                         ]],
                     ];
@@ -342,7 +394,8 @@ class SitemapController extends Controller
             return collect()
                 ->concat($news)
                 ->concat($podcasts)
-                ->filter(fn ($url) => !empty(data_get($url, 'videos.0.content_loc')))
+                ->filter(fn ($url) => !empty(data_get($url, 'videos.0.thumbnail_loc')))
+                ->filter(fn ($url) => !empty(data_get($url, 'videos.0.content_loc')) || !empty(data_get($url, 'videos.0.player_loc')))
                 ->values();
         });
 
@@ -367,21 +420,50 @@ class SitemapController extends Controller
         ])->render());
     }
 
-    private function xml(string $xml)
+    private function newsUrlset($urls)
     {
-        return response($xml, 200)
-            ->header('Content-Type', 'application/xml; charset=UTF-8');
+        $urls = collect($urls)
+            ->map(function ($url) {
+                $url['loc'] = Seo::absoluteUrl($url['loc'] ?? null);
+
+                return $url;
+            })
+            ->filter(fn ($url) => !empty($url['loc']) && !empty($url['publication_date']) && !empty($url['title']))
+            ->values();
+
+        return $this->xml(view('sitemap-news', ['urls' => $urls])->render(), 300);
+    }
+
+    private function xml(string $xml, int $maxAge = 900)
+    {
+        $response = response($xml, 200)
+            ->header('Content-Type', 'application/xml; charset=UTF-8')
+            ->header('Cache-Control', "public, max-age={$maxAge}, s-maxage={$maxAge}, stale-while-revalidate=3600")
+            ->header('ETag', '"' . hash('sha256', $xml) . '"');
+
+        $response->isNotModified(request());
+
+        return $response;
     }
 
     private function cacheKey(string $section): string
     {
-        return 'sitemap.' . $section . ':' . request()->getSchemeAndHttpHost();
+        return 'sitemap.' . $section;
     }
 
-    private function latestContentDate($query): string
+    private function latestContentDate($query): ?string
     {
         $value = (clone $query)->latest('updated_at')->value('updated_at');
 
-        return $value ? Carbon::parse($value)->toAtomString() : now()->toAtomString();
+        return $value ? Carbon::parse($value)->toAtomString() : null;
+    }
+
+    private function latestDate(array $queries): ?string
+    {
+        return collect($queries)
+            ->map(fn ($query) => $this->latestContentDate($query))
+            ->filter()
+            ->sortDesc()
+            ->first();
     }
 }

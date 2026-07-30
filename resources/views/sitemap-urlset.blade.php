@@ -34,14 +34,19 @@
         @endif
         @if($includeVideos)
             @foreach((array) ($url['videos'] ?? []) as $video)
-                @continue(empty($video['content_loc']))
+                @continue(empty($video['content_loc']) && empty($video['player_loc']))
                 <video:video>
                     @if(!empty($video['thumbnail_loc']))
                     <video:thumbnail_loc>{{ $video['thumbnail_loc'] }}</video:thumbnail_loc>
                     @endif
                     <video:title>{{ $video['title'] }}</video:title>
                     <video:description>{{ $video['description'] }}</video:description>
+                    @if(!empty($video['content_loc']))
                     <video:content_loc>{{ $video['content_loc'] }}</video:content_loc>
+                    @endif
+                    @if(!empty($video['player_loc']))
+                    <video:player_loc allow_embed="yes">{{ $video['player_loc'] }}</video:player_loc>
+                    @endif
                     @if(!empty($video['publication_date']))
                     <video:publication_date>{{ $video['publication_date'] }}</video:publication_date>
                     @endif
