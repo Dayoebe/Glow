@@ -1,385 +1,427 @@
-<div>
+<div class="bg-[#f7f4ee] text-slate-950">
     @normalizeArray($contactContent)
-    <!-- Page Header -->
-    <section
-        class="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white py-20 overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0"
-                style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
-            </div>
-        </div>
 
-        <div class="container mx-auto px-4 relative z-10">
-            <x-ad-slot placement="contact" />
-            <div class="max-w-4xl mx-auto text-center">
-                <h1 class="text-5xl md:text-6xl font-bold mb-6">{{ data_get($contactContent, 'header_title') }}</h1>
-                <p class="text-xl md:text-2xl text-emerald-100 leading-relaxed">
-                    {{ data_get($contactContent, 'header_subtitle') }}
-                </p>
+    @php
+        $phone = trim((string) data_get($contactContent, 'contact_info.phone', ''));
+        $phoneHref = preg_replace('/[^0-9+]/', '', $phone);
+        $email = trim((string) data_get($contactContent, 'contact_info.email', ''));
+        $address = trim((string) data_get($contactContent, 'contact_info.address', ''));
+        $hours = (array) data_get($contactContent, 'contact_info.hours', []);
+
+        $departments = collect((array) data_get($contactContent, 'departments', []))
+            ->filter(fn ($department) => is_array($department) && !empty($department['name']));
+        $faqs = collect((array) data_get($contactContent, 'faqs', []))
+            ->filter(fn ($faq) => is_array($faq) && !empty($faq['question']) && !empty($faq['answer']));
+        $socials = collect((array) data_get($contactContent, 'socials', []))
+            ->filter(function ($social) {
+                if (!is_array($social)) {
+                    return false;
+                }
+
+                $url = trim((string) ($social['url'] ?? ''));
+
+                return $url !== ''
+                    && $url !== '#'
+                    && \Illuminate\Support\Str::startsWith($url, ['https://', 'http://']);
+            });
+
+        $configuredMap = trim((string) data_get($contactContent, 'contact_info.map_embed', ''));
+        $mapEmbed = \Illuminate\Support\Str::startsWith($configuredMap, ['https://', 'http://'])
+            ? $configuredMap
+            : ($address !== '' ? 'https://www.google.com/maps?q=' . urlencode($address) . '&output=embed' : '');
+        $directions = $address !== ''
+            ? 'https://www.google.com/maps/dir/?api=1&destination=' . urlencode($address)
+            : '';
+    @endphp
+
+    <section class="relative isolate overflow-hidden bg-[#07182b] text-white">
+        <div
+            class="absolute inset-0 -z-10"
+            style="background-image: radial-gradient(circle at 85% 18%, rgba(243, 106, 33, .22), transparent 32%), radial-gradient(circle at 8% 92%, rgba(45, 87, 125, .38), transparent 34%);"
+        ></div>
+        <div class="mx-auto grid max-w-[1440px] gap-9 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:items-end lg:gap-16 lg:px-8 lg:py-20">
+            <div class="max-w-4xl">
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">Contact Glow FM</p>
+                <h1 class="mt-4 text-4xl font-black leading-[1.02] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+                    {{ data_get($contactContent, 'header_title', 'Get In Touch') }}
+                </h1>
+                @if(trim((string) data_get($contactContent, 'header_subtitle', '')) !== '')
+                    <p class="mt-6 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
+                        {{ data_get($contactContent, 'header_subtitle') }}
+                    </p>
+                @endif
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                @if($phone !== '')
+                    <a href="tel:{{ $phoneHref }}" class="flex items-center gap-4 rounded-xl border border-white/15 bg-white/[0.06] p-4 transition hover:border-orange-400/50 hover:bg-white/10">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#f36a21] text-white">
+                            <i class="fas fa-phone text-sm" aria-hidden="true"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Call the station</span>
+                            <span class="mt-1 block truncate text-sm font-black text-white">{{ $phone }}</span>
+                        </span>
+                    </a>
+                @endif
+                @if($email !== '')
+                    <a href="mailto:{{ $email }}" class="flex items-center gap-4 rounded-xl border border-white/15 bg-white/[0.06] p-4 transition hover:border-orange-400/50 hover:bg-white/10">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-orange-300">
+                            <i class="fas fa-envelope text-sm" aria-hidden="true"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Email</span>
+                            <span class="mt-1 block truncate text-sm font-black text-white">{{ $email }}</span>
+                        </span>
+                    </a>
+                @endif
             </div>
         </div>
     </section>
 
-    <!-- Contact Info Cards -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-                <!-- Phone -->
-                <div
-                    class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div
-                        class="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <i class="fas fa-phone text-3xl text-white"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Call Us</h3>
-                    <p class="text-gray-600 mb-4">Weekdays: {{ data_get($contactContent, 'contact_info.hours.weekdays') }}
-                    </p>
-                    <a href="tel:{{ data_get($contactContent, 'contact_info.phone') }}"
-                        class="text-xl font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
-                        {{ data_get($contactContent, 'contact_info.phone') }}
-                    </a>
-                </div>
+    <section class="border-b border-slate-200 bg-white py-7">
+        <div class="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+            <x-ad-slot placement="contact" />
+        </div>
+    </section>
 
-                <!-- Email -->
-                <div
-                    class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div
-                        class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <i class="fas fa-envelope text-3xl text-white"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Email Us</h3>
-                    <p class="text-gray-600 mb-4">We'll respond within 24 hours</p>
-                    <a href="mailto:{{ data_get($contactContent, 'contact_info.email') }}"
-                        class="text-xl font-semibold text-blue-600 hover:text-blue-700 transition-colors break-all">
-                        {{ data_get($contactContent, 'contact_info.email') }}
-                    </a>
-                </div>
+    <section class="bg-white py-16 sm:py-20">
+        <div class="mx-auto grid max-w-[1440px] gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)] lg:gap-12 lg:px-8">
+            <div id="contact-form" class="scroll-mt-28">
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Send a message</p>
+                <h2 class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">How can we help?</h2>
+                <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                    Choose the most relevant topic and give us the details the station team needs to respond.
+                </p>
 
-                <!-- Location -->
-                <div
-                    class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div
-                        class="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <i class="fas fa-map-marker-alt text-3xl text-white"></i>
+                @if($successMessage)
+                    <div class="flash-auto-dismiss mt-6 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900" role="status">
+                        <i class="fas fa-check-circle mt-0.5 text-emerald-600" aria-hidden="true"></i>
+                        <p class="text-sm font-semibold">{{ $successMessage }}</p>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Visit Us</h3>
-                    <p class="text-gray-600 mb-4">Come see our studio</p>
-                    <p class="text-purple-600 font-semibold">
-                        {{ data_get($contactContent, 'contact_info.address') }}
-                    </p>
-                </div>
+                @endif
+
+                @if($errorMessage)
+                    <div class="flash-auto-dismiss mt-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-red-900" role="alert">
+                        <i class="fas fa-exclamation-circle mt-0.5 text-red-600" aria-hidden="true"></i>
+                        <p class="text-sm font-semibold">{{ $errorMessage }}</p>
+                    </div>
+                @endif
+
+                <form wire:submit.prevent="submitForm" class="mt-8 space-y-6" novalidate>
+                    <div>
+                        <label for="inquiry_type" class="mb-2 block text-sm font-bold text-[#07182b]">
+                            Inquiry type <span class="text-[#e95516]" aria-hidden="true">*</span>
+                        </label>
+                        <select
+                            wire:model="inquiry_type"
+                            id="inquiry_type"
+                            required
+                            class="min-h-12 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#e95516] focus:ring-2 focus:ring-orange-100 @error('inquiry_type') border-red-500 @enderror"
+                        >
+                            <option value="general">General inquiry</option>
+                            <option value="advertising">Advertising</option>
+                            <option value="programming">Programming and shows</option>
+                            <option value="technical">Technical support</option>
+                            <option value="events">Events</option>
+                            <option value="careers">Careers</option>
+                            <option value="feedback">Feedback</option>
+                        </select>
+                        @error('inquiry_type')
+                            <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="name" class="mb-2 block text-sm font-bold text-[#07182b]">
+                                Full name <span class="text-[#e95516]" aria-hidden="true">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                wire:model="name"
+                                id="name"
+                                required
+                                autocomplete="name"
+                                placeholder="Your full name"
+                                class="min-h-12 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#e95516] focus:ring-2 focus:ring-orange-100 @error('name') border-red-500 @enderror"
+                            >
+                            @error('name')
+                                <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="email" class="mb-2 block text-sm font-bold text-[#07182b]">
+                                Email address <span class="text-[#e95516]" aria-hidden="true">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                wire:model="email"
+                                id="email"
+                                required
+                                autocomplete="email"
+                                placeholder="you@example.com"
+                                class="min-h-12 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#e95516] focus:ring-2 focus:ring-orange-100 @error('email') border-red-500 @enderror"
+                            >
+                            @error('email')
+                                <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="phone" class="mb-2 block text-sm font-bold text-[#07182b]">Phone number <span class="font-medium text-slate-400">(optional)</span></label>
+                            <input
+                                type="tel"
+                                wire:model="phone"
+                                id="phone"
+                                autocomplete="tel"
+                                placeholder="+234"
+                                class="min-h-12 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#e95516] focus:ring-2 focus:ring-orange-100 @error('phone') border-red-500 @enderror"
+                            >
+                            @error('phone')
+                                <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="subject" class="mb-2 block text-sm font-bold text-[#07182b]">
+                                Subject <span class="text-[#e95516]" aria-hidden="true">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                wire:model="subject"
+                                id="subject"
+                                required
+                                placeholder="A short summary"
+                                class="min-h-12 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#e95516] focus:ring-2 focus:ring-orange-100 @error('subject') border-red-500 @enderror"
+                            >
+                            @error('subject')
+                                <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="message" class="mb-2 block text-sm font-bold text-[#07182b]">
+                            Message <span class="text-[#e95516]" aria-hidden="true">*</span>
+                        </label>
+                        <textarea
+                            wire:model="message"
+                            id="message"
+                            rows="7"
+                            required
+                            placeholder="Tell us what you need help with"
+                            class="w-full resize-y rounded-lg border border-slate-300 px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#e95516] focus:ring-2 focus:ring-orange-100 @error('message') border-red-500 @enderror"
+                        ></textarea>
+                        @error('message')
+                            <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button
+                        type="submit"
+                        wire:loading.attr="disabled"
+                        wire:target="submitForm"
+                        class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#e95516] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#d94e12] disabled:cursor-wait disabled:opacity-70 sm:w-auto"
+                    >
+                        <span wire:loading.remove wire:target="submitForm">Send message</span>
+                        <span wire:loading wire:target="submitForm">Sending…</span>
+                        <i wire:loading.remove wire:target="submitForm" class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                    </button>
+                </form>
             </div>
 
-            <!-- Main Contact Form and Info -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                <!-- Contact Form -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                        <h2 class="text-3xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
-
-                        <!-- Success Message -->
-                        @if($successMessage)
-                            <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-600 rounded-lg flash-auto-dismiss">
-                                <div class="flex items-center">
-                                    <i class="fas fa-check-circle text-emerald-600 text-2xl mr-3"></i>
-                                    <p class="text-emerald-800 font-medium">{{ $successMessage }}</p>
-                                </div>
+            <aside class="space-y-5 lg:sticky lg:top-28 lg:self-start">
+                <div class="rounded-xl bg-[#07182b] p-6 text-white sm:p-7">
+                    <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-orange-300">Station details</p>
+                    <div class="mt-5 divide-y divide-white/10">
+                        @if($address !== '')
+                            <div class="flex gap-3 py-4 first:pt-0">
+                                <i class="fas fa-map-marker-alt mt-1 w-4 text-orange-300" aria-hidden="true"></i>
+                                <p class="text-sm leading-6 text-slate-300">{{ $address }}</p>
                             </div>
                         @endif
-
-                        <!-- Error Message -->
-                        @if($errorMessage)
-                            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-600 rounded-lg flash-auto-dismiss">
-                                <div class="flex items-center">
-                                    <i class="fas fa-exclamation-circle text-red-600 text-2xl mr-3"></i>
-                                    <p class="text-red-800 font-medium">{{ $errorMessage }}</p>
-                                </div>
-                            </div>
+                        @if($phone !== '')
+                            <a href="tel:{{ $phoneHref }}" class="flex gap-3 py-4 text-sm text-slate-300 transition hover:text-white">
+                                <i class="fas fa-phone mt-1 w-4 text-orange-300" aria-hidden="true"></i>
+                                <span>{{ $phone }}</span>
+                            </a>
                         @endif
-
-                        <form wire:submit.prevent="submitForm" class="space-y-6">
-                            <!-- Inquiry Type -->
-                            <div>
-                                <label for="inquiry_type" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    What is your inquiry about? <span class="text-red-500">*</span>
-                                </label>
-                                <select wire:model="inquiry_type" id="inquiry_type"
-                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-emerald-500 transition-colors">
-                                    <option value="general">General Inquiry</option>
-                                    <option value="advertising">Advertising</option>
-                                    <option value="programming">Programming/Shows</option>
-                                    <option value="technical">Technical Support</option>
-                                    <option value="events">Events</option>
-                                    <option value="careers">Careers</option>
-                                    <option value="feedback">Feedback</option>
-                                </select>
-                                @error('inquiry_type') <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <!-- Name and Email -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Your Name <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="text" wire:model="name" id="name" placeholder="John Doe"
-                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-emerald-500 transition-colors @error('name') border-red-500 @enderror">
-                                    @error('name') <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                                    @enderror
-                                </div>
-
-                                <div>
-                                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Your Email <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="email" wire:model="email" id="email" placeholder="john@example.com"
-                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-emerald-500 transition-colors @error('email') border-red-500 @enderror">
-                                    @error('email') <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <!-- Phone and Subject -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Phone Number (Optional)
-                                    </label>
-                                    <input type="tel" wire:model="phone" id="phone" placeholder="+1 (234) 567-890"
-                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-emerald-500 transition-colors">
-                                    @error('phone') <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                                    @enderror
-                                </div>
-
-                                <div>
-                                    <label for="subject" class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Subject <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="text" wire:model="subject" id="subject"
-                                        placeholder="Brief subject of your message"
-                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-emerald-500 transition-colors @error('subject') border-red-500 @enderror">
-                                    @error('subject') <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <!-- Message -->
-                            <div>
-                                <label for="message" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Your Message <span class="text-red-500">*</span>
-                                </label>
-                                <textarea wire:model="message" id="message" rows="6"
-                                    placeholder="Tell us more about your inquiry..."
-                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-emerald-500 transition-colors resize-none @error('message') border-red-500 @enderror"></textarea>
-                                @error('message') <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <!-- Submit Button -->
-                            <div>
-                                <button type="submit"
-                                    class="w-full px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2">
-                                    <i class="fas fa-paper-plane"></i>
-                                    <span>Send Message</span>
-                                </button>
-                            </div>
-                        </form>
+                        @if($email !== '')
+                            <a href="mailto:{{ $email }}" class="flex min-w-0 gap-3 py-4 text-sm text-slate-300 transition hover:text-white">
+                                <i class="fas fa-envelope mt-1 w-4 shrink-0 text-orange-300" aria-hidden="true"></i>
+                                <span class="break-all">{{ $email }}</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
 
-                <!-- Quick Contact Info -->
-                <div class="space-y-6">
-                    <!-- Office Hours -->
-                    <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-clock text-2xl text-emerald-600"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900">Office Hours</h3>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                <span class="text-gray-600 font-medium">Weekdays</span>
-                                <span
-                                    class="text-gray-900 font-semibold">{{ data_get($contactContent, 'contact_info.hours.weekdays') }}</span>
-                            </div>
-                            <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                <span class="text-gray-600 font-medium">Saturday</span>
-                                <span
-                                    class="text-gray-900 font-semibold">{{ data_get($contactContent, 'contact_info.hours.saturday') }}</span>
-                            </div>
-                            <div class="flex justify-between items-center py-2">
-                                <span class="text-gray-600 font-medium">Sunday</span>
-                                <span
-                                    class="text-gray-900 font-semibold">{{ data_get($contactContent, 'contact_info.hours.sunday') }}</span>
-                            </div>
-                        </div>
-                        <p class="mt-4 text-sm text-gray-600 bg-emerald-50 p-3 rounded-lg">
-                            <i class="fas fa-broadcast-tower text-emerald-600 mr-2"></i>
-                            We broadcast 24/7, but office hours are as listed above.
-                        </p>
+                @if(array_filter($hours))
+                    <div class="rounded-xl border border-slate-200 bg-[#f7f4ee] p-6">
+                        <h3 class="text-lg font-black text-[#07182b]">Office hours</h3>
+                        <dl class="mt-4 space-y-3 text-sm">
+                            @if(!empty($hours['weekdays']))
+                                <div class="flex justify-between gap-4 border-b border-slate-200 pb-3">
+                                    <dt class="font-medium text-slate-500">Weekdays</dt>
+                                    <dd class="text-right font-bold text-[#07182b]">{{ $hours['weekdays'] }}</dd>
+                                </div>
+                            @endif
+                            @if(!empty($hours['saturday']))
+                                <div class="flex justify-between gap-4 border-b border-slate-200 pb-3">
+                                    <dt class="font-medium text-slate-500">Saturday</dt>
+                                    <dd class="text-right font-bold text-[#07182b]">{{ $hours['saturday'] }}</dd>
+                                </div>
+                            @endif
+                            @if(!empty($hours['sunday']))
+                                <div class="flex justify-between gap-4">
+                                    <dt class="font-medium text-slate-500">Sunday</dt>
+                                    <dd class="text-right font-bold text-[#07182b]">{{ $hours['sunday'] }}</dd>
+                                </div>
+                            @endif
+                        </dl>
                     </div>
+                @endif
 
-                    <!-- Social Media -->
-                    <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-share-alt text-2xl text-blue-600"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900">Follow Us</h3>
-                        </div>
-                        <p class="text-gray-600 mb-4">Connect with us on social media for updates and behind-the-scenes
-                            content!</p>
-                        <div class="grid grid-cols-3 gap-3">
-                            @foreach((array) data_get($contactContent, 'socials', []) as $social)
-                                @continueIfNotArray($social)
-                                <a href="{{ $social['url'] }}"
-                                    class="flex flex-col items-center justify-center p-4 bg-gray-50 hover:bg-{{ $social['color'] }}-50 rounded-xl transition-all duration-300 group">
-                                    <i
-                                        class="{{ $social['icon'] }} text-2xl text-gray-600 group-hover:text-{{ $social['color'] }}-600 mb-2"></i>
-                                    <span class="text-xs font-medium text-gray-700">{{ $social['name'] }}</span>
+                @if($socials->isNotEmpty())
+                    <div class="rounded-xl border border-slate-200 bg-white p-6">
+                        <h3 class="text-lg font-black text-[#07182b]">Follow Glow FM</h3>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            @foreach($socials as $social)
+                                <a
+                                    href="{{ $social['url'] }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="{{ $social['name'] ?? 'Glow FM social profile' }}"
+                                    class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-[#173b5f] transition hover:border-[#e95516] hover:text-[#e95516]"
+                                >
+                                    <i class="{{ $social['icon'] ?? 'fas fa-link' }}" aria-hidden="true"></i>
                                 </a>
                             @endforeach
                         </div>
                     </div>
+                @endif
+            </aside>
+        </div>
+    </section>
 
-                    <!-- Emergency Contact -->
-                    <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-xl p-6 text-white">
-                        <div class="flex items-center space-x-3 mb-3">
-                            <i class="fas fa-phone-volume text-3xl"></i>
-                            <h3 class="text-xl font-bold">Request Line</h3>
-                        </div>
-                        <p class="mb-3 text-red-100">Call to request a song or give a shout-out on air!</p>
-                        <a href="tel:{{ data_get($contactContent, 'contact_info.phone') }}"
-                            class="block text-center py-3 bg-white text-red-600 font-bold rounded-xl hover:bg-red-50 transition-colors">
-                            {{ data_get($contactContent, 'contact_info.phone') }}
-                        </a>
-                    </div>
+    @if($departments->isNotEmpty())
+        <section class="border-y border-slate-200 bg-[#f7f4ee] py-16 sm:py-20" aria-labelledby="departments-heading">
+            <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+                <div class="max-w-2xl">
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Direct your inquiry</p>
+                    <h2 id="departments-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">Contact by team</h2>
+                    <p class="mt-3 text-sm leading-6 text-slate-600">Use the details supplied for the team most relevant to your message.</p>
+                </div>
+
+                <div class="mt-9 grid border-l border-t border-slate-200 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach($departments as $department)
+                        @php
+                            $departmentEmail = trim((string) ($department['email'] ?? ''));
+                            $departmentPhone = trim((string) ($department['phone'] ?? ''));
+                            $departmentPhoneHref = preg_replace('/[^0-9+]/', '', $departmentPhone);
+                        @endphp
+                        <article class="border-b border-r border-slate-200 bg-white p-6">
+                            <i class="{{ $department['icon'] ?? 'fas fa-circle' }} text-lg text-[#e95516]" aria-hidden="true"></i>
+                            <h3 class="mt-4 text-lg font-black text-[#07182b]">{{ $department['name'] }}</h3>
+                            @if(!empty($department['description']))
+                                <p class="mt-2 text-sm leading-6 text-slate-600">{{ $department['description'] }}</p>
+                            @endif
+                            @if($departmentEmail !== '' || $departmentPhone !== '')
+                                <div class="mt-4 space-y-2 border-t border-slate-100 pt-4 text-xs font-bold">
+                                    @if($departmentEmail !== '')
+                                        <a href="mailto:{{ $departmentEmail }}" class="flex min-w-0 items-center gap-2 text-[#173b5f] transition hover:text-[#e95516]">
+                                            <i class="fas fa-envelope w-4 shrink-0 text-[#e95516]" aria-hidden="true"></i>
+                                            <span class="truncate">{{ $departmentEmail }}</span>
+                                        </a>
+                                    @endif
+                                    @if($departmentPhone !== '')
+                                        <a href="tel:{{ $departmentPhoneHref }}" class="flex items-center gap-2 text-[#173b5f] transition hover:text-[#e95516]">
+                                            <i class="fas fa-phone w-4 text-[#e95516]" aria-hidden="true"></i>
+                                            <span>{{ $departmentPhone }}</span>
+                                        </a>
+                                    @endif
+                                </div>
+                            @endif
+                        </article>
+                    @endforeach
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
 
-    <!-- Departments Section -->
-    <section class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Contact by Department</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    Reach out to the right team for faster assistance
-                </p>
-            </div>
+    @if($mapEmbed !== '' || $faqs->isNotEmpty())
+        <section class="bg-white py-16 sm:py-20">
+            <div class="mx-auto grid max-w-[1440px] gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-12 lg:px-8">
+                @if($mapEmbed !== '')
+                    <div>
+                        <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Visit the station</p>
+                        <h2 class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b]">Find Glow FM</h2>
+                        @if($address !== '')
+                            <p class="mt-3 text-sm leading-6 text-slate-600">{{ $address }}</p>
+                        @endif
+                        <div class="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                            <iframe
+                                src="{{ $mapEmbed }}"
+                                title="Map showing Glow FM"
+                                width="100%"
+                                height="390"
+                                style="border:0;"
+                                allowfullscreen
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                class="block w-full"
+                            ></iframe>
+                        </div>
+                        @if($directions !== '')
+                            <a
+                                href="{{ $directions }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#173b5f] transition hover:text-[#e95516]"
+                            >
+                                Open directions
+                                <i class="fas fa-external-link-alt text-[10px]" aria-hidden="true"></i>
+                            </a>
+                        @endif
+                    </div>
+                @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                @foreach((array) data_get($contactContent, 'departments', []) as $dept)
-                    @continueIfNotArray($dept)
-                    <div
-                        class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border-b-4 border-{{ $dept['color'] }}-500">
-                        <div class="flex items-start space-x-4 mb-4">
-                            <div class="flex-shrink-0">
-                                <div
-                                    class="w-14 h-14 bg-{{ $dept['color'] }}-100 rounded-xl flex items-center justify-center">
-                                    <i class="{{ $dept['icon'] }} text-2xl text-{{ $dept['color'] }}-600"></i>
+                @if($faqs->isNotEmpty())
+                    <div>
+                        <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Useful answers</p>
+                        <h2 class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b]">Frequently asked</h2>
+                        <div class="mt-6 divide-y divide-slate-200 border-y border-slate-200">
+                            @foreach($faqs as $faq)
+                                <div x-data="{ open: false }">
+                                    <button
+                                        type="button"
+                                        @click="open = !open"
+                                        :aria-expanded="open"
+                                        class="flex w-full items-center justify-between gap-5 py-5 text-left"
+                                    >
+                                        <span class="font-black text-[#07182b]">{{ $faq['question'] }}</span>
+                                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f7f4ee] text-[#e95516]">
+                                            <i class="fas fa-plus text-xs transition-transform" :class="open && 'rotate-45'" aria-hidden="true"></i>
+                                        </span>
+                                    </button>
+                                    <div x-show="open" x-collapse>
+                                        <p class="pb-5 pr-10 text-sm leading-6 text-slate-600">{{ $faq['answer'] }}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $dept['name'] }}</h3>
-                                <p class="text-sm text-gray-600">{{ $dept['description'] }}</p>
-                            </div>
+                            @endforeach
                         </div>
-                        <div class="space-y-2 pt-4 border-t border-gray-200">
-                            <a href="mailto:{{ $dept['email'] }}"
-                                class="flex items-center space-x-2 text-gray-600 hover:text-{{ $dept['color'] }}-600 transition-colors">
-                                <i class="fas fa-envelope text-sm"></i>
-                                <span class="text-sm">{{ $dept['email'] }}</span>
-                            </a>
-                            <a href="tel:{{ $dept['phone'] }}"
-                                class="flex items-center space-x-2 text-gray-600 hover:text-{{ $dept['color'] }}-600 transition-colors">
-                                <i class="fas fa-phone text-sm"></i>
-                                <span class="text-sm">{{ $dept['phone'] }}</span>
-                            </a>
-                        </div>
+                        <a href="#contact-form" class="mt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#173b5f] transition hover:text-[#e95516]">
+                            Send a message
+                            <i class="fas fa-arrow-up text-xs" aria-hidden="true"></i>
+                        </a>
                     </div>
-                @endforeach
+                @endif
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
 
-    <!-- Map Section -->
-  @php
-    $address = 'No. 1, Efon Alaye Street, Ijapo Estate, Akure, Ondo State, Nigeria';
-    $mapEmbed = 'https://www.google.com/maps?q=' . urlencode($address) . '&output=embed';
-    $directions = 'https://www.google.com/maps/dir/?api=1&destination=' . urlencode($address);
-@endphp
-
-
-<section class="py-20 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Find Us</h2>
-            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                Visit our studio and see where the magic happens
-            </p>
-        </div>
-
-        <div class="rounded-2xl overflow-hidden shadow-2xl">
-            <iframe src="{{ $mapEmbed }}" width="100%" height="500"
-                style="border:0;" allowfullscreen="" loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-                class="w-full"></iframe>
-        </div>
-
-        <div class="mt-8 text-center">
-            <a href="{{ $directions }}" target="_blank"
-                class="inline-flex items-center space-x-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
-                <i class="fas fa-directions"></i>
-                <span>Get Directions</span>
-            </a>
-        </div>
-    </div>
-</section>
-
-
-    <!-- FAQ Section -->
-    <section class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    Quick answers to common questions
-                </p>
-            </div>
-
-            <div class="max-w-4xl mx-auto space-y-4">
-                @foreach((array) data_get($contactContent, 'faqs', []) as $index => $faq)
-                    @continueIfNotArray($faq)
-                    <div x-data="{ open: false }" class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                        <button @click="open = !open"
-                            class="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors">
-                            <span class="text-lg font-semibold text-gray-900 pr-4">{{ $faq['question'] }}</span>
-                            <i class="fas fa-chevron-down text-emerald-600 transition-transform duration-200"
-                                :class="open && 'rotate-180'"></i>
-                        </button>
-                        <div x-show="open" x-collapse class="px-6 pb-6">
-                            <p class="text-gray-600 leading-relaxed">{{ $faq['answer'] }}</p>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="text-center mt-12">
-                <p class="text-gray-600 mb-4">Didn't find what you're looking for?</p>
-                <a href="#contact-form"
-                    class="inline-flex items-center space-x-2 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">
-                    <span>Send us a message</span>
-                    <i class="fas fa-arrow-up"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-    
-    <!--Start of Tawk.to Script-->
     <script type="text/javascript">
         var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
         (function () {
@@ -391,5 +433,4 @@
             s0.parentNode.insertBefore(s1, s0);
         })();
     </script>
-    <!--End of Tawk.to Script-->
 </div>

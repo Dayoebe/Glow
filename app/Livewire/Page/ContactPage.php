@@ -48,6 +48,12 @@ class ContactPage extends Component
     public function mount()
     {
         $station = Seo::station();
+        $requestedInquiry = request()->query('inquiry_type');
+        $allowedInquiryTypes = ['general', 'advertising', 'programming', 'technical', 'events', 'careers', 'feedback'];
+        if (is_string($requestedInquiry) && in_array($requestedInquiry, $allowedInquiryTypes, true)) {
+            $this->inquiry_type = $requestedInquiry;
+        }
+
         $defaults = [
             'header_title' => 'Get In Touch',
             'header_subtitle' => 'We\'d love to hear from you! Whether you have a question, feedback, or just want to say hello, we\'re here to help.',
@@ -115,41 +121,76 @@ class ContactPage extends Component
             'faqs' => [
                 [
                     'question' => 'How can I listen to Glow FM online?',
-                    'answer' => 'You can listen to Glow FM through our website by clicking the \"Listen Live\" button, downloading our mobile app (available on iOS and Android), or using your favorite radio streaming app by searching for \"Glow FM 99.1\".',
+                    'answer' => 'Use the Listen Live button on this website to hear the Glow 99.1 FM stream.',
                 ],
                 [
                     'question' => 'How do I request a song?',
-                    'answer' => 'You can request songs through our website contact form, by calling our request line, or by sending us a message on our social media channels. Make sure to include the song title and artist name!',
+                    'answer' => 'Use this contact form or call the station and include the song title and artist name in your request.',
                 ],
                 [
                     'question' => 'Can I visit the studio?',
-                    'answer' => 'Yes! We offer studio tours by appointment. Please contact us at least one week in advance to schedule your visit. Group tours for schools and organizations are also available.',
+                    'answer' => 'Use this contact form to ask about a studio visit. The station team will confirm whether a visit can be accommodated.',
                 ],
                 [
                     'question' => 'How do I advertise on Glow FM?',
-                    'answer' => 'For advertising opportunities, contact Glow 99.1 FM through this page or call the station. Our team can discuss radio advertising, sponsored programs, jingles, interviews, live coverage, social media promotion, and Glow TV packages.',
+                    'answer' => 'Select Advertising in this form or call the station. Include your campaign goal, preferred dates, intended audience, and budget range.',
                 ],
                 [
                     'question' => 'Are you hiring?',
-                    'answer' => 'We\'re always looking for talented individuals! Check our careers page or send your resume and cover letter to careers@glowfm.com. We offer opportunities for DJs, producers, marketing professionals, and more.',
+                    'answer' => 'Current opportunities are published on the Glow FM careers page. Applications should be submitted through the instructions on an active listing.',
                 ],
                 [
                     'question' => 'How can I sponsor an event?',
-                    'answer' => 'We love partnering with local businesses for events! Contact our events team at events@glowfm.com to discuss sponsorship opportunities and how we can work together to create memorable experiences.',
+                    'answer' => 'Select Events in this contact form and share the event, proposed partnership, dates, and contact details.',
                 ],
             ],
-            'socials' => [
-                ['name' => 'Facebook', 'icon' => 'fab fa-facebook-f', 'url' => '#', 'handle' => '@glowfm991', 'color' => 'blue'],
-                ['name' => 'Twitter', 'icon' => 'fab fa-twitter', 'url' => '#', 'handle' => '@glowfm', 'color' => 'sky'],
-                ['name' => 'Instagram', 'icon' => 'fab fa-instagram', 'url' => '#', 'handle' => '@glowfm991', 'color' => 'pink'],
-                ['name' => 'YouTube', 'icon' => 'fab fa-youtube', 'url' => '#', 'handle' => 'Glow FM 99.1', 'color' => 'red'],
-                ['name' => 'TikTok', 'icon' => 'fab fa-tiktok', 'url' => '#', 'handle' => '@glowfm', 'color' => 'slate'],
-                ['name' => 'LinkedIn', 'icon' => 'fab fa-linkedin-in', 'url' => '#', 'handle' => 'Glow FM', 'color' => 'indigo'],
-            ],
+            'socials' => [],
         ];
 
         $settings = Setting::get('website.contact', []);
         $this->contactContent = array_replace_recursive($defaults, $settings);
+
+        $this->contactContent['socials'] = collect((array) data_get($this->contactContent, 'socials', []))
+            ->filter(function ($social) {
+                if (!is_array($social)) {
+                    return false;
+                }
+
+                $url = trim((string) ($social['url'] ?? ''));
+
+                return $url !== ''
+                    && $url !== '#'
+                    && (str_starts_with($url, 'https://') || str_starts_with($url, 'http://'));
+            })
+            ->values()
+            ->all();
+
+        $this->contactContent['faqs'] = collect((array) data_get($this->contactContent, 'faqs', []))
+            ->map(function ($faq) {
+                if (!is_array($faq)) {
+                    return $faq;
+                }
+
+                $answer = strtolower((string) ($faq['answer'] ?? ''));
+
+                if (str_contains($answer, 'available on ios and android') || str_contains($answer, 'downloading our mobile app')) {
+                    $faq['answer'] = 'Use the Listen Live button on this website to hear the Glow 99.1 FM stream.';
+                } elseif (str_contains($answer, 'social media channels')) {
+                    $faq['answer'] = 'Use this contact form or call the station and include the song title and artist name in your request.';
+                } elseif (str_contains($answer, 'offer studio tours')) {
+                    $faq['answer'] = 'Use this contact form to ask about a studio visit. The station team will confirm whether a visit can be accommodated.';
+                } elseif (str_contains($answer, 'glow tv packages')) {
+                    $faq['answer'] = 'Select Advertising in this form or call the station. Include your campaign goal, preferred dates, intended audience, and budget range.';
+                } elseif (str_contains($answer, 'careers@glowfm.com')) {
+                    $faq['answer'] = 'Current opportunities are published on the Glow FM careers page. Applications should be submitted through the instructions on an active listing.';
+                } elseif (str_contains($answer, 'events@glowfm.com')) {
+                    $faq['answer'] = 'Select Events in this contact form and share the event, proposed partnership, dates, and contact details.';
+                }
+
+                return $faq;
+            })
+            ->values()
+            ->all();
     }
 
     public function submitForm()
