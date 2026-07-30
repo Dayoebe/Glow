@@ -1,80 +1,74 @@
-<div>
-    <section class="relative bg-gradient-to-br from-slate-700 via-slate-800 to-gray-900 text-white py-16">
-        <div class="container mx-auto px-4">
+<div class="min-h-screen bg-[#f6f2e9] text-[#0b1830]">
+    <section class="bg-[#07172f] text-white">
+        <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-20">
             <x-ad-slot placement="oap-directory" />
-            <div class="max-w-4xl mx-auto text-center">
-                <h1 class="text-4xl md:text-5xl font-bold mb-4">OAP Directory</h1>
-                <p class="text-lg md:text-xl text-slate-200">Meet the voices behind Glow FM.</p>
+            <div class="grid gap-8 lg:grid-cols-[1fr_20rem] lg:items-end">
+                <div class="max-w-3xl">
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-[#ff8a2a]">The voices of Glow</p>
+                    <h1 class="font-display mt-4 text-5xl font-semibold leading-none tracking-tight sm:text-6xl">Meet our presenters.</h1>
+                    <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+                        Get to know the personalities behind the conversations, music and moments you hear on Glow 99.1 FM.
+                    </p>
+                </div>
+                <label class="relative block">
+                    <span class="sr-only">Search presenters</span>
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-xs text-slate-400" aria-hidden="true"></i>
+                    <input type="search" wire:model.live.debounce.500ms="searchQuery" placeholder="Search presenters"
+                        class="w-full border border-white/25 bg-white/10 py-3.5 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-400 focus:border-[#ff8a2a] focus:ring-1 focus:ring-[#ff8a2a]">
+                </label>
             </div>
         </div>
     </section>
 
-    <section class="py-12 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="max-w-xl mx-auto mb-8">
-                <div class="relative">
-                    <input type="text" wire:model.live.debounce.500ms="searchQuery"
-                        placeholder="Search OAPs..."
-                        class="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-slate-600 transition-colors">
-                    <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                </div>
-            </div>
-
+    <main class="py-14 lg:py-20">
+        <div class="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
             @if($oaps->count() > 0)
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="mb-8 flex items-end justify-between gap-5">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">On air</p>
+                        <h2 class="font-display mt-2 text-3xl font-semibold sm:text-4xl">People you know by voice</h2>
+                    </div>
+                    <p class="hidden text-sm text-slate-500 sm:block">{{ $oaps->total() }} {{ \Illuminate\Support\Str::plural('presenter', $oaps->total()) }}</p>
+                </div>
+
+                <div class="grid gap-x-7 gap-y-11 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     @foreach($oaps as $oap)
-                        <article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                            <div class="p-6">
-                                <div class="flex items-center space-x-4">
-                                    <div class="relative w-16 h-16 rounded-full overflow-hidden">
-                                        <x-initials-image
-                                            :src="$oap->profile_photo"
-                                            :title="$oap->name"
-                                            imgClass="w-full h-full object-cover"
-                                            fallbackClass="bg-slate-700/90"
-                                            textClass="text-lg font-bold text-white"
-                                        />
-                                    </div>
-                                    <div class="min-w-0">
-                                        <h3 class="text-lg font-bold text-gray-900 truncate">{{ $oap->name }}</h3>
-                                        <p class="text-sm text-gray-500">{{ $oap->teamRole?->name ?? ($oap->employment_status ?? 'Broadcaster') }}</p>
-                                        <p class="text-xs text-slate-500">{{ $oap->department?->name ?? 'General' }}</p>
-                                    </div>
+                        <article class="group">
+                            <a href="{{ route('oaps.show', $oap->slug) }}"
+                                class="block focus:outline-none focus:ring-2 focus:ring-[#f36b21] focus:ring-offset-4">
+                                <div class="aspect-[4/5] overflow-hidden bg-[#dfe4e8]">
+                                    <x-initials-image
+                                        :src="$oap->profile_photo"
+                                        :title="$oap->name"
+                                        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                        fallbackClass="h-full w-full bg-[#17375f]"
+                                        textClass="text-5xl font-display font-semibold text-white"
+                                    />
                                 </div>
-                                <p class="text-gray-600 mt-4 line-clamp-3">{{ $oap->bio }}</p>
-                                @php($socialLinks = array_filter($oap->public_social_links ?? []))
-                                @if(count($socialLinks) > 0)
-                                    <div class="mt-4 flex flex-wrap items-center gap-3 text-slate-500">
-                                        @foreach($socialLinks as $platform => $url)
-                                            <a href="{{ $url }}" target="_blank" rel="noopener"
-                                                class="hover:text-slate-700 transition-colors"
-                                                aria-label="{{ ucfirst($platform) }}">
-                                                <i class="fab fa-{{ $platform === 'linkedin' ? 'linkedin-in' : $platform }}"></i>
-                                            </a>
-                                        @endforeach
-                                    </div>
-                                @endif
-                                <div class="mt-4 flex items-center justify-between">
-                                    <span class="text-xs text-gray-500">{{ $oap->shows_count ?? 0 }} shows</span>
-                                    <a href="{{ route('oaps.show', $oap->slug) }}"
-                                        class="text-slate-600 hover:text-slate-800 text-sm font-semibold">
-                                        View Profile
-                                    </a>
-                                </div>
-                            </div>
+                                <p class="mt-5 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#d95318]">
+                                    {{ $oap->department?->name ?? 'Broadcast' }}
+                                </p>
+                                <h3 class="font-display mt-1 text-2xl font-semibold leading-tight transition group-hover:text-[#d95318]">{{ $oap->name }}</h3>
+                                <p class="mt-1 text-sm text-slate-600">{{ $oap->teamRole?->name ?? ($oap->employment_status ?? 'Presenter') }}</p>
+                            </a>
+                            @if($oap->bio)
+                                <p class="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{{ strip_tags($oap->bio) }}</p>
+                            @endif
+                            <p class="mt-3 text-xs text-slate-500">{{ $oap->shows_count ?? 0 }} {{ \Illuminate\Support\Str::plural('show', $oap->shows_count ?? 0) }}</p>
                         </article>
                     @endforeach
                 </div>
-                <div class="mt-10 flex justify-center">
+
+                <div class="mt-12 border-t border-[#0b1830]/10 pt-8">
                     {{ $oaps->links() }}
                 </div>
             @else
-                <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
-                    <i class="fas fa-user-circle text-6xl text-gray-300 mb-4"></i>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">No OAPs found</h3>
-                    <p class="text-gray-600">Try a different search keyword.</p>
+                <div class="border border-dashed border-[#0b1830]/20 bg-white px-6 py-16 text-center">
+                    <i class="fas fa-microphone text-3xl text-slate-300" aria-hidden="true"></i>
+                    <h2 class="font-display mt-4 text-2xl font-semibold">No presenters found</h2>
+                    <p class="mt-2 text-sm text-slate-600">Try a different name, role or department.</p>
                 </div>
             @endif
         </div>
-    </section>
+    </main>
 </div>
