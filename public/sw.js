@@ -1,30 +1,36 @@
-const CACHE_VERSION = 'v1-2026-03-04';
+const CACHE_VERSION = 'v3-2026-07-30';
 const STATIC_CACHE = `glow-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `glow-runtime-${CACHE_VERSION}`;
-const OFFLINE_URL = '/offline.html';
+const APP_BASE_URL = new URL('./', self.location.href);
+const appUrl = (path) => new URL(path.replace(/^\/+/, ''), APP_BASE_URL).toString();
+const appPath = (path) => new URL(path.replace(/^\/+/, ''), APP_BASE_URL).pathname;
+const OFFLINE_URL = appUrl('offline.html');
 
 const PRECACHE_URLS = [
     OFFLINE_URL,
-    '/manifest.webmanifest',
-    '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png',
-    '/icons/icon-512x512-maskable.png',
-    '/icons/apple-touch-icon.png',
-    '/favicon.ico',
+    appUrl('manifest.webmanifest'),
+    appUrl('icons/icon-192x192.png'),
+    appUrl('icons/icon-512x512.png'),
+    appUrl('icons/icon-512x512-maskable.png'),
+    appUrl('icons/apple-touch-icon.png'),
+    appUrl('favicon.ico'),
 ];
 
 const EXCLUDED_PREFIXES = [
-    '/admin',
-    '/api',
-    '/livewire',
-    '/broadcasting',
-    '/sanctum',
-    '/login',
-    '/register',
-    '/logout',
-    '/password',
-    '/telescope',
-];
+    'admin',
+    'dashboard',
+    'profile',
+    'settings',
+    'api',
+    'livewire',
+    'broadcasting',
+    'sanctum',
+    'login',
+    'register',
+    'logout',
+    'password',
+    'telescope',
+].map(appPath);
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -49,7 +55,19 @@ self.addEventListener('activate', (event) => {
 });
 
 function isExcludedPath(pathname) {
-    return EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+    return EXCLUDED_PREFIXES.some(
+        (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
+}
+
+function isCacheableResponse(response) {
+    if (!response || !response.ok) {
+        return false;
+    }
+
+    const cacheControl = response.headers.get('Cache-Control') || '';
+
+    return !/(?:^|,)\s*(?:private|no-store)(?:\s|,|$)/i.test(cacheControl);
 }
 
 async function networkFirst(request) {
@@ -57,7 +75,7 @@ async function networkFirst(request) {
 
     try {
         const response = await fetch(request);
-        if (response && response.ok) {
+        if (isCacheableResponse(response)) {
             runtimeCache.put(request, response.clone());
         }
         return response;
@@ -73,7 +91,7 @@ async function staleWhileRevalidate(request) {
 
     const networkPromise = fetch(request)
         .then((response) => {
-            if (response && response.ok) {
+            if (isCacheableResponse(response)) {
                 runtimeCache.put(request, response.clone());
             }
             return response;
@@ -124,7 +142,7 @@ self.addEventListener('fetch', (event) => {
         request.destination === 'script' ||
         request.destination === 'image' ||
         request.destination === 'font' ||
-        url.pathname.startsWith('/build/');
+        url.pathname.startsWith(appPath('build/'));
 
     if (shouldCacheStatic) {
         event.respondWith(staleWhileRevalidate(request));

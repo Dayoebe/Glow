@@ -8,6 +8,31 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-public: 'Manrope', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-editorial: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', serif;
+    --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', serif;
+
+    --color-glow-ink: #07162f;
+    --color-glow-midnight: #0b1f3a;
+    --color-glow-navy: #12345a;
+    --color-glow-orange: #f26a2e;
+    --color-glow-coral: #fb5d55;
+    --color-glow-amber: #ffb13b;
+    --color-glow-ivory: #fffaf3;
+    --color-glow-paper: #fffdf9;
+    --color-glow-mist: #eef2f6;
+}
+
+:root {
+    --glow-ink: #07162f;
+    --glow-midnight: #0b1f3a;
+    --glow-navy: #12345a;
+    --glow-orange: #f26a2e;
+    --glow-coral: #fb5d55;
+    --glow-amber: #ffb13b;
+    --glow-ivory: #fffaf3;
+    --glow-paper: #fffdf9;
+    --glow-line: #dbe2ea;
 }
 
 @layer base {
@@ -23,6 +48,16 @@
         max-width: 100%;
         overflow-x: clip;
         overscroll-behavior-x: none;
+    }
+
+    .mobile-public-shell ::selection {
+        background: rgba(242, 106, 46, 0.24);
+        color: var(--glow-ink);
+    }
+
+    .mobile-public-shell :focus-visible {
+        outline: 3px solid rgba(242, 106, 46, 0.52);
+        outline-offset: 3px;
     }
 }
 
@@ -52,6 +87,329 @@
         box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
     }
 
+    .public-nav-link {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+        padding-inline: 0.75rem;
+        color: #334155;
+        font-size: 0.875rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        transition: color 180ms ease;
+    }
+
+    .public-nav-link::after {
+        content: "";
+        position: absolute;
+        right: 0.75rem;
+        bottom: 0.2rem;
+        left: 0.75rem;
+        height: 2px;
+        border-radius: 999px;
+        background: var(--glow-orange);
+        transform: scaleX(0);
+        transform-origin: center;
+        transition: transform 180ms ease;
+    }
+
+    .public-nav-link:hover,
+    .public-nav-link-active {
+        color: var(--glow-ink);
+    }
+
+    .public-nav-link:hover::after,
+    .public-nav-link-active::after {
+        transform: scaleX(1);
+    }
+
+    .public-social-link {
+        display: inline-flex;
+        width: 2.5rem;
+        height: 2.5rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 0.625rem;
+        color: #cbd5e1;
+        transition:
+            border-color 180ms ease,
+            background-color 180ms ease,
+            color 180ms ease,
+            transform 180ms ease;
+    }
+
+    .public-social-link:hover {
+        border-color: rgba(242, 106, 46, 0.6);
+        background: var(--glow-orange);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .public-menu-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        min-height: 3rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: #334155;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        transition:
+            color 180ms ease,
+            border-color 180ms ease;
+    }
+
+    .public-menu-link:hover,
+    .public-menu-link[aria-current="page"] {
+        border-color: rgba(242, 106, 46, 0.48);
+        color: var(--glow-orange);
+    }
+
+    .public-footer-link {
+        color: #aebdce;
+        transition: color 180ms ease;
+    }
+
+    .public-footer-link:hover {
+        color: white;
+    }
+
+    .public-footer-nav a {
+        color: #aebdce;
+        font-size: 0.875rem;
+    }
+
+    .public-footer-nav a:hover {
+        color: white;
+    }
+
+    .public-footer-nav li i {
+        color: var(--glow-orange);
+        font-size: 0.5625rem;
+    }
+
+    .font-editorial {
+        font-family: var(--font-editorial);
+    }
+
+    .font-display {
+        font-family: var(--font-display);
+    }
+
+    .font-public {
+        font-family: var(--font-public);
+    }
+
+    .public-kicker {
+        color: var(--glow-orange);
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+    }
+
+    /*
+     * Editorial content foundation. Tailwind Typography is intentionally not
+     * installed in this app, so public rich text receives a predictable,
+     * accessible reading treatment without leaking into forms or admin UI.
+     */
+    .prose {
+        max-width: 70ch;
+        color: #334155;
+        font-size: 1rem;
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+    }
+
+    .prose-lg {
+        font-size: 1.075rem;
+        line-height: 1.85;
+    }
+
+    .prose > :first-child {
+        margin-top: 0;
+    }
+
+    .prose > :last-child {
+        margin-bottom: 0;
+    }
+
+    .prose p,
+    .prose ul,
+    .prose ol,
+    .prose blockquote,
+    .prose figure,
+    .prose table,
+    .prose pre {
+        margin-block: 1.25em;
+    }
+
+    .prose h1,
+    .prose h2,
+    .prose h3,
+    .prose h4 {
+        margin-top: 1.75em;
+        margin-bottom: 0.65em;
+        color: inherit;
+        font-family: var(--font-editorial);
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+        text-wrap: balance;
+    }
+
+    .prose h1 {
+        font-size: clamp(2rem, 5vw, 3rem);
+    }
+
+    .prose h2 {
+        font-size: clamp(1.6rem, 3.5vw, 2.15rem);
+    }
+
+    .prose h3 {
+        font-size: clamp(1.3rem, 2.75vw, 1.65rem);
+    }
+
+    .prose h4 {
+        font-family: var(--font-public);
+        font-size: 1.1rem;
+        letter-spacing: -0.01em;
+    }
+
+    .prose strong {
+        color: inherit;
+        font-weight: 800;
+    }
+
+    .prose a {
+        color: var(--glow-orange);
+        font-weight: 700;
+        text-decoration: underline;
+        text-decoration-color: rgba(242, 106, 46, 0.36);
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.18em;
+        transition:
+            color 180ms ease,
+            text-decoration-color 180ms ease;
+    }
+
+    .prose a:hover {
+        color: var(--glow-coral);
+        text-decoration-color: currentColor;
+    }
+
+    .prose ul,
+    .prose ol {
+        padding-left: 1.45em;
+    }
+
+    .prose ul {
+        list-style: disc;
+    }
+
+    .prose ol {
+        list-style: decimal;
+    }
+
+    .prose li {
+        margin-block: 0.45em;
+        padding-left: 0.25em;
+    }
+
+    .prose li::marker {
+        color: var(--glow-orange);
+        font-weight: 800;
+    }
+
+    .prose blockquote {
+        border-left: 3px solid var(--glow-orange);
+        border-radius: 0 0.5rem 0.5rem 0;
+        background: rgba(242, 106, 46, 0.07);
+        padding: 1rem 1.25rem;
+        color: inherit;
+        font-family: var(--font-editorial);
+        font-size: 1.08em;
+        font-style: italic;
+    }
+
+    .prose img,
+    .prose video {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin-block: 1.75em;
+        border-radius: 0.75rem;
+    }
+
+    .prose figure img {
+        margin-block: 0;
+    }
+
+    .prose figcaption {
+        margin-top: 0.75rem;
+        color: #64748b;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        text-align: center;
+    }
+
+    .prose hr {
+        margin-block: 2.25em;
+        border: 0;
+        border-top: 1px solid var(--glow-line);
+    }
+
+    .prose table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        border-collapse: collapse;
+        font-size: 0.9em;
+    }
+
+    .prose th,
+    .prose td {
+        min-width: 8rem;
+        border-bottom: 1px solid var(--glow-line);
+        padding: 0.75rem;
+        text-align: left;
+    }
+
+    .prose th {
+        color: inherit;
+        font-weight: 800;
+    }
+
+    .prose :not(pre) > code {
+        border-radius: 0.3rem;
+        background: #eef2f6;
+        padding: 0.15em 0.35em;
+        color: var(--glow-ink);
+        font-size: 0.88em;
+        font-weight: 700;
+    }
+
+    .prose pre {
+        max-width: 100%;
+        overflow-x: auto;
+        border-radius: 0.75rem;
+        background: var(--glow-ink);
+        padding: 1rem 1.1rem;
+        color: #e2e8f0;
+        font-size: 0.875em;
+        line-height: 1.7;
+    }
+
+    .prose-invert {
+        color: #dbe5ef;
+    }
+
+    .prose-invert figcaption {
+        color: #94a3b8;
+    }
 }
 
 @media (max-width: 1023px) {
@@ -81,9 +439,8 @@
 
         .mobile-public-shell {
             background:
-                radial-gradient(circle at top left, rgba(249, 115, 22, 0.18), transparent 24%),
-                radial-gradient(circle at top right, rgba(16, 185, 129, 0.16), transparent 26%),
-                linear-gradient(180deg, #082f49 0, #dbeafe 18rem, #f8fafc 100%);
+                radial-gradient(circle at top right, rgba(242, 106, 46, 0.13), transparent 24rem),
+                linear-gradient(180deg, #fffaf3 0, #fffdf9 28rem, #f8fafc 100%);
         }
     }
 }
@@ -194,5 +551,20 @@
     50% {
         transform: translateX(60%) rotate(8deg);
         opacity: 0.45;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mobile-public-shell {
+        scroll-behavior: auto;
+    }
+
+    .mobile-public-shell *,
+    .mobile-public-shell *::before,
+    .mobile-public-shell *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
     }
 }
