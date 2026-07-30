@@ -6,11 +6,12 @@
         <atom:link href="{{ \App\Support\Seo::absoluteUrl(route('shows.feed')) }}" rel="self" type="application/rss+xml" />
         <description>Active radio programs and shows from {{ $station['name'] }}.</description>
         <language>en-ng</language>
-        <lastBuildDate>{{ now()->toRfc2822String() }}</lastBuildDate>
+        @if ($lastBuildDate)
+            <lastBuildDate>{{ $lastBuildDate->toRfc2822String() }}</lastBuildDate>
+        @endif
         @foreach ($items as $item)
             @php
                 $url = \App\Support\Seo::absoluteUrl(route('shows.show', $item->slug));
-                $image = \App\Support\Seo::absoluteUrl($item->cover_image);
                 $description = \App\Support\Seo::text($item->description ?: $item->full_description, 300);
             @endphp
             <item>
@@ -23,8 +24,8 @@
                 @if ($item->updated_at)
                     <pubDate>{{ $item->updated_at->toRfc2822String() }}</pubDate>
                 @endif
-                @if ($image)
-                    <media:content url="{{ $image }}" medium="image" />
+                @if ($item->feed_image_url)
+                    <media:content url="{{ $item->feed_image_url }}" medium="image" />
                 @endif
             </item>
         @endforeach
