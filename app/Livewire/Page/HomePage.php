@@ -35,6 +35,7 @@ class HomePage extends Component
     public $newsHasMore = true;
     public $homeContent = [];
     public $currentShow = null;
+    public $nextShow = null;
 
     public function hydrate()
     {
@@ -48,9 +49,6 @@ class HomePage extends Component
         $this->loadRealPodcasts();
         $this->loadCurrentShow();
         $this->loadUpcomingEvents();
-         $this->loadRealBlogPosts();
-        $this->loadStats();
-        $this->loadTestimonials();
         $this->loadHomeContent();
     }
 
@@ -123,23 +121,7 @@ class HomePage extends Component
             })
             ->toArray();
 
-        // Get Trending News (based on views in last 7 days)
-        $this->trendingNews = News::with(['category'])
-            ->published()
-            ->trending(7)
-            ->take(5)
-            ->get()
-            ->map(function ($news) {
-                return [
-                    'id' => $news->id,
-                    'slug' => $news->slug,
-                    'title' => $news->title,
-                    'category' => $news->category?->name ?? 'News',
-                    'views' => $news->views,
-                    'published_at' => $news->time_ago,
-                ];
-            })
-            ->toArray();
+        $this->trendingNews = [];
     }
 
     private function loadNewsShowcase(): void
@@ -159,14 +141,8 @@ class HomePage extends Component
                 ->get();
         }
 
-        $mostViewed = News::with(['category', 'author'])
-            ->published()
-            ->orderByDesc('views')
-            ->take(5)
-            ->get();
-
         $this->featuredNews = $featured->map(fn ($news) => $this->mapNewsCard($news))->toArray();
-        $this->mostViewedNews = $mostViewed->map(fn ($news) => $this->mapNewsCompact($news))->toArray();
+        $this->mostViewedNews = [];
 
         $this->newsBatch = 1;
         [$other, $hasMore] = $this->fetchOtherNewsBatch($this->getExcludedNewsIds(), $this->newsBatch);
@@ -330,21 +306,30 @@ class HomePage extends Component
     {
         $timezone = 'Africa/Lagos'; // Enforce WAT
         $now = Carbon::now($timezone);
+        $rangeEnd = $now->copy()->addDays(7);
         $day = strtolower($now->format('l'));
         $time = $now->format('H:i:s');
+        $candidateDays = collect(range(0, 7))
+            ->map(fn ($dayOffset) => strtolower($now->copy()->addDays($dayOffset)->format('l')))
+            ->unique()
+            ->values()
+            ->all();
 
-        $currentSlot = ScheduleSlot::query()
+        $candidateSlots = ScheduleSlot::query()
             ->with(['show', 'oap'])
             ->active()
-            ->forDay($day)
-            ->where('start_time', '<=', $time)
-            ->where('end_time', '>', $time)
-            ->orderBy('start_time', 'desc')
-            ->first();
+            ->whereHas('show', fn ($query) => $query->active())
+            ->overlappingDates($now, $rangeEnd)
+            ->whereIn('day_of_week', $candidateDays)
+            ->orderBy('start_time')
+            ->get();
 
-        if ($currentSlot && !$currentSlot->isActiveOn($now)) {
-            $currentSlot = null;
-        }
+        $currentSlot = $candidateSlots->last(
+            fn ($slot) => $slot->day_of_week === $day
+                && $slot->start_time <= $time
+                && $slot->end_time > $time
+                && $slot->isActiveOn($now)
+        );
 
         if ($currentSlot) {
             $this->currentShow = [
@@ -353,14 +338,71 @@ class HomePage extends Component
                 'host' => $currentSlot->oap?->name ?? 'Host TBA',
                 'host_slug' => $currentSlot->oap?->slug,
                 'time' => $currentSlot->time_range,
+                'image' => $currentSlot->show?->cover_image,
             ];
+
+            $this->loadNextShow($now, $candidateSlots);
 
             return;
         }
 
         $this->currentShow = null;
+        $this->loadNextShow($now, $candidateSlots);
     }
- private function loadRealBlogPosts()
+
+    private function loadNextShow(Carbon $now, $candidateSlots): void
+    {
+        $timezone = 'Africa/Lagos';
+        $nextSlot = null;
+        $nextStartsAt = null;
+        $nextDayOffset = null;
+
+        for ($dayOffset = 0; $dayOffset <= 7; $dayOffset++) {
+            $candidateDate = $now->copy()->addDays($dayOffset);
+            $candidateDay = strtolower($candidateDate->format('l'));
+            $candidateDateString = $candidateDate->format('Y-m-d');
+
+            $nextSlot = $candidateSlots->first(
+                fn ($slot) => $slot->day_of_week === $candidateDay
+                    && ($dayOffset > 0 || $slot->start_time > $now->format('H:i:s'))
+                    && $slot->isActiveOn($candidateDate)
+            );
+
+            if ($nextSlot) {
+                $nextStartsAt = Carbon::parse(
+                    $candidateDateString . ' ' . $nextSlot->start_time,
+                    $timezone
+                );
+                $nextDayOffset = $dayOffset;
+
+                break;
+            }
+        }
+
+        if (!$nextSlot || !$nextStartsAt || $nextDayOffset === null) {
+            $this->nextShow = null;
+
+            return;
+        }
+
+        $dayLabel = match ($nextDayOffset) {
+            0 => 'Today',
+            1 => 'Tomorrow',
+            default => $nextStartsAt->format('l'),
+        };
+
+        $this->nextShow = [
+            'title' => $nextSlot->show?->title ?? 'Untitled Show',
+            'slug' => $nextSlot->show?->slug,
+            'host' => $nextSlot->oap?->name ?? 'Host TBA',
+            'host_slug' => $nextSlot->oap?->slug,
+            'time' => $nextSlot->time_range,
+            'day' => $dayLabel,
+            'image' => $nextSlot->show?->cover_image,
+        ];
+    }
+
+    private function loadRealBlogPosts()
     {
         // Get Latest Blog Posts (3 most recent)
         $this->latestBlogPosts = \App\Models\Blog\Post::with(['category', 'author'])
@@ -455,9 +497,6 @@ class HomePage extends Component
         $this->loadNewsShowcase();
         $this->loadRealPodcasts();
         $this->loadUpcomingEvents();
-        $this->loadRealBlogPosts();
-        $this->loadStats();
-        $this->loadTestimonials();
         $this->loadHomeContent();
     }
 

@@ -1,923 +1,739 @@
-<div wire:poll.60s="refreshCurrentShow">
+<div class="bg-[#f7f4ee] text-slate-950">
     @normalizeArray($featuredShows)
     @normalizeArray($latestPodcastEpisodes)
     @normalizeArray($latestNews)
-    @normalizeArray($latestBlogPosts)
-    @normalizeArray($trendingBlogPosts)
     @normalizeArray($upcomingEvents)
-    @normalizeArray($stats)
-    @normalizeArray($testimonials)
-    @normalizeArray($trendingNews)
     @normalizeArray($featuredNews)
-    @normalizeArray($mostViewedNews)
     @normalizeArray($otherNews)
     @normalizeArray($homeContent)
     @normalizeArray($currentShow)
-    <!-- Breaking News Banner (if exists) -->
+    @normalizeArray($nextShow)
+
+    @php
+        $newsPool = collect(array_merge($featuredNews, $latestNews, $otherNews))
+            ->filter(fn ($story) => is_array($story) && !empty($story['slug']) && !empty($story['title']))
+            ->unique(fn ($story) => $story['id'] ?? $story['slug'])
+            ->values();
+
+        $leadStory = $newsPool->first();
+        $topStories = $newsPool->skip(1)->take(4)->values();
+        $topStorySlugs = $topStories
+            ->pluck('slug')
+            ->when($leadStory, fn ($slugs) => $slugs->push($leadStory['slug']))
+            ->filter()
+            ->all();
+
+        $latestStories = collect(array_merge($latestNews, $otherNews))
+            ->filter(fn ($story) => is_array($story) && !empty($story['slug']) && !empty($story['title']))
+            ->reject(fn ($story) => in_array($story['slug'], $topStorySlugs, true))
+            ->unique(fn ($story) => $story['id'] ?? $story['slug'])
+            ->take(4)
+            ->values();
+
+        $homepageEvents = collect($upcomingEvents)
+            ->filter(fn ($event) => is_array($event) && !empty($event['slug']) && !empty($event['title']))
+            ->take(3)
+            ->values();
+        $primaryEvent = $homepageEvents->first();
+        $secondaryEvents = $homepageEvents->skip(1);
+
+        $onAirTitle = $currentShow['title'] ?? 'Glow 99.1 FM';
+        $onAirArtwork = $currentShow['image'] ?? asset('glowfm logo.jpeg');
+    @endphp
+
     @if($breakingNews)
-    <div class="bg-red-600 text-white py-3 sticky top-28 z-40 shadow-lg animate-pulse">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center space-x-4">
-                <span class="flex-shrink-0 px-3 py-1 bg-white text-red-600 font-bold text-sm rounded-full">
-                    <i class="fas fa-bolt mr-1"></i> BREAKING
+        <aside class="border-b border-orange-700 bg-[#e95516] text-white" aria-label="Breaking news">
+            <div class="mx-auto flex max-w-[1440px] items-center gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
+                <span class="inline-flex shrink-0 items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em]">
+                    <span class="h-2 w-2 rounded-full bg-white"></span>
+                    Breaking
                 </span>
-                <marquee class="flex-1 font-semibold">
-                    {{ $breakingNews->title }} - {{ $breakingNews->excerpt }}
-                </marquee>
-                <a href="/news/{{ $breakingNews->slug }}" class="flex-shrink-0 px-4 py-1 bg-white/20 hover:bg-white/30 rounded-full text-sm font-semibold transition-colors">
-                    Read More <i class="fas fa-arrow-right ml-1"></i>
+                <span class="hidden h-4 w-px bg-white/35 sm:block"></span>
+                <a
+                    href="{{ route('news.show', $breakingNews->slug) }}"
+                    class="min-w-0 flex-1 truncate text-sm font-semibold transition-opacity hover:opacity-80"
+                >
+                    {{ $breakingNews->title }}
+                </a>
+                <a
+                    href="{{ route('news.show', $breakingNews->slug) }}"
+                    class="inline-flex shrink-0 items-center gap-2 text-xs font-bold uppercase tracking-wider"
+                >
+                    Read
+                    <i class="fas fa-arrow-right text-[10px]" aria-hidden="true"></i>
                 </a>
             </div>
-        </div>
-    </div>
+        </aside>
     @endif
 
-    <!-- Hero Section -->
-    <section class="relative bg-orange-500 text-white overflow-hidden">
-        <!-- Background Pattern -->
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-        </div>
+    <section class="relative isolate overflow-hidden bg-[#07182b] text-white">
+        <div
+            class="absolute inset-0 -z-10 opacity-80"
+            style="background-image: radial-gradient(circle at 78% 24%, rgba(243, 106, 33, .22), transparent 31%), radial-gradient(circle at 12% 90%, rgba(45, 87, 125, .36), transparent 34%);"
+        ></div>
+        <div class="absolute inset-x-0 bottom-0 -z-10 h-px bg-white/10"></div>
 
-        <div class="container mx-auto px-4 py-20 relative z-10">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <!-- Left Content -->
-                <div class="text-center lg:text-left">
-                    <div class="inline-flex items-center space-x-2 glass-panel px-4 py-2 rounded-full mb-6">
-                        <span class="w-3 h-3 bg-lime-500 rounded-full glass-glow"></span>
-                        <span class="text-sm font-semibold">{{ $homeContent['hero_badge'] ?? 'NOW LIVE ON AIR' }}</span>
-                    </div>
-                    
-                    <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                        {{ $homeContent['hero_title'] ?? 'Your Voice,' }}<br>
-                        <span class="text-emerald-200">{{ $homeContent['hero_highlight'] ?? 'Your Music' }}</span>
-                    </h1>
-                    
-                    <p class="text-xl md:text-2xl text-emerald-100 mb-8 leading-relaxed">
-                        {{ $homeContent['hero_subtitle'] ?? 'Broadcasting the heartbeat of the city of Akure, 24/7 on 99.1 FM' }}
-                    </p>
+        <div class="mx-auto grid max-w-[1440px] gap-10 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,0.92fr)_minmax(480px,1.08fr)] lg:items-center lg:gap-16 lg:px-8 lg:py-20">
+            <div class="max-w-2xl">
+                <div class="mb-6 flex items-center gap-3">
+                    <span class="inline-flex items-center gap-2 rounded-md border border-orange-400/40 bg-orange-500/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.18em] text-orange-300">
+                        <span class="h-2 w-2 rounded-full bg-orange-400"></span>
+                        Live from Akure
+                    </span>
+                    <span class="text-xs font-semibold uppercase tracking-[0.16em] text-white/50">99.1 FM</span>
+                </div>
 
-                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
-                        <a href="{{ $homeContent['primary_cta_url'] ?? 'https://stream-176.zeno.fm/mwam2yirv1pvv' }}" @click.prevent="startLive"
-                            class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-white text-emerald-700 font-bold rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
-                            <i class="fas fa-play-circle text-2xl"></i>
-                            <span>{{ $homeContent['primary_cta_text'] ?? 'Listen Live Now' }}</span>
-                        </a>
-                        <a href="{{ $homeContent['secondary_cta_url'] ?? '/shows' }}" class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-amber-700 backdrop-blur-sm text-white font-semibold rounded-full border-2 border-white/30 hover:bg-white/10 transition-all duration-300">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span>{{ $homeContent['secondary_cta_text'] ?? 'View Schedule' }}</span>
-                        </a>
-                    </div>
+                <h1 class="max-w-xl text-4xl font-black leading-[0.98] tracking-[-0.045em] text-white sm:text-5xl md:text-6xl lg:text-7xl">
+                    {{ $homeContent['hero_title'] ?? 'Your Voice,' }}
+                    <span class="mt-2 block text-[#f47a35]">{{ $homeContent['hero_highlight'] ?? 'Your Music' }}</span>
+                </h1>
 
-                    <!-- Current Show Info -->
-                    <div class="mt-12 p-6 glass-panel rounded-2xl border border-white/20">
-                        <div class="flex items-center space-x-4">
-                            <div class="flex-shrink-0">
-                                <div class="w-16 h-16 glass-panel rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-microphone-alt text-3xl"></i>
-                                </div>
-                            </div>
-                            <div class="flex-1 text-left">
-                                <p class="text-sm text-emerald-200 mb-1">Now Playing</p>
-                                @if($currentShow)
-                                    <h3 class="text-lg font-bold">
-                                        @if(!empty($currentShow['slug']))
-                                            <a href="{{ route('shows.show', $currentShow['slug']) }}" class="hover:text-white">
-                                                {{ $currentShow['title'] ?? 'On Air' }}
-                                            </a>
-                                        @else
-                                            {{ $currentShow['title'] ?? 'On Air' }}
-                                        @endif
-                                    </h3>
-                                    <p class="text-sm text-emerald-100">
-                                        @if(!empty($currentShow['host_slug']))
-                                            <a href="{{ route('oaps.show', $currentShow['host_slug']) }}" class="hover:text-white">
-                                                {{ $currentShow['host'] ?? 'Live' }}
-                                            </a>
-                                        @else
-                                            {{ $currentShow['host'] ?? 'Live' }}
-                                        @endif
+                <p class="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
+                    {{ $homeContent['hero_subtitle'] ?? 'Broadcasting the heartbeat of Akure, 24/7 on 99.1 FM.' }}
+                </p>
+
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <a
+                        href="{{ route('listen.live') }}"
+                        @click.prevent="startLive"
+                        class="inline-flex min-h-12 items-center justify-center gap-3 rounded-lg bg-[#f36a21] px-6 py-3 text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(243,106,33,0.24)] transition hover:bg-[#ff7a30] focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 focus:ring-offset-[#07182b]"
+                    >
+                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#f36a21]">
+                            <i class="fas fa-play ml-0.5 text-[10px]" aria-hidden="true"></i>
+                        </span>
+                        {{ $homeContent['primary_cta_text'] ?? 'Listen Live' }}
+                    </a>
+                    <a
+                        href="{{ route('schedule') }}"
+                        class="inline-flex min-h-12 items-center justify-center gap-3 rounded-lg border border-white/20 bg-white/[0.06] px-6 py-3 text-sm font-bold text-white transition hover:border-white/35 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60"
+                    >
+                        <i class="far fa-calendar-alt text-orange-300" aria-hidden="true"></i>
+                        View today’s schedule
+                    </a>
+                </div>
+
+                <div class="mt-9 flex flex-wrap gap-x-6 gap-y-3 border-t border-white/10 pt-5 text-sm">
+                    <a href="{{ route('news') }}" class="font-semibold text-slate-300 transition hover:text-white">
+                        Latest news <i class="fas fa-arrow-right ml-1 text-[10px] text-orange-400" aria-hidden="true"></i>
+                    </a>
+                    <a href="{{ route('podcasts.index') }}" class="font-semibold text-slate-300 transition hover:text-white">
+                        Listen back <i class="fas fa-arrow-right ml-1 text-[10px] text-orange-400" aria-hidden="true"></i>
+                    </a>
+                    <a href="{{ route('shows.index') }}" class="font-semibold text-slate-300 transition hover:text-white">
+                        Explore shows <i class="fas fa-arrow-right ml-1 text-[10px] text-orange-400" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div wire:poll.visible.60s="refreshCurrentShow" class="relative">
+                <div class="absolute -inset-5 -z-10 rounded-[2rem] bg-orange-500/10 blur-2xl"></div>
+                <div class="overflow-hidden rounded-2xl border border-white/15 bg-[#0c2138] shadow-[0_28px_70px_rgba(0,0,0,0.35)]">
+                    <div class="grid sm:grid-cols-[minmax(210px,0.84fr)_minmax(0,1.16fr)]">
+                        <div class="relative min-h-[260px] overflow-hidden sm:min-h-[390px]">
+                            <x-initials-image
+                                :src="$onAirArtwork"
+                                :title="$onAirTitle"
+                                imgClass="absolute inset-0 h-full w-full object-cover"
+                                fallbackClass="bg-[#102b48]"
+                                textClass="text-5xl font-black text-white"
+                                loading="eager"
+                                fetchpriority="high"
+                                width="640"
+                                height="800"
+                                sizes="(min-width: 1024px) 27vw, (min-width: 640px) 42vw, 92vw"
+                            />
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#07182b] via-transparent to-black/10"></div>
+                            <span class="absolute left-4 top-4 inline-flex items-center gap-2 rounded-md bg-[#e95516] px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-white shadow-lg">
+                                <span class="h-2 w-2 rounded-full bg-white"></span>
+                                On air
+                            </span>
+                        </div>
+
+                        <div class="flex flex-col justify-between p-6 sm:p-8">
+                            <div>
+                                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">Now playing</p>
+                                <h2 class="mt-3 text-3xl font-black leading-tight tracking-[-0.03em] text-white">
+                                    @if(!empty($currentShow['slug']))
+                                        <a href="{{ route('shows.show', $currentShow['slug']) }}" class="transition hover:text-orange-300">
+                                            {{ $currentShow['title'] ?? 'Glow 99.1 FM' }}
+                                        </a>
+                                    @else
+                                        {{ $currentShow['title'] ?? 'Live on Glow 99.1 FM' }}
+                                    @endif
+                                </h2>
+
+                                @if(!empty($currentShow))
+                                    <div class="mt-4 space-y-2 text-sm text-slate-300">
+                                        <p class="flex items-center gap-2">
+                                            <i class="fas fa-microphone-alt w-4 text-orange-400" aria-hidden="true"></i>
+                                            @if(!empty($currentShow['host_slug']))
+                                                <a href="{{ route('oaps.show', $currentShow['host_slug']) }}" class="transition hover:text-white">
+                                                    {{ $currentShow['host'] ?? 'Host TBA' }}
+                                                </a>
+                                            @else
+                                                <span>{{ $currentShow['host'] ?? 'Host TBA' }}</span>
+                                            @endif
+                                        </p>
                                         @if(!empty($currentShow['time']))
-                                            <span class="mx-2">•</span>{{ $currentShow['time'] }}
-                                            <span class="ml-2 text-[10px] text-emerald-200 font-semibold">WAT</span>
+                                            <p class="flex items-center gap-2">
+                                                <i class="far fa-clock w-4 text-orange-400" aria-hidden="true"></i>
+                                                <span>{{ $currentShow['time'] }} WAT</span>
+                                            </p>
                                         @endif
-                                    </p>
+                                    </div>
                                 @else
-                                    <h3 class="text-lg font-bold">No show scheduled</h3>
-                                    <p class="text-sm text-emerald-100">Check the weekly schedule</p>
+                                    <p class="mt-4 text-sm leading-6 text-slate-300">
+                                        The live stream is always on. Check the schedule to see what’s playing next.
+                                    </p>
                                 @endif
                             </div>
+
+                            <button
+                                type="button"
+                                @click="startLive"
+                                class="mt-8 flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] p-3.5 text-left transition hover:border-orange-400/50 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                aria-label="Play Glow 99.1 FM live"
+                            >
+                                <span class="flex items-center gap-3">
+                                    <span class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#f36a21] text-white">
+                                        <i class="fas fa-play ml-0.5 text-sm" aria-hidden="true"></i>
+                                    </span>
+                                    <span>
+                                        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400">Live stream</span>
+                                        <span class="mt-0.5 block text-sm font-extrabold text-white">Play Glow FM</span>
+                                    </span>
+                                </span>
+                                <i class="fas fa-volume-up text-orange-300" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <!-- Right Content - Radio Visualization -->
-                <div class="relative">
-                    <div class="relative z-10">
-                        <!-- Main Circle -->
-                        <div class="w-80 h-80 md:w-96 md:h-96 mx-auto glass-orb glass-sheen rounded-full border-8 border-white/20 flex items-center justify-center relative">
-                            <div class="w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-slate-900 to-slate-950 rounded-full flex items-center justify-center shadow-2xl">
-                                <div class="text-center">
-                                    <i class="fas fa-radio text-8xl text-white mb-4"></i>
-                                    <div class="text-4xl font-bold text-white">99.1</div>
-                                    <div class="text-xl text-emerald-100">FM</div>
-                                </div>
+    <section class="bg-white py-16 sm:py-20" aria-labelledby="top-stories-heading">
+        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+            <div class="mb-8 flex items-end justify-between gap-6 border-b border-slate-200 pb-5">
+                <div>
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Glow newsroom</p>
+                    <h2 id="top-stories-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                        Top stories
+                    </h2>
+                </div>
+                <a href="{{ route('news') }}" class="inline-flex items-center gap-2 text-sm font-bold text-[#173b5f] transition hover:text-[#e95516]">
+                    All news
+                    <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                </a>
+            </div>
+
+            @if($leadStory)
+                <div class="grid gap-7 lg:grid-cols-[minmax(0,1.42fr)_minmax(380px,0.88fr)]">
+                    <article class="group overflow-hidden border-b border-slate-200 pb-6 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-7">
+                        <a
+                            href="{{ route('news.show', $leadStory['slug']) }}"
+                            class="relative block aspect-[16/10] overflow-hidden rounded-xl bg-slate-100"
+                            aria-label="Read {{ $leadStory['title'] }}"
+                        >
+                            <x-initials-image
+                                :src="$leadStory['image'] ?? null"
+                                :title="$leadStory['title']"
+                                imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+                                fallbackClass="bg-[#173b5f]"
+                                textClass="text-5xl font-black text-white"
+                            />
+                        </a>
+                        <div class="mt-5">
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold uppercase tracking-[0.12em]">
+                                <span class="text-[#e95516]">{{ $leadStory['category'] ?? 'News' }}</span>
+                                <span class="text-slate-300">/</span>
+                                <span class="text-slate-500">{{ $leadStory['date'] ?? '' }}</span>
+                                @if(!empty($leadStory['read_time']))
+                                    <span class="text-slate-300">/</span>
+                                    <span class="text-slate-500">{{ $leadStory['read_time'] }}</span>
+                                @endif
                             </div>
-                            
-                            <!-- Pulse Rings -->
-                            <div class="absolute inset-0 rounded-full border-4 border-white/30 glass-ripple"></div>
-                            <div class="absolute inset-0 rounded-full border-4 border-white/20 glass-glow"></div>
+                            <h3 class="mt-3 max-w-4xl text-3xl font-black leading-[1.08] tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                                <a href="{{ route('news.show', $leadStory['slug']) }}" class="transition hover:text-[#d94e12]">
+                                    {{ $leadStory['title'] }}
+                                </a>
+                            </h3>
+                            @if(!empty($leadStory['excerpt']))
+                                <p class="mt-4 max-w-3xl text-base leading-7 text-slate-600 line-clamp-2">
+                                    {{ $leadStory['excerpt'] }}
+                                </p>
+                            @endif
                         </div>
+                    </article>
 
-                        <!-- Floating Elements -->
-                        <div class="absolute top-10 -left-10 w-24 h-24 glass-panel rounded-2xl flex items-center justify-center transform rotate-12 glass-float">
-                            <i class="fas fa-music text-4xl text-white"></i>
-                        </div>
-                        <div class="absolute bottom-20 -right-10 w-20 h-20 glass-panel rounded-full flex items-center justify-center glass-float-slow">
-                            <i class="fas fa-heart text-3xl text-red-400"></i>
-                        </div>
-                        <div class="absolute top-1/2 -right-20 w-16 h-16 glass-panel rounded-xl flex items-center justify-center transform -rotate-12 glass-float">
-                            <i class="fas fa-star text-2xl text-yellow-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Wave Bottom -->
-        <div class="absolute bottom-0 left-0 right-0">
-            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 80C1200 80 1320 70 1380 65L1440 60V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="white"/>
-            </svg>
-        </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="py-16 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
-                @foreach($stats as $stat)
-                    @continueIfNotArray($stat)
-                    <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-2xl mb-4">
-                            <i class="{{ $stat['icon'] }} text-3xl text-emerald-600"></i>
-                        </div>
-                        <div class="text-4xl font-bold text-gray-900 mb-2">{{ $stat['number'] }}</div>
-                        <div class="text-gray-600 font-medium">{{ $stat['label'] }}</div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    <!-- Trending News Ticker -->
-    @if(count($trendingNews) > 0)
-    <section class="py-4 bg-emerald-600 text-white">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center space-x-4">
-                <div class="flex-shrink-0 flex items-center space-x-2 font-bold">
-                    <i class="fas fa-fire text-orange-300"></i>
-                    <span>TRENDING:</span>
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <div class="flex animate-scroll space-x-8">
-                    @foreach($trendingNews as $trending)
-                        @continueIfNotArray($trending)
-                            <a href="/news/{{ $trending['slug'] }}" class="flex-shrink-0 hover:text-emerald-200 transition-colors">
-                                <span class="font-semibold">{{ $trending['title'] }}</span>
-                                <span class="text-emerald-200 text-sm ml-2">• {{ $trending['views'] }} views</span>
-                            </a>
+                    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
+                        @foreach($topStories as $story)
+                            @continueIfNotArray($story)
+                            <article class="group grid grid-cols-[112px_minmax(0,1fr)] gap-4 border-b border-slate-200 pb-5 last:border-b-0 last:pb-0 sm:grid-cols-1 lg:grid-cols-[132px_minmax(0,1fr)]">
+                                <a
+                                    href="{{ route('news.show', $story['slug']) }}"
+                                    class="relative block aspect-square overflow-hidden rounded-lg bg-slate-100 sm:aspect-[16/10] lg:aspect-square"
+                                    aria-label="Read {{ $story['title'] }}"
+                                >
+                                    <x-initials-image
+                                        :src="$story['image'] ?? null"
+                                        :title="$story['title']"
+                                        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                                        fallbackClass="bg-[#173b5f]"
+                                        textClass="text-2xl font-black text-white"
+                                    />
+                                </a>
+                                <div class="min-w-0 self-center">
+                                    <p class="text-[11px] font-extrabold uppercase tracking-[0.15em] text-[#e95516]">
+                                        {{ $story['category'] ?? 'News' }}
+                                    </p>
+                                    <h3 class="mt-2 text-lg font-black leading-snug tracking-[-0.02em] text-[#07182b] sm:text-xl lg:text-lg">
+                                        <a href="{{ route('news.show', $story['slug']) }}" class="transition hover:text-[#d94e12]">
+                                            {{ $story['title'] }}
+                                        </a>
+                                    </h3>
+                                    <p class="mt-2 text-xs font-medium text-slate-500">
+                                        {{ $story['date'] ?? '' }}
+                                    </p>
+                                </div>
+                            </article>
                         @endforeach
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-    @endif
-
-
-    <section class="py-12 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="max-w-5xl mx-auto">
-                <x-ad-slot placement="home" />
-            </div>
-        </div>
-    </section>
-
-    <!-- Latest News Section - REAL DATA -->
-    <section class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between mb-12">
-                <div>
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Latest News</h2>
-                    <p class="text-xl text-gray-600">Stay updated with the latest from Glow FM</p>
+            @else
+                <div class="rounded-xl border border-slate-200 bg-[#f7f4ee] px-6 py-12 text-center">
+                    <p class="text-sm font-bold uppercase tracking-[0.15em] text-[#e95516]">Newsroom update</p>
+                    <h3 class="mt-2 text-2xl font-black text-[#07182b]">Fresh stories are on the way.</h3>
+                    <p class="mt-2 text-slate-600">Check back shortly for the latest from Glow FM.</p>
                 </div>
-                <a href="/news" class="hidden md:inline-flex items-center space-x-2 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">
-                    <span>View All</span>
-                    <i class="fas fa-arrow-right"></i>
+            @endif
+
+            @if($latestStories->isNotEmpty())
+                <div class="mt-14 border-t-2 border-[#07182b] pt-5">
+                    <div class="mb-6 flex items-center justify-between">
+                        <h3 class="text-xl font-black tracking-[-0.02em] text-[#07182b]">Latest updates</h3>
+                        <span class="hidden text-xs font-bold uppercase tracking-[0.14em] text-slate-400 sm:inline">From the Glow newsroom</span>
+                    </div>
+                    <div class="grid gap-x-8 gap-y-0 md:grid-cols-2">
+                        @foreach($latestStories as $story)
+                            @continueIfNotArray($story)
+                            <article class="group grid grid-cols-[88px_minmax(0,1fr)] gap-4 border-b border-slate-200 py-5 first:pt-0 md:grid-cols-[104px_minmax(0,1fr)]">
+                                <a
+                                    href="{{ route('news.show', $story['slug']) }}"
+                                    class="relative block aspect-square overflow-hidden rounded-lg bg-slate-100"
+                                    aria-label="Read {{ $story['title'] }}"
+                                >
+                                    <x-initials-image
+                                        :src="$story['image'] ?? null"
+                                        :title="$story['title']"
+                                        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                                        fallbackClass="bg-[#173b5f]"
+                                        textClass="text-xl font-black text-white"
+                                    />
+                                </a>
+                                <div class="min-w-0 self-center">
+                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#e95516]">
+                                        {{ $story['category'] ?? 'News' }}
+                                    </p>
+                                    <h4 class="mt-1.5 text-base font-black leading-snug text-[#07182b] sm:text-lg">
+                                        <a href="{{ route('news.show', $story['slug']) }}" class="transition hover:text-[#d94e12]">
+                                            {{ $story['title'] }}
+                                        </a>
+                                    </h4>
+                                    <p class="mt-1 text-xs font-medium text-slate-500">{{ $story['date'] ?? '' }}</p>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+    </section>
+
+    <section class="border-y border-slate-200 bg-[#f7f4ee] py-7">
+        <div class="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+            <x-ad-slot placement="home" />
+        </div>
+    </section>
+
+    <section class="bg-[#07182b] py-16 text-white sm:py-20" aria-labelledby="schedule-heading">
+        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+            <div class="grid gap-8 lg:grid-cols-[minmax(260px,0.6fr)_minmax(0,1.4fr)] lg:items-end">
+                <div>
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">Today on 99.1 FM</p>
+                    <h2 id="schedule-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] sm:text-4xl">Now &amp; next</h2>
+                    <p class="mt-4 max-w-md text-sm leading-6 text-slate-300">
+                        Stay with Glow throughout the day for conversation, music, news and the voices shaping our community.
+                    </p>
+                    <a href="{{ route('schedule') }}" class="mt-6 inline-flex items-center gap-2 text-sm font-extrabold text-orange-300 transition hover:text-white">
+                        Full weekly schedule
+                        <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+                <div class="grid overflow-hidden rounded-xl border border-white/15 bg-white/[0.04] md:grid-cols-2">
+                    <article class="relative p-6 sm:p-7 md:border-r md:border-white/10">
+                        <div class="absolute inset-y-0 left-0 w-1 bg-[#f36a21]"></div>
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.18em] text-orange-300">
+                                <span class="h-2 w-2 rounded-full bg-orange-400"></span>
+                                On now
+                            </p>
+                            <span class="text-xs font-bold text-slate-400">WAT</span>
+                        </div>
+                        <h3 class="mt-5 text-2xl font-black tracking-[-0.025em]">
+                            @if(!empty($currentShow['slug']))
+                                <a href="{{ route('shows.show', $currentShow['slug']) }}" class="transition hover:text-orange-300">
+                                    {{ $currentShow['title'] ?? 'Glow 99.1 FM' }}
+                                </a>
+                            @else
+                                {{ $currentShow['title'] ?? 'Glow 99.1 FM live' }}
+                            @endif
+                        </h3>
+                        <p class="mt-2 text-sm text-slate-300">
+                            {{ $currentShow['host'] ?? 'Live programming' }}
+                            @if(!empty($currentShow['time']))
+                                <span class="mx-2 text-slate-600">•</span>{{ $currentShow['time'] }}
+                            @endif
+                        </p>
+                        <button type="button" @click="startLive" class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-white transition hover:text-orange-300">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f36a21]">
+                                <i class="fas fa-play ml-0.5 text-[10px]" aria-hidden="true"></i>
+                            </span>
+                            Listen live
+                        </button>
+                    </article>
+
+                    <article class="p-6 sm:p-7">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Up next</p>
+                            @if(!empty($nextShow['day']))
+                                <span class="text-xs font-bold text-orange-300">{{ $nextShow['day'] }}</span>
+                            @endif
+                        </div>
+                        @if(!empty($nextShow))
+                            <h3 class="mt-5 text-2xl font-black tracking-[-0.025em]">
+                                @if(!empty($nextShow['slug']))
+                                    <a href="{{ route('shows.show', $nextShow['slug']) }}" class="transition hover:text-orange-300">
+                                        {{ $nextShow['title'] ?? 'Next programme' }}
+                                    </a>
+                                @else
+                                    {{ $nextShow['title'] ?? 'Next programme' }}
+                                @endif
+                            </h3>
+                            <p class="mt-2 text-sm text-slate-300">
+                                {{ $nextShow['host'] ?? 'Host TBA' }}
+                                @if(!empty($nextShow['time']))
+                                    <span class="mx-2 text-slate-600">•</span>{{ $nextShow['time'] }}
+                                @endif
+                            </p>
+                            @if(!empty($nextShow['slug']))
+                                <a href="{{ route('shows.show', $nextShow['slug']) }}" class="mt-6 inline-flex items-center gap-2 text-sm font-bold text-orange-300 transition hover:text-white">
+                                    Programme details <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                                </a>
+                            @endif
+                        @else
+                            <h3 class="mt-5 text-2xl font-black tracking-[-0.025em]">More live radio follows</h3>
+                            <p class="mt-2 text-sm leading-6 text-slate-300">Browse the full schedule for upcoming programmes.</p>
+                        @endif
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-[#f7f4ee] py-16 sm:py-20" aria-labelledby="listen-back-heading">
+        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+            <div class="mb-8 flex items-end justify-between gap-6">
+                <div>
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">On demand</p>
+                    <h2 id="listen-back-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                        Listen back
+                    </h2>
+                    <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                        Catch the conversations, interviews and moments you missed on air.
+                    </p>
+                </div>
+                <a href="{{ route('podcasts.index') }}" class="hidden items-center gap-2 text-sm font-bold text-[#173b5f] transition hover:text-[#e95516] sm:inline-flex">
+                    All podcasts
+                    <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
                 </a>
             </div>
 
-            @if(count($latestNews) > 0)
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    @foreach($latestNews as $news)
-                        @continueIfNotArray($news)
-                        <article class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group">
-                            <div class="relative h-56 overflow-hidden">
-                                <a href="{{ route('news.show', $news['slug']) }}" class="block h-full"
-                                    aria-label="Read {{ $news['title'] }}">
-                                    <x-initials-image
-                                        :src="$news['image'] ?? null"
-                                        :title="$news['title'] ?? ''"
-                                        imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                        fallbackClass="bg-emerald-700/90"
-                                        textClass="text-3xl font-bold text-white"
-                                    />
-                                </a>
-                                <div class="absolute top-4 left-4">
-                                    <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
-                                        {{ $news['category'] ?? 'News' }}
-                                    </span>
-                                </div>
-                                <div class="absolute bottom-4 right-4 flex items-center space-x-2">
-                                    <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                                        <i class="fas fa-eye mr-1"></i> {{ $news['views'] }}
-                                    </span>
-                                    <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                                        <i class="fas fa-heart mr-1"></i> {{ $news['likes'] }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500 mb-3">
-                                    <span class="flex items-center space-x-1">
-                                        <i class="fas fa-calendar text-xs"></i>
-                                        <span>{{ $news['date'] }}</span>
-                                    </span>
-                                    <span class="flex items-center space-x-1">
-                                        <i class="fas fa-clock text-xs"></i>
-                                        <span>{{ $news['read_time'] }}</span>
-                                    </span>
-                                </div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition-colors">
-                                    <a href="/news/{{ $news['slug'] }}">{{ $news['title'] }}</a>
-                                </h3>
-                                <p class="text-gray-600 mb-4 line-clamp-3">{{ $news['excerpt'] }}</p>
-                                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                                    <span class="inline-flex items-center space-x-2 text-sm text-gray-600">
-                                        <img src="{{ asset('glowfm logo.jpeg') }}" alt="Glow FM" class="w-5 h-5 rounded-full object-cover">
-                                        <span>Glow FM</span>
-                                    </span>
-                                    <a href="/news/{{ $news['slug'] }}" class="inline-flex items-center space-x-2 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">
-                                        <span>Read More</span>
-                                        <i class="fas fa-arrow-right"></i>
+            @if(count($latestPodcastEpisodes) > 0)
+                <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    @foreach(array_slice($latestPodcastEpisodes, 0, 3) as $episode)
+                        @continueIfNotArray($episode)
+                        <article class="group grid grid-cols-[112px_minmax(0,1fr)] overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-[148px_minmax(0,1fr)]">
+                            <a
+                                href="{{ route('podcasts.episode', [$episode['show_slug'], $episode['slug']]) }}"
+                                class="relative block min-h-[160px] overflow-hidden bg-slate-100"
+                                aria-label="Listen to {{ $episode['title'] }}"
+                            >
+                                <x-initials-image
+                                    :src="$episode['image'] ?? null"
+                                    :title="$episode['title'] ?? ''"
+                                    imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                                    fallbackClass="bg-[#173b5f]"
+                                    textClass="text-3xl font-black text-white"
+                                />
+                                <span class="absolute bottom-3 left-3 flex h-9 w-9 items-center justify-center rounded-lg bg-[#f36a21] text-white shadow-lg">
+                                    <i class="fas fa-play ml-0.5 text-[10px]" aria-hidden="true"></i>
+                                </span>
+                            </a>
+                            <div class="flex min-w-0 flex-col justify-center p-4 sm:p-5">
+                                <p class="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#e95516]">
+                                    {{ $episode['show_title'] ?? 'Glow podcast' }}
+                                </p>
+                                <h3 class="mt-2 text-base font-black leading-snug text-[#07182b] sm:text-lg">
+                                    <a href="{{ route('podcasts.episode', [$episode['show_slug'], $episode['slug']]) }}" class="transition hover:text-[#d94e12]">
+                                        {{ $episode['title'] }}
                                     </a>
+                                </h3>
+                                <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold text-slate-500">
+                                    @if(!empty($episode['duration']))
+                                        <span><i class="far fa-clock mr-1 text-[#e95516]" aria-hidden="true"></i>{{ $episode['duration'] }}</span>
+                                    @endif
+                                    <span>{{ $episode['published_at'] ?? '' }}</span>
                                 </div>
                             </div>
                         </article>
                     @endforeach
                 </div>
             @else
-                <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
-                    <i class="fas fa-newspaper text-6xl text-gray-300 mb-4"></i>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">No News Available</h3>
-                    <p class="text-gray-600">Check back soon for the latest updates!</p>
+                <div class="rounded-xl border border-slate-200 bg-white p-8">
+                    <p class="text-sm font-bold uppercase tracking-[0.15em] text-[#e95516]">Coming up</p>
+                    <h3 class="mt-2 text-2xl font-black text-[#07182b]">New listen-back episodes are being prepared.</h3>
+                    <p class="mt-2 text-slate-600">Browse our programmes while you wait for the next upload.</p>
                 </div>
             @endif
 
-            <div class="text-center mt-12">
-                <a href="/news" class="inline-flex items-center space-x-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                    <span>View All News</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Newsroom Spotlight Section -->
-    <section class="relative py-24 bg-gradient-to-br from-amber-50 via-white to-emerald-50 overflow-hidden"
-        x-data="{
-            loading: false,
-            initObserver() {
-                const observer = new IntersectionObserver((entries) => {
-                    if (!entries[0].isIntersecting) return;
-                    if (this.loading || !$wire.get('newsHasMore')) return;
-                    this.loading = true;
-                    $wire.loadMoreNews().then(() => { this.loading = false; });
-                }, { rootMargin: '200px' });
-                observer.observe(this.$refs.newsSentinel);
-            }
-        }"
-        x-init="initObserver()"
-    >
-        <div class="absolute -top-24 -right-24 w-96 h-96 bg-emerald-200/40 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-200/50 rounded-full blur-3xl"></div>
-        <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.12) 1px, transparent 0); background-size: 24px 24px;"></div>
-
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
-                <div>
-                    <p class="uppercase tracking-[0.3em] text-xs text-emerald-700 font-semibold">Newsroom</p>
-                    <h2 class="text-4xl md:text-6xl font-black text-slate-900 mt-2" style="font-family: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', serif;">
-                        Featured, Most Viewed, and Fresh Drops
-                    </h2>
-                    <p class="text-lg text-slate-600 mt-4 max-w-2xl">
-                        Curated highlights and what the city is reading right now — refreshed in batches as you scroll.
-                    </p>
-                </div>
-                <a href="/news" class="inline-flex items-center space-x-2 text-emerald-700 font-semibold hover:text-emerald-800 transition-colors">
-                    <span>Explore Newsroom</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            @if(count($trendingNews) > 0)
-                <div class="flex flex-wrap gap-3 mb-10">
-                    <span class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-900 text-white">
-                        <i class="fas fa-fire text-amber-300"></i> Trending Now
-                    </span>
-                    @foreach($trendingNews as $trend)
-                        @continueIfNotArray($trend)
-                        <a href="/news/{{ $trend['slug'] ?? '#' }}" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/80 border border-emerald-100 text-emerald-800 hover:bg-emerald-600 hover:text-white transition-colors">
-                            <span>{{ $trend['title'] }}</span>
-                            <span class="text-[10px] opacity-70">{{ $trend['published_at'] }}</span>
-                        </a>
-                    @endforeach
-                </div>
-            @endif
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <div class="lg:col-span-8 space-y-6">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-2xl font-bold text-slate-900">Featured News</h3>
-                        <span class="text-sm font-semibold text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full">Editor's picks</span>
-                    </div>
-
-                    @php $mainFeatured = $featuredNews[0] ?? null; @endphp
-                    @if($mainFeatured)
-                        <article class="group relative overflow-hidden rounded-3xl shadow-xl bg-white">
-                            <div class="relative h-80">
-                                <a href="{{ route('news.show', $mainFeatured['slug']) }}" class="block h-full"
-                                    aria-label="Read {{ $mainFeatured['title'] }}">
-                                    <x-initials-image
-                                        :src="$mainFeatured['image'] ?? null"
-                                        :title="$mainFeatured['title'] ?? ''"
-                                        imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                        fallbackClass="bg-emerald-700/90"
-                                        textClass="text-4xl font-bold text-white"
-                                    />
-                                </a>
-                                <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                                <div class="pointer-events-none absolute bottom-6 left-6 right-6">
-                                    <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-white/90 text-emerald-700">
-                                        {{ $mainFeatured['category'] ?? 'News' }}
-                                    </span>
-                                    <h4 class="text-2xl md:text-3xl font-bold text-white mt-3">
-                                        <a href="{{ route('news.show', $mainFeatured['slug']) }}" class="pointer-events-auto">{{ $mainFeatured['title'] }}</a>
-                                    </h4>
-                                    <p class="text-sm text-white/80 mt-2 line-clamp-2">{{ $mainFeatured['excerpt'] }}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-                                <div class="flex items-center gap-4 text-sm text-slate-500">
-                                    <span class="inline-flex items-center gap-1"><i class="fas fa-clock text-xs"></i>{{ $mainFeatured['read_time'] }}</span>
-                                    <span class="inline-flex items-center gap-1"><i class="fas fa-eye text-xs"></i>{{ $mainFeatured['views'] }}</span>
-                                </div>
-                                <a href="/news/{{ $mainFeatured['slug'] }}" class="inline-flex items-center gap-2 text-emerald-700 font-semibold">
-                                    <span>Read Story</span>
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </div>
-                        </article>
-                    @endif
-
-                    @if(count($featuredNews) > 1)
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            @foreach(array_slice($featuredNews, 1) as $news)
-                                @continueIfNotArray($news)
-                                <article class="group rounded-2xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300">
-                                    <div class="relative h-48">
-                                        <a href="{{ route('news.show', $news['slug']) }}" class="block h-full"
-                                            aria-label="Read {{ $news['title'] }}">
-                                            <x-initials-image
-                                                :src="$news['image'] ?? null"
-                                                :title="$news['title'] ?? ''"
-                                                imgClass="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                                fallbackClass="bg-slate-800"
-                                                textClass="text-2xl font-bold text-white"
-                                            />
-                                        </a>
-                                        <span class="absolute top-4 left-4 px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
-                                            {{ $news['category'] ?? 'News' }}
-                                        </span>
-                                    </div>
-                                    <div class="p-5">
-                                        <p class="text-xs uppercase tracking-widest text-emerald-700 font-semibold">{{ $news['date'] }}</p>
-                                        <h4 class="text-lg font-bold text-slate-900 mt-2 group-hover:text-emerald-700 transition-colors">
-                                            <a href="/news/{{ $news['slug'] }}">{{ $news['title'] }}</a>
-                                        </h4>
-                                        <p class="text-sm text-slate-600 mt-2 line-clamp-2">{{ $news['excerpt'] }}</p>
-                                    </div>
-                                </article>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-
-                <div class="lg:col-span-4">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-2xl font-bold text-slate-900">Most Viewed</h3>
-                        <span class="text-xs font-semibold text-amber-700 bg-amber-100/80 px-3 py-1 rounded-full">Top reads</span>
-                    </div>
-
-                    <div class="space-y-4">
-                        @forelse($mostViewedNews as $index => $news)
-                            @continueIfNotArray($news)
-                            <a href="/news/{{ $news['slug'] }}" class="group flex items-start gap-4 p-4 rounded-2xl bg-white/80 border border-white hover:bg-white shadow-sm hover:shadow-lg transition-all duration-300">
-                                <div class="text-2xl font-black text-emerald-700/60 w-8">{{ $index + 1 }}</div>
-                                <div class="flex-1">
-                                    <p class="text-xs uppercase tracking-widest text-amber-700 font-semibold">{{ $news['category'] ?? 'News' }}</p>
-                                    <h4 class="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mt-1">
-                                        {{ $news['title'] }}
-                                    </h4>
-                                    <div class="flex items-center gap-3 text-xs text-slate-500 mt-2">
-                                        <span class="inline-flex items-center gap-1"><i class="fas fa-eye text-[10px]"></i>{{ $news['views'] }}</span>
-                                        <span class="inline-flex items-center gap-1"><i class="fas fa-clock text-[10px]"></i>{{ $news['date'] }}</span>
-                                    </div>
-                                </div>
-                            </a>
-                        @empty
-                            <div class="p-6 rounded-2xl bg-white text-center text-slate-500">
-                                No popular stories yet.
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-16">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-2xl font-bold text-slate-900">More News</h3>
-                    <span class="text-sm text-slate-500">Keep scrolling for more updates</span>
-                </div>
-
-                @if(count($otherNews) > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        @foreach($otherNews as $news)
-                            @continueIfNotArray($news)
-                            <article class="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300">
-                                <div class="relative h-48 overflow-hidden">
-                                    <a href="{{ route('news.show', $news['slug']) }}" class="block h-full"
-                                        aria-label="Read {{ $news['title'] }}">
-                                        <x-initials-image
-                                            :src="$news['image'] ?? null"
-                                            :title="$news['title'] ?? ''"
-                                            imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                            fallbackClass="bg-emerald-700/80"
-                                            textClass="text-2xl font-bold text-white"
-                                        />
-                                    </a>
-                                    <div class="absolute top-4 left-4">
-                                        <span class="px-3 py-1 bg-slate-900/80 text-white text-xs font-semibold rounded-full">
-                                            {{ $news['category'] ?? 'News' }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="p-5">
-                                    <div class="flex items-center gap-3 text-xs text-slate-500">
-                                        <span class="inline-flex items-center gap-1"><i class="fas fa-calendar text-[10px]"></i>{{ $news['date'] }}</span>
-                                        <span class="inline-flex items-center gap-1"><i class="fas fa-clock text-[10px]"></i>{{ $news['read_time'] }}</span>
-                                    </div>
-                                    <h4 class="text-lg font-bold text-slate-900 mt-2 group-hover:text-emerald-700 transition-colors">
-                                        <a href="/news/{{ $news['slug'] }}">{{ $news['title'] }}</a>
-                                    </h4>
-                                    <p class="text-sm text-slate-600 mt-2 line-clamp-2">{{ $news['excerpt'] }}</p>
-                                </div>
-                            </article>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="bg-white rounded-2xl shadow-lg p-10 text-center text-slate-500">
-                        No additional news to show yet.
-                    </div>
-                @endif
-
-                <div class="mt-10 flex items-center justify-center">
-                    <div x-ref="newsSentinel" class="w-full max-w-sm">
-                        @if($newsHasMore)
-                            <div class="flex items-center justify-center gap-3 text-sm text-slate-500">
-                                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span>Loading more stories...</span>
-                            </div>
-                            <div wire:loading.flex wire:target="loadMoreNews" class="mt-3 justify-center text-xs text-emerald-700">
-                                Fetching the next batch
-                            </div>
-                        @else
-                            <div class="text-sm text-slate-500 text-center">You're all caught up.</div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- Latest Blog Posts Section -->
-<section class="py-20 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="flex items-center justify-between mb-12">
-            <div>
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Latest Blog Posts</h2>
-                <p class="text-xl text-gray-600">Deep insights and articles from our blog</p>
-            </div>
-            <a href="/blog" class="hidden md:inline-flex items-center space-x-2 text-purple-600 font-semibold hover:text-purple-700 transition-colors">
-                <span>View All Posts</span>
-                <i class="fas fa-arrow-right"></i>
+            <a href="{{ route('podcasts.index') }}" class="mt-7 inline-flex items-center gap-2 text-sm font-extrabold text-[#173b5f] transition hover:text-[#e95516] sm:hidden">
+                Browse all podcasts
+                <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
             </a>
         </div>
-
-        @if(count($latestBlogPosts) > 0)
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                @foreach($latestBlogPosts as $post)
-                    @continueIfNotArray($post)
-                    <article class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 group">
-                        <div class="relative h-56 overflow-hidden">
-                            <x-initials-image
-                                :src="$post['image'] ?? null"
-                                :title="$post['title'] ?? ''"
-                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                fallbackClass="bg-purple-700/90"
-                                textClass="text-3xl font-bold text-white"
-                            />
-                            <div class="absolute top-4 left-4">
-                                <span class="px-3 py-1 bg-{{ $post['category_color'] ?? 'purple' }}-600 text-white text-xs font-semibold rounded-full">
-                                    {{ $post['category'] ?? 'Blog' }}
-                                </span>
-                            </div>
-                            <div class="absolute bottom-4 right-4 flex items-center space-x-2">
-                                <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                                    <i class="fas fa-eye mr-1"></i> {{ $post['views'] }}
-                                </span>
-                                <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                                    <i class="fas fa-comment mr-1"></i> {{ $post['comments_count'] }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex items-center space-x-4 text-sm text-gray-500 mb-3">
-                                <span class="flex items-center space-x-1">
-                                    <i class="fas fa-calendar text-xs"></i>
-                                    <span>{{ $post['date'] }}</span>
-                                </span>
-                                <span class="flex items-center space-x-1">
-                                    <i class="fas fa-clock text-xs"></i>
-                                    <span>{{ $post['read_time'] }}</span>
-                                </span>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">
-                                <a href="/blog/{{ $post['slug'] }}">{{ $post['title'] }}</a>
-                            </h3>
-                            <p class="text-gray-600 mb-4 line-clamp-3">{{ $post['excerpt'] }}</p>
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                                <span class="text-sm text-gray-600">
-                                    <i class="fas fa-user-circle mr-1"></i> {{ $post['author'] }}
-                                </span>
-                                <a href="/blog/{{ $post['slug'] }}" class="inline-flex items-center space-x-2 text-purple-600 font-semibold hover:text-purple-700 transition-colors">
-                                    <span>Read More</span>
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-                @endforeach
-            </div>
-        @else
-            <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
-                <i class="fas fa-blog text-6xl text-gray-300 mb-4"></i>
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">No Blog Posts Available</h3>
-                <p class="text-gray-600">Check back soon for insightful articles!</p>
-            </div>
-        @endif
-
-        <div class="text-center mt-12">
-            <a href="/blog" class="inline-flex items-center space-x-2 px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                <span>View All Blog Posts</span>
-                <i class="fas fa-arrow-right"></i>
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- Trending Blog Posts Ticker -->
-@if(count($trendingBlogPosts) > 0)
-<section class="py-4 bg-purple-600 text-white">
-    <div class="container mx-auto px-4">
-        <div class="flex items-center space-x-4">
-            <div class="flex-shrink-0 flex items-center space-x-2 font-bold">
-                <i class="fas fa-fire text-orange-300"></i>
-                <span>TRENDING BLOG:</span>
-            </div>
-            <div class="flex-1 overflow-hidden">
-                <div class="flex animate-scroll space-x-8">
-                @foreach($trendingBlogPosts as $trending)
-                    @continueIfNotArray($trending)
-                    <a href="/blog/{{ $trending['slug'] }}" class="flex-shrink-0 hover:text-purple-200 transition-colors">
-                            <span class="font-semibold">{{ $trending['title'] }}</span>
-                            <span class="text-purple-200 text-sm ml-2">• {{ number_format($trending['views']) }} views</span>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-@endif
-
-    <!-- Upcoming Events Section -->
-    <section class="py-20 bg-amber-600 text-white relative overflow-hidden">
-        <!-- Background Pattern -->
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-        </div>
-
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold mb-4">Upcoming Events</h2>
-                <p class="text-xl text-emerald-100 max-w-2xl mx-auto">
-                    Join us at our exclusive events and experience the magic of live entertainment
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                @foreach($upcomingEvents as $event)
-                    @continueIfNotArray($event)
-                    <div class="bg-white/10 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/20 hover:bg-white/20 transition-all duration-300 group">
-                        <div class="relative h-48 overflow-hidden">
-                            <x-initials-image
-                                :src="$event['image'] ?? null"
-                                :title="$event['title'] ?? ''"
-                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                fallbackClass="bg-emerald-700/90"
-                                textClass="text-3xl font-bold text-white"
-                            />
-                            <div class="absolute top-4 right-4 bg-white text-emerald-600 px-3 py-1 rounded-full text-sm font-semibold">
-                                <i class="fas fa-users mr-1"></i> {{ $event['attendees'] ?? '0' }}
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-2xl font-bold mb-3">{{ $event['title'] }}</h3>
-                            <div class="space-y-2 mb-4">
-                                <div class="flex items-center space-x-2 text-emerald-100">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <span>{{ $event['date'] }}</span>
-                                </div>
-                                <div class="flex items-center space-x-2 text-emerald-100">
-                                    <i class="fas fa-clock"></i>
-                                    <span>{{ $event['time'] }}</span>
-                                </div>
-                                <div class="flex items-center space-x-2 text-emerald-100">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span>{{ $event['location'] }}</span>
-                                </div>
-                            </div>
-                            <a href="#" class="inline-flex items-center space-x-2 text-white font-semibold hover:text-emerald-200 transition-colors">
-                                <span>Get Tickets</span>
-                                <i class="fas fa-ticket-alt"></i>
-                            </a>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="text-center mt-12">
-                <a href="/events" class="inline-flex items-center space-x-2 px-8 py-4 bg-white text-emerald-700 font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                    <span>View All Events</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
     </section>
 
-    <!-- Meet Our Podcast Section -->
-<!-- Latest Podcast Episodes Section -->
-<section class="py-20 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="text-center mb-16">
-            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Latest Podcast Episodes</h2>
-            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                Listen to our newest podcast episodes featuring amazing conversations and stories
-            </p>
-        </div>
+    @if(count($featuredShows) > 0)
+        <section class="bg-white py-16 sm:py-20" aria-labelledby="featured-shows-heading">
+            <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+                <div class="mb-8 flex items-end justify-between gap-6 border-b border-slate-200 pb-5">
+                    <div>
+                        <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Meet the voices</p>
+                        <h2 id="featured-shows-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                            Featured shows
+                        </h2>
+                    </div>
+                    <a href="{{ route('shows.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-[#173b5f] transition hover:text-[#e95516]">
+                        All shows
+                        <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                    </a>
+                </div>
 
-        @if(count($latestPodcastEpisodes) > 0)
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            @foreach($latestPodcastEpisodes as $episode)
-                @continueIfNotArray($episode)
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                        <div class="relative h-48 overflow-hidden">
-                            <x-initials-image
-                                :src="$episode['image'] ?? null"
-                                :title="$episode['title'] ?? ''"
-                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                fallbackClass="bg-purple-700/90"
-                                textClass="text-3xl font-bold text-white"
-                            />
-                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <a href="{{ route('podcasts.episode', [$episode['show_slug'], $episode['slug']]) }}" 
-                                   class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl transform scale-75 group-hover:scale-100 transition-transform">
-                                    <i class="fas fa-play ml-1"></i>
-                                </a>
-                            </div>
-                            <div class="absolute top-3 right-3">
-                                <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                                    {{ $episode['duration'] }}
-                                </span>
-                            </div>
-                            @if($episode['season_episode'])
-                            <div class="absolute top-3 left-3">
-                                <span class="px-2 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">
-                                    {{ $episode['season_episode'] }}
-                                </span>
-                            </div>
+                <div class="grid gap-6 md:grid-cols-3">
+                    @foreach(array_slice($featuredShows, 0, 3) as $show)
+                        @continueIfNotArray($show)
+                        @php($showSlug = $show['slug'] ?? null)
+                        <article class="group">
+                            @if($showSlug)
+                                <a
+                                    href="{{ route('shows.show', $showSlug) }}"
+                                    class="relative block aspect-[4/3] overflow-hidden rounded-xl bg-slate-100"
+                                    aria-label="View {{ $show['title'] }}"
+                                >
+                            @else
+                                <div class="relative block aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
                             @endif
-                        </div>
-                        <div class="p-6">
-                            <p class="text-xs text-purple-600 font-semibold mb-2">{{ $episode['show_title'] }}</p>
-                            <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
-                                <a href="{{ route('podcasts.episode', [$episode['show_slug'], $episode['slug']]) }}">
-                                    {{ $episode['title'] }}
-                                </a>
-                            </h3>
-                            <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $episode['description'] }}</p>
-                            <div class="flex items-center justify-between text-xs text-gray-500">
-                                <span><i class="fas fa-calendar mr-1"></i>{{ $episode['published_at'] }}</span>
-                                <span><i class="fas fa-headphones mr-1"></i>{{ $episode['plays'] }}</span>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @else
-            <div class="text-center py-12">
-                <i class="fas fa-podcast text-6xl text-gray-300 mb-4"></i>
-                <p class="text-gray-600 text-lg">No podcast episodes available yet. Check back soon!</p>
-            </div>
-        @endif
-
-        <div class="text-center mt-12">
-            <a href="{{ route('podcasts.index') }}" class="inline-flex items-center space-x-2 px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                <span>Browse All Podcasts</span>
-                <i class="fas fa-arrow-right"></i>
-            </a>
-        </div>
-    </div>
-</section>
-
-
-
-    <!-- Featured Shows Section -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Featured Shows</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    Tune in to our most popular programs featuring the best Podcasts and music selection
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                @foreach($featuredShows as $show)
-                    @continueIfNotArray($show)
-                    @php($showSlug = $show['slug'] ?? null)
-                    <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2">
-                        @if($showSlug)
-                            <a href="{{ route('shows.show', $showSlug) }}" class="relative h-64 overflow-hidden block">
-                        @else
-                            <div class="relative h-64 overflow-hidden block">
-                        @endif
-                            <x-initials-image
-                                :src="$show['image'] ?? null"
-                                :title="$show['title'] ?? ''"
-                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                fallbackClass="bg-emerald-700/90"
-                                textClass="text-4xl font-bold text-white"
-                            />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                            <div class="absolute top-4 right-4">
-                                <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">
-                                    {{ $show['category'] ?? 'Show' }}
+                                <x-initials-image
+                                    :src="$show['image'] ?? null"
+                                    :title="$show['title'] ?? ''"
+                                    imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
+                                    fallbackClass="bg-[#173b5f]"
+                                    textClass="text-4xl font-black text-white"
+                                />
+                                <div class="absolute inset-0 bg-gradient-to-t from-[#07182b]/85 via-transparent to-transparent"></div>
+                                <span class="absolute bottom-4 left-4 text-[11px] font-extrabold uppercase tracking-[0.15em] text-orange-300">
+                                    {{ $show['days'] ?? 'Weekly' }} · {{ $show['time'] ?? 'Schedule TBA' }}
                                 </span>
-                            </div>
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <h3 class="text-2xl font-bold text-white mb-1">{{ $show['title'] }}</h3>
-                                <p class="text-emerald-300 text-sm">{{ $show['days'] }}</p>
-                            </div>
-                        @if($showSlug)
-                            </a>
-                        @else
-                            </div>
-                        @endif
-                        <div class="p-6">
-                            <div class="flex items-center space-x-3 mb-4">
-                                <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-microphone text-white"></i>
+                            @if($showSlug)
+                                </a>
+                            @else
                                 </div>
-                                <div>
+                            @endif
+
+                            <div class="pt-4">
+                                <p class="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#e95516]">{{ $show['category'] ?? 'Show' }}</p>
+                                <h3 class="mt-1.5 text-xl font-black tracking-[-0.02em] text-[#07182b]">
+                                    @if($showSlug)
+                                        <a href="{{ route('shows.show', $showSlug) }}" class="transition hover:text-[#d94e12]">
+                                            {{ $show['title'] }}
+                                        </a>
+                                    @else
+                                        {{ $show['title'] }}
+                                    @endif
+                                </h3>
+                                <p class="mt-2 text-sm text-slate-600">
+                                    With
                                     @if(!empty($show['host_slug']))
-                                        <a href="{{ route('oaps.show', $show['host_slug']) }}" class="font-semibold text-gray-900 hover:text-emerald-600 transition-colors">
+                                        <a href="{{ route('oaps.show', $show['host_slug']) }}" class="font-bold text-[#173b5f] transition hover:text-[#e95516]">
                                             {{ $show['host'] }}
                                         </a>
                                     @else
-                                        <p class="font-semibold text-gray-900">{{ $show['host'] }}</p>
+                                        <span class="font-bold text-[#173b5f]">{{ $show['host'] ?? 'Host TBA' }}</span>
                                     @endif
-                                    <p class="text-sm text-emerald-600">{{ $show['time'] }}</p>
-                                </div>
+                                </p>
                             </div>
-                            <p class="text-gray-600 mb-4">{{ $show['description'] }}</p>
-                            @if($showSlug)
-                                <a href="{{ route('shows.show', $showSlug) }}" class="inline-flex items-center space-x-2 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">
-                                    <span>Learn More</span>
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            @else
-                                <span class="inline-flex items-center space-x-2 text-gray-400 font-semibold cursor-not-allowed">
-                                    <span>Learn More</span>
-                                    <i class="fas fa-arrow-right"></i>
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="text-center mt-12">
-                <a href="/shows" class="inline-flex items-center space-x-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                    <span>View All Shows</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">What Our Listeners Say</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    Real feedback from our amazing community of listeners
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                @foreach($testimonials as $testimonial)
-                    @continueIfNotArray($testimonial)
-                    <div class="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
-                        <div class="flex items-center mb-4">
-                            @for($i = 0; $i < $testimonial['rating']; $i++)
-                                <i class="fas fa-star text-yellow-400 text-xl"></i>
-                            @endfor
-                        </div>
-                        <p class="text-gray-600 mb-6 italic leading-relaxed">
-                            "{{ $testimonial['message'] }}"
-                        </p>
-                        <div class="flex items-center space-x-4">
-                            <img src="{{ $testimonial['avatar'] }}" alt="{{ $testimonial['name'] }}" class="w-14 h-14 rounded-full">
-                            <div>
-                                <h4 class="font-bold text-gray-900">{{ $testimonial['name'] }}</h4>
-                                <p class="text-sm text-gray-600">{{ $testimonial['role'] }}</p>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="py-20 bg-orange-400 text-white relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-        </div>
-
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl md:text-5xl font-bold mb-6">Ready to Tune In?</h2>
-                <p class="text-xl text-emerald-100 mb-8 leading-relaxed">
-                    Join over 1 million listeners and experience the best radio station in the city. 
-                    Listen live now or request your favorite song!
-                </p>
-                <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                    <a href="#" class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-white text-emerald-700 font-bold rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
-                        <i class="fas fa-play-circle text-2xl"></i>
-                        <span>Start Listening</span>
-                    </a>
-                    <a href="/contact" class="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 bg-emerald-500/20 backdrop-blur-sm text-white font-semibold rounded-full border-2 border-white/30 hover:bg-white/10 transition-all duration-300">
-                        <i class="fas fa-envelope"></i>
-                        <span>Contact Us</span>
-                    </a>
+                        </article>
+                    @endforeach
                 </div>
             </div>
+        </section>
+    @endif
+
+    <section class="border-t border-slate-200 bg-[#f7f4ee] py-16 sm:py-20" aria-labelledby="community-heading">
+        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+            <div class="grid gap-8 lg:grid-cols-[minmax(280px,0.62fr)_minmax(0,1.38fr)]">
+                <div>
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Beyond the studio</p>
+                    <h2 id="community-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                        Glow in the community
+                    </h2>
+                    <p class="mt-4 max-w-md text-sm leading-6 text-slate-600 sm:text-base">
+                        Join the experiences, conversations and gatherings bringing listeners together across Akure.
+                    </p>
+                    <div class="mt-6 flex flex-wrap gap-4">
+                        <a href="{{ route('events.index') }}" class="inline-flex items-center gap-2 text-sm font-extrabold text-[#173b5f] transition hover:text-[#e95516]">
+                            Explore events
+                            <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                        </a>
+                        <a href="{{ route('contact') }}" class="inline-flex items-center gap-2 text-sm font-extrabold text-[#173b5f] transition hover:text-[#e95516]">
+                            Contact Glow
+                            <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+
+                @if($primaryEvent)
+                    <div class="grid gap-5 md:grid-cols-[minmax(0,1.25fr)_minmax(240px,0.75fr)]">
+                        <article class="group overflow-hidden rounded-xl border border-slate-200 bg-white">
+                            <a
+                                href="{{ route('events.show', $primaryEvent['slug']) }}"
+                                class="relative block aspect-[16/9] overflow-hidden bg-slate-100"
+                                aria-label="View {{ $primaryEvent['title'] }}"
+                            >
+                                <x-initials-image
+                                    :src="$primaryEvent['image'] ?? null"
+                                    :title="$primaryEvent['title']"
+                                    imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                    fallbackClass="bg-[#173b5f]"
+                                    textClass="text-4xl font-black text-white"
+                                />
+                            </a>
+                            <div class="p-5 sm:p-6">
+                                <p class="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#e95516]">{{ $primaryEvent['category'] ?? 'Glow event' }}</p>
+                                <h3 class="mt-2 text-2xl font-black leading-tight tracking-[-0.025em] text-[#07182b]">
+                                    <a href="{{ route('events.show', $primaryEvent['slug']) }}" class="transition hover:text-[#d94e12]">
+                                        {{ $primaryEvent['title'] }}
+                                    </a>
+                                </h3>
+                                <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-slate-500">
+                                    <span><i class="far fa-calendar-alt mr-1.5 text-[#e95516]" aria-hidden="true"></i>{{ $primaryEvent['date'] }}</span>
+                                    <span><i class="fas fa-map-marker-alt mr-1.5 text-[#e95516]" aria-hidden="true"></i>{{ $primaryEvent['location'] }}</span>
+                                </div>
+                            </div>
+                        </article>
+
+                        <div class="space-y-4">
+                            @forelse($secondaryEvents as $event)
+                                @continueIfNotArray($event)
+                                <article class="group grid grid-cols-[92px_minmax(0,1fr)] gap-4 rounded-xl border border-slate-200 bg-white p-3">
+                                    <a
+                                        href="{{ route('events.show', $event['slug']) }}"
+                                        class="relative block aspect-square overflow-hidden rounded-lg bg-slate-100"
+                                        aria-label="View {{ $event['title'] }}"
+                                    >
+                                        <x-initials-image
+                                            :src="$event['image'] ?? null"
+                                            :title="$event['title']"
+                                            imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                                            fallbackClass="bg-[#173b5f]"
+                                            textClass="text-xl font-black text-white"
+                                        />
+                                    </a>
+                                    <div class="min-w-0 self-center">
+                                        <p class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#e95516]">{{ $event['date'] }}</p>
+                                        <h3 class="mt-1.5 text-base font-black leading-snug text-[#07182b]">
+                                            <a href="{{ route('events.show', $event['slug']) }}" class="transition hover:text-[#d94e12]">
+                                                {{ $event['title'] }}
+                                            </a>
+                                        </h3>
+                                        <p class="mt-1 truncate text-xs text-slate-500">{{ $event['location'] }}</p>
+                                    </div>
+                                </article>
+                            @empty
+                                <div class="rounded-xl border border-slate-200 bg-white p-5">
+                                    <p class="text-sm font-bold text-[#07182b]">More community moments are coming.</p>
+                                    <a href="{{ route('events.index') }}" class="mt-3 inline-flex items-center gap-2 text-xs font-extrabold text-[#e95516]">
+                                        See all events <i class="fas fa-arrow-right text-[10px]" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                @else
+                    <div class="rounded-xl border border-slate-200 bg-white p-8 sm:p-10">
+                        <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#e95516]">Stay connected</p>
+                        <h3 class="mt-3 text-2xl font-black tracking-[-0.025em] text-[#07182b]">The next Glow experience is being planned.</h3>
+                        <p class="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+                            Follow our event page for announcements, live broadcasts and opportunities to meet the Glow FM team.
+                        </p>
+                        <a href="{{ route('events.index') }}" class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#173b5f] transition hover:text-[#e95516]">
+                            Visit events
+                            <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </section>
+
+    <section id="newsletter" class="scroll-mt-28 bg-[#e95516] py-12 text-white sm:py-14">
+        <div class="mx-auto grid max-w-[1440px] gap-7 px-4 sm:px-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(420px,1.15fr)] lg:items-center lg:gap-14 lg:px-8">
+            <div>
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-100">The Glow briefing</p>
+                <h2 class="mt-2 text-3xl font-black tracking-[-0.035em] sm:text-4xl">Stay close to the stories.</h2>
+                <p class="mt-3 max-w-xl text-sm leading-6 text-orange-50 sm:text-base">
+                    Get newsroom highlights, programme updates and the best of Glow FM delivered to your inbox.
+                </p>
+            </div>
+
+            <form method="POST" action="{{ route('newsletter.subscribe') }}" class="sm:flex sm:items-start sm:gap-3">
+                @csrf
+                <div class="flex-1">
+                    <label for="homepage-newsletter-email" class="sr-only">Email address</label>
+                    <input
+                        id="homepage-newsletter-email"
+                        type="email"
+                        name="email"
+                        value="{{ old('email') }}"
+                        required
+                        autocomplete="email"
+                        placeholder="Your email address"
+                        class="min-h-12 w-full rounded-lg border border-white/30 bg-white px-4 py-3 text-sm font-semibold text-[#07182b] placeholder:text-slate-400 focus:border-[#07182b] focus:outline-none focus:ring-2 focus:ring-[#07182b]/25"
+                    >
+                    @error('email')
+                        <p class="mt-2 text-xs font-semibold text-white">{{ $message }}</p>
+                    @enderror
+                </div>
+                <button
+                    type="submit"
+                    class="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#07182b] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#102b48] focus:outline-none focus:ring-2 focus:ring-white sm:mt-0 sm:w-auto"
+                >
+                    Subscribe
+                    <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                </button>
+            </form>
         </div>
     </section>
 </div>
