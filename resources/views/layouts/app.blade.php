@@ -5,20 +5,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#047857">
-    <title>{{ $title ?? 'Glow FM 99.1 - Your Station, Your Voice' }}</title>
-    <meta name="google-adsense-account" content="ca-pub-3970534274644088">
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SEVJRFYBL8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-SEVJRFYBL8');
-</script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3970534274644088"
-     crossorigin="anonymous"></script>
+    <meta name="theme-color" content="#07162f">
+    @php
+        $googleAnalyticsId = config('services.google_site_tags.analytics_id');
+        $googleAdsenseClient = config('services.google_site_tags.adsense_client');
+        $googleSiteTagsEnabled = (bool) config('services.google_site_tags.enabled')
+            && !in_array(request()->getHost(), ['localhost', '127.0.0.1', '::1'], true);
+    @endphp
+    <title>{{ $metaTitle }}</title>
+    @if ($googleSiteTagsEnabled)
+        <meta name="google-adsense-account" content="{{ $googleAdsenseClient }}">
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $googleAnalyticsId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', @js($googleAnalyticsId));
+        </script>
+        <script async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $googleAdsenseClient }}"
+            crossorigin="anonymous"></script>
+    @endif
     
     @php
         $stationProfile = \App\Support\Seo::station();
@@ -33,18 +40,22 @@
         if (!empty($stationLogoUrl) && !\Illuminate\Support\Str::startsWith($stationLogoUrl, ['http://', 'https://'])) {
             $stationLogoUrl = url($stationLogoUrl);
         }
-        $metaTitle = $meta_title ?? ($title ?? trim($stationProfile['name'] . ' ' . $stationProfile['frequency']));
-        $metaDescription = $meta_description ?? ($stationTagline . ' - Glow 99.1 FM is a radio station and digital news platform in Akure, Ondo State, Nigeria.');
-        $metaImage = $meta_image ?? $stationLogoUrl;
-        if (!empty($metaImage) && !\Illuminate\Support\Str::startsWith($metaImage, ['http://', 'https://'])) {
-            $metaImage = url($metaImage);
-        }
+        $metaTitle = \App\Support\Seo::text(
+            $meta_title ?? ($title ?? trim($stationProfile['name'] . ' ' . $stationProfile['frequency'])),
+            70
+        );
+        $metaDescription = \App\Support\Seo::text(
+            $meta_description ?? ($stationTagline . ' - Glow 99.1 FM is a radio station and digital news platform in Akure, Ondo State, Nigeria.'),
+            165
+        );
+        $metaImage = \App\Support\Seo::absoluteUrl($meta_image ?? $stationLogoUrl, $stationProfile['logo']);
         $metaImageAlt = $meta_image_alt ?? $metaTitle;
         $canonicalUrl = \App\Support\Seo::absoluteUrl($canonical_url ?? request()->url()) ?: request()->url();
-        $metaRobots = $meta_robots ?? 'index, follow';
+        $metaRobots = $meta_robots ?? \App\Support\Seo::robotsDirectives();
         $metaType = $meta_type ?? 'website';
         $metaPublishedTime = $meta_published_time ?? null;
         $metaModifiedTime = $meta_modified_time ?? null;
+        $metaAuthor = $meta_author ?? null;
         $locale = str_replace('-', '_', app()->getLocale());
         $twitterSite = $twitter_site ?? data_get($stationSettings, 'twitter_handle', '');
         $defaultBreadcrumbs = [['name' => 'Home', 'url' => route('home')]];
@@ -72,6 +83,10 @@
     @endphp
     <meta name="description" content="{{ $metaDescription }}">
     <meta name="robots" content="{{ $metaRobots }}">
+    <meta name="googlebot" content="{{ $metaRobots }}">
+    @if (!empty($metaAuthor))
+        <meta name="author" content="{{ $metaAuthor }}">
+    @endif
     <link rel="canonical" href="{{ $canonicalUrl }}">
     <meta property="og:title" content="{{ $metaTitle }}">
     <meta property="og:description" content="{{ $metaDescription }}">
@@ -89,10 +104,14 @@
         <meta property="article:modified_time" content="{{ $metaModifiedTime }}">
         <meta property="og:updated_time" content="{{ $metaModifiedTime }}">
     @endif
+    @if (!empty($metaAuthor))
+        <meta property="article:author" content="{{ $metaAuthor }}">
+    @endif
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ $metaTitle }}">
     <meta name="twitter:description" content="{{ $metaDescription }}">
     <meta name="twitter:image" content="{{ $metaImage }}">
+    <meta name="twitter:image:alt" content="{{ $metaImageAlt }}">
     @if (!empty($twitterSite))
         <meta name="twitter:site" content="{{ $twitterSite }}">
     @endif
@@ -100,6 +119,7 @@
     <link rel="alternate" type="application/rss+xml" title="{{ $stationProfile['name'] }} Podcasts RSS" href="{{ route('podcasts.feed') }}">
     <link rel="alternate" type="application/rss+xml" title="{{ $stationProfile['name'] }} Programs RSS" href="{{ route('shows.feed') }}">
     <link rel="alternate" type="text/markdown" title="{{ $stationProfile['name'] }} llms.txt" href="{{ route('llms') }}">
+    <link rel="sitemap" type="application/xml" title="{{ $stationProfile['name'] }} Sitemap" href="{{ route('sitemap') }}">
     <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -114,6 +134,10 @@
     <script type="application/ld+json">
         @json($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
     </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         [x-cloak]{display:none!important;}
@@ -133,11 +157,9 @@
     @livewireStyles
 </head>
 
-<body class="mobile-app-shell mobile-public-shell overflow-x-hidden bg-slate-950 font-sans antialiased text-slate-900" x-data="{ 
+<body class="mobile-app-shell mobile-public-shell overflow-x-hidden bg-glow-ivory font-public antialiased text-glow-ink" x-data="{
     mobileMenuOpen: false, 
     searchOpen: false,
-    mobileNavCollapsed: false,
-    mobileLivePanelOpen: true,
     scrolled: false,
     consentBannerOpen: false,
     consentChoice: null,
@@ -240,14 +262,6 @@
     closeMobileChrome() {
         this.mobileMenuOpen = false;
         this.searchOpen = false;
-        this.mobileNavCollapsed = true;
-    },
-    toggleMobileNav() {
-        this.mobileNavCollapsed = !this.mobileNavCollapsed;
-        if (!this.mobileNavCollapsed) {
-            this.mobileMenuOpen = false;
-            this.searchOpen = false;
-        }
     },
     setConsent(choice) {
         this.consentChoice = choice;
@@ -300,555 +314,386 @@
         $currentProgramTitle = $currentSlot?->show?->title ?: ($streamShowName ?: 'Unknown');
         $currentProgramHost = $currentSlot?->oap?->name ?: ($streamShowHost ?: ($streamArtist ?: 'Unknown'));
         $currentProgramTime = $currentSlot?->time_range ?: ($streamShowTime ?: 'Unknown');
+        $streamTrackLabel = collect([$streamTitle, $streamArtist])
+            ->filter(fn ($value) => filled($value))
+            ->implode(' — ');
         $recentShows = \App\Models\Show\Show::active()
             ->latest('created_at')
             ->take(3)
             ->get();
-        $publicMobileNav = [
-            [
-                'label' => 'Home',
-                'icon' => 'fas fa-house',
-                'href' => route('home'),
-                'active' => request()->routeIs('home'),
-                'active_classes' => 'bg-sky-600 text-white shadow-lg',
-                'inactive_classes' => 'bg-sky-50/80 text-sky-700 hover:bg-sky-100',
-            ],
-            [
-                'label' => 'News',
-                'icon' => 'fas fa-newspaper',
-                'href' => route('news'),
-                'active' => request()->routeIs('news', 'news.show'),
-                'active_classes' => 'bg-orange-500 text-white shadow-lg',
-                'inactive_classes' => 'bg-orange-50/80 text-orange-700 hover:bg-orange-100',
-            ],
-            [
-                'label' => 'Podcast',
-                'icon' => 'fas fa-podcast',
-                'href' => route('podcasts.index'),
-                'active' => request()->routeIs('podcasts.*'),
-                'active_classes' => 'bg-indigo-600 text-white shadow-lg',
-                'inactive_classes' => 'bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100',
-            ],
-            [
-                'label' => 'All Shows',
-                'icon' => 'fas fa-microphone-lines',
-                'href' => route('shows.index'),
-                'active' => request()->routeIs('shows.*'),
-                'active_classes' => 'bg-emerald-600 text-white shadow-lg',
-                'inactive_classes' => 'bg-emerald-50/80 text-emerald-700 hover:bg-emerald-100',
-            ],
+        $primaryNavigation = [
+            ['label' => 'Home', 'href' => route('home'), 'active' => request()->routeIs('home')],
+            ['label' => 'News', 'href' => route('news'), 'active' => request()->routeIs('news', 'news.show')],
+            ['label' => 'Shows', 'href' => route('shows.index'), 'active' => request()->routeIs('shows.*')],
+            ['label' => 'Schedule', 'href' => route('schedule'), 'active' => request()->routeIs('schedule')],
+            ['label' => 'Podcasts', 'href' => route('podcasts.index'), 'active' => request()->routeIs('podcasts.*')],
         ];
+        $exploreNavigation = [
+            ['label' => 'Listen Live', 'icon' => 'fas fa-headphones', 'href' => route('listen.live'), 'active' => request()->is('listen-live')],
+            ['label' => 'About Glow', 'icon' => 'fas fa-circle-info', 'href' => route('about'), 'active' => request()->is('about')],
+            ['label' => 'Vettas', 'icon' => 'fas fa-star', 'href' => route('vettas.index'), 'active' => request()->is('vettas*')],
+            ['label' => 'Blog', 'icon' => 'fas fa-pen-nib', 'href' => route('blog.index'), 'active' => request()->is('blog*')],
+            ['label' => 'Presenters', 'icon' => 'fas fa-microphone-lines', 'href' => route('oaps.index'), 'active' => request()->is('oaps*')],
+            ['label' => 'Our Team', 'icon' => 'fas fa-people-group', 'href' => route('staff.index'), 'active' => request()->is('team*')],
+            ['label' => 'Events', 'icon' => 'fas fa-calendar-day', 'href' => route('events.index'), 'active' => request()->is('events*')],
+            ['label' => 'Contact', 'icon' => 'fas fa-envelope', 'href' => route('contact'), 'active' => request()->is('contact*')],
+            ['label' => 'Advertise', 'icon' => 'fas fa-bullhorn', 'href' => route('advertise'), 'active' => request()->is('advertise')],
+            ['label' => 'Careers', 'icon' => 'fas fa-briefcase', 'href' => route('careers.index'), 'active' => request()->is('careers*')],
+        ];
+        $moreNavigationIsActive = collect($exploreNavigation)->contains('active', true);
     @endphp
 
     <!-- Fixed Header -->
     <header class="fixed inset-x-0 top-0 z-[80] transition-all duration-300">
-        <!-- Top Bar -->
-        <div class="hidden lg:block bg-slate-600 text-white">
-            <div class="container mx-auto px-4">
-                <div class="flex items-center justify-between h-10 text-sm">
-                    <div class="flex items-center space-x-6">
-                        <a href="tel:{{ $stationPhone }}"
-                            class="flex items-center space-x-2 hover:text-emerald-100 transition-colors">
-                            <i class="fas fa-phone text-xs"></i>
-                            <span class="hidden md:inline">{{ $stationPhone }}</span>
-                        </a>
-                        <a href="mailto:{{ $stationEmail }}"
-                            class="flex items-center space-x-2 hover:text-emerald-100 transition-colors">
-                            <i class="fas fa-envelope text-xs"></i>
-                            <span class="hidden md:inline">{{ $stationEmail }}</span>
-                        </a>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <span class="hidden sm:flex items-center space-x-2 text-xs">
-                            <span class="relative flex h-2 w-2">
-                                <span class="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"
-                                    :class="$store.radio.audioPlaying ? 'animate-ping' : ''"></span>
-                                <span class="relative inline-flex h-2 w-2 rounded-full"
-                                    :class="$store.radio.audioPlaying ? 'bg-emerald-400' : 'bg-red-500'"></span>
-                            </span>
-                            <span class="font-medium" x-text="$store.radio.audioPlaying ? 'LIVE STREAMING' : '{{ $streamIsLive ? 'LIVE NOW' : 'OFFLINE' }}'"></span>
-                            <span class="text-emerald-200">•</span>
-                            <span class="font-medium">{{ $currentProgramTitle }}</span>
-                            <span class="text-emerald-200">•</span>
-                            <span class="font-medium tabular-nums"
-                                  data-station-timezone="{{ $stationTimezone }}"
-                                  x-data="{
-                                    now: '',
-                                    tz: null,
-                                    init() {
-                                        this.tz = this.$el.dataset.stationTimezone || 'UTC';
-                                        const formatter = new Intl.DateTimeFormat([], {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                            timeZone: this.tz,
-                                        });
-                                        const format = () => {
-                                            this.now = formatter.format(new Date());
-                                        };
-                                        format();
-                                        setInterval(format, 1000);
-                                    }
-                                  }"
-                                  x-text="now"></span>
-                            <span class="text-emerald-200 text-[11px] font-semibold">WAT</span>
+        <!-- Live broadcast rail -->
+        <div class="hidden bg-glow-ink text-white lg:block">
+            <div class="mx-auto flex h-9 max-w-7xl items-center justify-between gap-6 px-5 text-xs">
+                <div class="flex min-w-0 items-center gap-3">
+                    <span class="inline-flex shrink-0 items-center gap-2 font-extrabold uppercase tracking-[0.16em] text-white">
+                        <span class="relative flex h-2 w-2">
+                            <span class="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60"
+                                :class="$store.radio.audioPlaying ? 'animate-ping' : ''"></span>
+                            <span class="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
                         </span>
-                        <div class="flex items-center space-x-3">
-                            <a href="{{ data_get($stationSocials, 'facebook', '#') }}" class="hover:text-emerald-100 transition-colors" aria-label="Facebook">
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <a href="{{ data_get($stationSocials, 'x', data_get($stationSocials, 'twitter', '#')) }}" class="hover:text-emerald-100 transition-colors" aria-label="X">
-                                <i class="fab fa-x-twitter"></i>
-                            </a>
-                            <a href="{{ data_get($stationSocials, 'instagram', '#') }}" class="hover:text-emerald-100 transition-colors" aria-label="Instagram">
-                                <i class="fab fa-instagram"></i>
-                            </a>
-                            <a href="{{ data_get($stationSocials, 'youtube', '#') }}" class="hover:text-emerald-100 transition-colors" aria-label="YouTube">
-                                <i class="fab fa-youtube"></i>
-                            </a>
-                        </div>
-                    </div>
+                        <span x-text="$store.radio.audioPlaying ? 'Listening live' : '{{ $streamIsLive ? 'On air' : 'Off air' }}'">{{ $streamIsLive ? 'On air' : 'Off air' }}</span>
+                    </span>
+                    <span class="h-4 w-px bg-white/20"></span>
+                    <p class="min-w-0 truncate text-slate-300">
+                        <strong class="font-bold text-white">{{ $currentProgramTitle }}</strong>
+                        @if ($streamTrackLabel)
+                            <span class="mx-1 text-slate-500">/</span>
+                            {{ $streamTrackLabel }}
+                        @endif
+                    </p>
+                    <button type="button" @click="startLive"
+                        class="shrink-0 font-bold text-glow-amber transition hover:text-white">
+                        Listen now <i class="fas fa-arrow-right ml-1 text-[10px]" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <div class="flex shrink-0 items-center gap-4 text-slate-300">
+                    <a href="tel:{{ $stationPhone }}" class="transition hover:text-white" aria-label="Call {{ $stationName }}">
+                        <i class="fas fa-phone mr-1.5 text-[10px]" aria-hidden="true"></i>{{ $stationPhone }}
+                    </a>
+                    <span class="font-semibold tabular-nums text-white"
+                        data-station-timezone="{{ $stationTimezone }}"
+                        x-data="{
+                            now: '',
+                            init() {
+                                const formatter = new Intl.DateTimeFormat([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    timeZone: this.$el.dataset.stationTimezone || 'UTC',
+                                });
+                                const format = () => this.now = formatter.format(new Date());
+                                format();
+                                setInterval(format, 1000);
+                            }
+                        }"
+                        x-text="`${now} WAT`"></span>
                 </div>
             </div>
         </div>
 
         <!-- Main Navigation -->
-        <div class="w-full pt-[calc(env(safe-area-inset-top)+0.75rem)] lg:pt-0">
-            <div class="mobile-app-surface relative overflow-hidden border-y border-white/70 shadow-2xl lg:overflow-visible lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none"
-                :class="scrolled ? 'lg:bg-white lg:shadow-lg' : 'lg:bg-white/95 lg:shadow-none lg:backdrop-blur-sm'">
-                <nav class="relative z-[85] mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-3 lg:h-20 lg:px-4 lg:py-0">
+        <div class="w-full bg-glow-paper pt-[env(safe-area-inset-top)] lg:pt-0">
+            <div class="relative overflow-visible border-b border-slate-200/90 bg-glow-paper/95 transition-shadow duration-200"
+                :class="scrolled ? 'shadow-[0_12px_32px_rgba(7,22,47,0.08)]' : 'shadow-none'">
+                <nav class="relative z-[85] mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-3 px-4 sm:px-5">
 
                     <!-- Logo -->
-                    <a href="/" class="flex items-center space-x-3 group">
-                        <div class="relative">
+                    <a href="{{ route('home') }}" class="group flex min-w-0 items-center gap-3" aria-label="{{ $stationName }} home">
+                        <div class="relative shrink-0">
                             @if (!empty($stationLogoUrl))
                                 <img src="{{ $stationLogoUrl }}" alt="{{ $stationName }} logo"
-                                    class="h-11 w-11 rounded-2xl object-contain bg-white p-1 shadow-lg transition-transform duration-300 group-hover:scale-105 lg:h-12 lg:w-12 lg:rounded-xl">
+                                    width="48" height="48" loading="eager" decoding="async"
+                                    class="h-11 w-11 rounded-lg border border-slate-200 bg-white object-contain p-0.5 transition-transform duration-200 group-hover:-rotate-2 lg:h-12 lg:w-12">
                             @else
-                                <div
-                                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 shadow-lg transition-transform duration-300 group-hover:scale-105 lg:h-12 lg:w-12 lg:rounded-xl">
+                                <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-glow-orange lg:h-12 lg:w-12">
                                     <i class="fas fa-radio text-xl text-white lg:text-2xl"></i>
                                 </div>
                             @endif
-                            <div
-                                class="absolute -top-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-red-500 animate-pulse">
-                            </div>
+                            <span class="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white bg-red-500"
+                                aria-hidden="true"></span>
                         </div>
-                        <div>
-                            <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700 lg:hidden">Live Radio</p>
-                            <p class="text-lg font-bold leading-none text-gray-900 lg:text-2xl">{{ $stationName }}</p>
-                            <p class="text-xs font-semibold text-emerald-600">{{ $stationFrequency }}</p>
+                        <div class="min-w-0">
+                            <p class="truncate text-lg font-extrabold leading-none tracking-[-0.04em] text-glow-ink lg:text-xl">
+                                {{ $stationName }}
+                            </p>
+                            <p class="mt-1 text-[10px] font-extrabold uppercase tracking-[0.22em] text-glow-orange">
+                                {{ $stationFrequency }} <span class="text-slate-400">Akure</span>
+                            </p>
                         </div>
                     </a>
 
                     <!-- Desktop Navigation -->
-                    <div class="hidden lg:flex items-center space-x-1">
-                        <a href="/"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('/') ? 'text-emerald-600' : '' }}">
-                            Home
-                        </a>
-                        <a href="/about"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('about') ? 'text-emerald-600' : '' }}">
-                            About
-                        </a>
-                        <a href="/news"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('news*') ? 'text-emerald-600' : '' }}">
-                            News
-                        </a>
-                        <a href="/shows"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('shows*') ? 'text-emerald-600' : '' }}">
-                            Shows
-                        </a>
-                        <a href="/schedule"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('schedule') ? 'text-emerald-600' : '' }}">
-                            Schedule
-                        </a>
-                        <a href="/vettas"
-                            class="px-4 py-2 text-gray-700 font-medium hover:text-emerald-600 transition-colors duration-200 {{ request()->is('vettas*') ? 'text-emerald-600' : '' }}">
-                            Vettas
-                        </a>
+                    <div class="hidden items-center lg:flex">
+                        @foreach ($primaryNavigation as $navItem)
+                            <x-public.nav-link :href="$navItem['href']" :active="$navItem['active']">
+                                {{ $navItem['label'] }}
+                            </x-public.nav-link>
+                        @endforeach
+
                         <div x-data="{ open: false }" class="relative">
-                            <button @click="open = !open" @click.away="open = false"
-                                class="flex items-center px-4 py-2 text-gray-700 font-medium transition-colors duration-200 hover:text-emerald-600 {{ request()->is('podcasts*') || request()->is('blog*') || request()->is('oaps*') || request()->is('team*') || request()->is('events*') || request()->is('contact*') || request()->is('careers*') || request()->is('listen-live') || request()->is('advertise') ? 'text-emerald-600' : '' }}">
-                                More
-                                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                            <button type="button" @click="open = !open" @click.away="open = false"
+                                class="public-nav-link {{ $moreNavigationIsActive ? 'public-nav-link-active' : '' }}"
+                                :aria-expanded="open.toString()" aria-haspopup="true">
+                                Explore
+                                <i class="fas fa-chevron-down ml-2 text-[9px] transition-transform"
+                                    :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
                             </button>
-                            <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                            <div x-cloak x-show="open" x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
                                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
                                 x-transition:leave-end="opacity-0 translate-y-2"
-                                class="absolute left-0 z-[95] mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
-                                <a href="/podcasts"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                    Podcasts
-                                </a>
-                                <a href="/listen-live"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                    Listen Live
-                                </a>
-                                <a href="/blog"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                    Blog
-                                </a>
-                                <a href="/oaps"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                    OAPs
-                                </a>
-                                <a href="/team"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                    Team
-                                </a>
-                                <a href="/events"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                    Events
-                                </a>
-                                <a href="/contact"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                    Contact
-                                </a>
-                                <a href="/advertise"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                    Advertise
-                                </a>
-                                <div class="my-1 border-t border-gray-100"></div>
-                                <a href="/careers"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                    Careers
-                                </a>
+                                class="absolute right-0 z-[95] mt-2 w-[30rem] rounded-xl border border-slate-200 bg-white p-3 shadow-[0_24px_70px_rgba(7,22,47,0.16)]">
+                                <div class="mb-2 flex items-center justify-between border-b border-slate-100 px-2 pb-3">
+                                    <div>
+                                        <p class="public-kicker">Explore Glow</p>
+                                        <p class="mt-1 text-xs text-slate-500">Radio, stories and community</p>
+                                    </div>
+                                    <span class="text-2xl text-glow-orange"><i class="fas fa-wave-square" aria-hidden="true"></i></span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-1">
+                                    @foreach ($exploreNavigation as $navItem)
+                                        <a href="{{ $navItem['href'] }}"
+                                            @if ($navItem['active']) aria-current="page" @endif
+                                            class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-bold transition {{ $navItem['active'] ? 'bg-orange-50 text-glow-orange' : 'text-slate-700 hover:bg-slate-50 hover:text-glow-orange' }}">
+                                            <span class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-xs text-glow-navy">
+                                                <i class="{{ $navItem['icon'] }}" aria-hidden="true"></i>
+                                            </span>
+                                            {{ $navItem['label'] }}
+                                        </a>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Right Side Actions -->
-                    <div class="flex items-center space-x-2 lg:space-x-4">
+                    <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
                         <!-- Install App Button -->
                         <button type="button" x-cloak x-show="canInstallApp && !appInstalled" @click="installApp"
                             :disabled="installInProgress"
-                            class="hidden items-center space-x-2 rounded-full border border-emerald-200 bg-white px-4 py-2 font-semibold text-emerald-700 shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-70 hover:bg-emerald-50 md:flex">
-                            <i class="fas fa-download text-xs"></i>
-                            <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
+                            class="hidden h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-glow-navy transition hover:border-orange-200 hover:bg-orange-50 hover:text-glow-orange disabled:cursor-not-allowed disabled:opacity-50 xl:flex"
+                            aria-label="Install Glow FM app">
+                            <i class="fas fa-download text-xs" aria-hidden="true"></i>
                         </button>
 
                         <!-- Search Buttons -->
-                        <button @click="searchOpen = !searchOpen"
-                            class="hidden h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition-all duration-200 hover:bg-emerald-50 hover:text-emerald-600 md:flex">
-                            <i class="fas fa-search"></i>
-                        </button>
-                        <button @click="searchOpen = !searchOpen; mobileMenuOpen = false; mobileNavCollapsed = true"
-                            class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900/5 text-gray-700 transition-all duration-200 hover:bg-emerald-50 hover:text-emerald-600 lg:hidden">
-                            <i class="fas fa-search"></i>
+                        <button type="button" @click="searchOpen = !searchOpen; mobileMenuOpen = false"
+                            class="flex h-10 w-10 items-center justify-center rounded-lg text-glow-ink transition hover:bg-slate-100 hover:text-glow-orange"
+                            :aria-expanded="searchOpen.toString()" aria-label="Search Glow FM">
+                            <i class="fas fa-search text-sm" aria-hidden="true"></i>
                         </button>
 
                         <!-- Authentication Links -->
                         @auth
-                            <!-- User Dropdown -->
-                            <div x-data="{ userMenuOpen: false }" class="relative">
-                                <button @click="userMenuOpen = !userMenuOpen"
-                                    class="flex items-center space-x-2 rounded-full bg-emerald-50 px-3 py-2 text-emerald-700 transition-all duration-200 hover:bg-emerald-100 lg:px-4">
-                                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600">
-                                        <i class="fas fa-user text-sm text-white"></i>
+                            <div x-data="{ userMenuOpen: false }" class="relative hidden md:block">
+                                <button type="button" @click="userMenuOpen = !userMenuOpen"
+                                    class="flex h-10 items-center gap-2 rounded-lg border border-slate-200 px-2 text-glow-ink transition hover:border-orange-200 hover:bg-orange-50"
+                                    :aria-expanded="userMenuOpen.toString()" aria-label="Open account menu">
+                                    <div class="flex h-7 w-7 items-center justify-center rounded-md bg-glow-midnight">
+                                        <i class="fas fa-user text-xs text-white" aria-hidden="true"></i>
                                     </div>
-                                    <span class="hidden font-medium md:inline">{{ auth()->user()->name }}</span>
-                                    <i class="fas fa-chevron-down text-xs"></i>
+                                    <span class="hidden max-w-24 truncate text-xs font-bold xl:inline">{{ auth()->user()->name }}</span>
+                                    <i class="fas fa-chevron-down text-[9px]" aria-hidden="true"></i>
                                 </button>
 
-                                <!-- Dropdown Menu -->
-                                <div x-show="userMenuOpen" @click.away="userMenuOpen = false"
+                                <div x-cloak x-show="userMenuOpen" @click.away="userMenuOpen = false"
                                     x-transition:enter="transition ease-out duration-200"
                                     x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                                     x-transition:leave="transition ease-in duration-150"
                                     x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                                    class="absolute right-0 z-[95] mt-2 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
-
+                                    class="absolute right-0 z-[95] mt-2 w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_20px_55px_rgba(7,22,47,0.16)]">
                                     @if($canAccessDashboard)
                                         <a href="{{ route('dashboard') }}"
-                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                                            class="block rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-orange-50 hover:text-glow-orange">
+                                            <i class="fas fa-tachometer-alt mr-2 text-xs" aria-hidden="true"></i>Dashboard
                                         </a>
-                                        <div class="my-1 border-t"></div>
+                                        <div class="my-1 border-t border-slate-100"></div>
                                     @endif
 
-                                    <a href="/profile"
-                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                        <i class="fas fa-user-circle mr-2"></i>My Profile
+                                    <a href="{{ route('profile') }}"
+                                        class="block rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                        <i class="fas fa-user-circle mr-2 text-xs" aria-hidden="true"></i>My Profile
                                     </a>
-                                    <a href="/settings"
-                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
-                                        <i class="fas fa-cog mr-2"></i>Settings
+                                    <a href="{{ route('settings') }}"
+                                        class="block rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-glow-orange">
+                                        <i class="fas fa-cog mr-2 text-xs" aria-hidden="true"></i>Settings
                                     </a>
 
-                                    <!-- Logout Form -->
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit"
-                                            class="mt-1 block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50">
-                                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                            class="mt-1 block w-full rounded-lg px-3 py-2.5 text-left text-sm font-bold text-red-600 transition hover:bg-red-50">
+                                            <i class="fas fa-sign-out-alt mr-2 text-xs" aria-hidden="true"></i>Logout
                                         </button>
                                     </form>
                                 </div>
                             </div>
                         @else
-                            <!-- Login/Register Links -->
-                            <div class="hidden md:flex items-center space-x-2">
+                            <div class="hidden items-center md:flex">
                                 <a href="{{ route('login') }}"
-                                    class="px-4 py-2 font-medium text-emerald-600 transition-colors hover:text-emerald-700">
+                                    class="px-2 py-2 text-sm font-bold text-glow-ink transition hover:text-glow-orange">
                                     Login
                                 </a>
                                 <a href="{{ route('register') }}"
-                                    class="rounded-full bg-emerald-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-emerald-700">
-                                    Sign Up
+                                    class="ml-1 hidden rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-glow-ink transition hover:border-orange-200 hover:text-glow-orange xl:inline-flex">
+                                    Sign up
                                 </a>
                             </div>
                         @endauth
 
                         <!-- Listen Live Button -->
                         <button type="button" @click="startLive"
-                            class="hidden items-center space-x-2 rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-emerald-700 hover:shadow-xl md:flex">
-                            <i class="fas fa-play-circle text-xl"></i>
-                            <span>Listen Live</span>
+                            class="hidden h-10 items-center gap-2 rounded-lg bg-glow-orange px-4 text-sm font-extrabold text-white shadow-[0_10px_25px_rgba(242,106,46,0.22)] transition hover:bg-glow-coral lg:flex">
+                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[9px] text-glow-orange">
+                                <i x-show="!$store.radio.audioPlaying" class="fas fa-play" aria-hidden="true"></i>
+                                <i x-cloak x-show="$store.radio.audioPlaying" class="fas fa-pause" aria-hidden="true"></i>
+                            </span>
+                            <span x-text="$store.radio.audioPlaying ? 'Listening' : 'Listen live'">Listen live</span>
                         </button>
 
                         <!-- Mobile Menu Button -->
-                        <button @click="mobileMenuOpen = !mobileMenuOpen; searchOpen = false; mobileNavCollapsed = true"
-                            class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900/5 text-gray-700 transition-all duration-200 hover:bg-emerald-50 hover:text-emerald-600 lg:hidden">
-                            <i class="fas" :class="mobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+                        <button type="button" @click="mobileMenuOpen = !mobileMenuOpen; searchOpen = false"
+                            class="flex h-10 w-10 items-center justify-center rounded-lg bg-glow-midnight text-white transition hover:bg-glow-navy lg:hidden"
+                            :aria-expanded="mobileMenuOpen.toString()" aria-label="Open site menu">
+                            <i x-show="!mobileMenuOpen" class="fas fa-bars text-sm" aria-hidden="true"></i>
+                            <i x-cloak x-show="mobileMenuOpen" class="fas fa-times text-sm" aria-hidden="true"></i>
                         </button>
                     </div>
                 </nav>
 
-                <div class="border-t border-slate-200/70 px-4 pb-4 pt-2 lg:hidden">
-                    <div class="mobile-app-surface-dark rounded-[1.6rem] px-4 py-3 text-white">
-                        <button type="button" @click="mobileLivePanelOpen = !mobileLivePanelOpen"
-                            class="flex w-full items-start justify-between gap-3 text-left">
-                            <div class="min-w-0">
-                                <p class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
-                                    <span class="relative flex h-2.5 w-2.5">
-                                        <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"
-                                            :class="$store.radio.audioPlaying ? 'animate-ping' : ''"></span>
-                                        <span class="relative inline-flex h-2.5 w-2.5 rounded-full"
-                                            :class="$store.radio.audioPlaying ? 'bg-lime-300' : 'bg-emerald-300'"></span>
-                                    </span>
-                                    On Air Now
-                                </p>
-                                <p class="mt-2 truncate text-base font-semibold">{{ $currentProgramTitle }}</p>
-                                <p class="mt-1 truncate text-xs text-slate-300">{{ $currentProgramHost }} • {{ $currentProgramTime }} WAT</p>
-                            </div>
-                            <span class="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-white">
-                                <i class="fas text-xs transition-transform duration-200"
-                                    :class="mobileLivePanelOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                            </span>
-                        </button>
-
-                        <div x-cloak x-show="mobileLivePanelOpen"
-                            x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 -translate-y-2"
-                            x-transition:enter-end="opacity-100 translate-y-0"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 -translate-y-2"
-                            class="mt-3">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="min-w-0">
-                                    <p class="truncate text-xs text-slate-300">{{ $streamTitle }}</p>
-                                    <p class="mt-1 truncate text-[11px] text-slate-400">{{ $streamArtist }} • {{ $streamStatusMessage }}</p>
-                                </div>
-                                <button type="button" @click="startLive; closeMobileChrome()"
-                                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-lg">
-                                    <i class="fas fa-play text-sm"></i>
-                                </button>
-                            </div>
-                            <div class="mt-3 flex items-center gap-2">
-                                <a href="{{ route('schedule') }}" @click="closeMobileChrome()"
-                                    class="inline-flex items-center rounded-full bg-white/10 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/20">
-                                    <i class="fas fa-calendar-alt mr-2 text-[11px]"></i>Schedule
-                                </a>
-                                <button type="button" x-cloak x-show="canInstallApp && !appInstalled" @click="installApp"
-                                    :disabled="installInProgress"
-                                    class="inline-flex items-center rounded-full bg-emerald-500/20 px-3 py-2 text-xs font-medium text-emerald-100 transition hover:bg-emerald-500/30 disabled:opacity-70">
-                                    <i class="fas fa-download mr-2 text-[11px]"></i>
-                                    <span x-text="installInProgress ? 'Installing...' : 'Install App'"></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
         <!-- Search Bar (Dropdown) -->
         <div x-cloak x-show="searchOpen" x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 -translate-y-4"
-            class="mobile-app-surface fixed inset-x-3 top-[calc(env(safe-area-inset-top)+7.25rem)] z-[70] rounded-[1.75rem] border border-white/70 shadow-2xl lg:relative lg:inset-auto lg:top-auto lg:z-[90] lg:rounded-none lg:border-t lg:border-white/0 lg:bg-white lg:shadow-xl"
+            x-transition:leave-end="opacity-0 -translate-y-2"
+            class="absolute inset-x-0 top-full z-[90] border-b border-slate-200 bg-white shadow-[0_20px_45px_rgba(7,22,47,0.12)]"
             @click.away="searchOpen = false">
-            <div class="mx-auto max-w-3xl px-4 py-5 lg:px-4 lg:py-6">
-                <div class="relative">
-                    <input type="text" placeholder="Search news, shows, events..."
-                        class="w-full rounded-2xl border-2 border-gray-300 px-5 py-4 pr-12 text-base transition-colors focus:border-emerald-500 focus:outline-none lg:px-6 lg:text-lg">
-                    <button
-                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-emerald-600 hover:text-emerald-700">
-                        <i class="fas fa-search text-xl"></i>
+            <form action="{{ route('news') }}" method="GET" class="mx-auto max-w-3xl px-4 py-5 sm:px-5 lg:py-6"
+                role="search">
+                <label for="global-news-search" class="public-kicker">Search the newsroom</label>
+                <div class="relative mt-2">
+                    <input id="global-news-search" type="search" name="searchQuery"
+                        value="{{ request('searchQuery') }}" placeholder="Search stories, topics and people"
+                        class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 pr-14 text-sm text-glow-ink placeholder:text-slate-400 focus:border-glow-orange focus:outline-none focus:ring-4 focus:ring-orange-100">
+                    <button type="submit" aria-label="Submit search"
+                        class="absolute right-1.5 top-1/2 flex h-9 w-10 -translate-y-1/2 items-center justify-center rounded-md bg-glow-orange text-white transition hover:bg-glow-coral">
+                        <i class="fas fa-search text-sm" aria-hidden="true"></i>
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
 
         <!-- Mobile Menu -->
         <div x-cloak x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 -translate-y-4"
-            class="mobile-app-surface fixed inset-x-3 top-[calc(env(safe-area-inset-top)+7.25rem)] bottom-[calc(env(safe-area-inset-bottom)+6rem)] z-[60] overflow-y-auto rounded-[2rem] border border-white/70 p-4 shadow-2xl lg:hidden">
-            <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="/" @click="closeMobileChrome()"
-                        class="rounded-[1.35rem] border border-slate-200/80 px-4 py-4 text-sm font-semibold text-gray-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
-                        <i class="fas fa-house mb-3 block text-base text-emerald-600"></i>
-                        Home
-                    </a>
-                    <a href="/news" @click="closeMobileChrome()"
-                        class="rounded-[1.35rem] border border-slate-200/80 px-4 py-4 text-sm font-semibold text-gray-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
-                        <i class="fas fa-newspaper mb-3 block text-base text-emerald-600"></i>
-                        News
-                    </a>
-                    <a href="/shows" @click="closeMobileChrome()"
-                        class="rounded-[1.35rem] border border-slate-200/80 px-4 py-4 text-sm font-semibold text-gray-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
-                        <i class="fas fa-microphone-lines mb-3 block text-base text-emerald-600"></i>
-                        Shows
-                    </a>
-                    <a href="/schedule" @click="closeMobileChrome()"
-                        class="rounded-[1.35rem] border border-slate-200/80 px-4 py-4 text-sm font-semibold text-gray-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
-                        <i class="fas fa-calendar-alt mb-3 block text-base text-emerald-600"></i>
-                        Schedule
-                    </a>
-                </div>
-                <div class="space-y-2 rounded-[1.5rem] border border-slate-200/80 p-2">
-                    <a href="/about" @click="closeMobileChrome()"
-                        class="block rounded-xl px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-                        About
-                    </a>
-                    <a href="/vettas" @click="closeMobileChrome()"
-                        class="block rounded-xl px-4 py-3 text-gray-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-                        Vettas
-                    </a>
-                    <div x-data="{ open: false }" class="rounded-xl border border-slate-200/80">
-                        <button @click="open = !open"
-                            class="flex w-full items-center justify-between rounded-xl px-4 py-3 text-gray-700 font-medium transition-colors hover:bg-emerald-50 hover:text-emerald-600">
-                            <span>More</span>
-                            <i class="fas text-xs" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                        </button>
-                        <div x-show="open" x-transition class="space-y-1 pb-2">
-                            <a href="/podcasts" @click="closeMobileChrome()"
-                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                                Podcasts
-                            </a>
-                            <a href="/listen-live" @click="closeMobileChrome()"
-                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                                Listen Live
-                            </a>
-                            <a href="/blog" @click="closeMobileChrome()"
-                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                                Blog
-                            </a>
-                            <a href="/oaps" @click="closeMobileChrome()"
-                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                                OAPs
-                            </a>
-                            <a href="/team" @click="closeMobileChrome()"
-                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                                Team
-                            </a>
-                            <a href="/events" @click="closeMobileChrome()"
-                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                                Events
-                            </a>
-                            <a href="/contact" @click="closeMobileChrome()"
-                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                                Contact
-                            </a>
-                            <a href="/advertise" @click="closeMobileChrome()"
-                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                                Advertise
-                            </a>
-                            <a href="/careers" @click="closeMobileChrome()"
-                                class="block px-6 py-2 text-sm text-gray-600 hover:text-emerald-600">
-                                Careers
-                            </a>
-                        </div>
+            x-transition:leave-end="opacity-0 -translate-y-2"
+            class="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] top-[calc(env(safe-area-inset-top)+4.5rem)] z-[70] overflow-y-auto border-t border-slate-200 bg-white px-5 pb-8 pt-5 shadow-[0_24px_70px_rgba(7,22,47,0.18)] lg:hidden">
+            <div class="mx-auto max-w-lg space-y-6">
+                <div class="flex items-center gap-3 rounded-xl bg-glow-midnight p-3.5 text-white">
+                    <button type="button" @click="toggleLive"
+                        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-glow-orange text-sm text-white transition hover:bg-glow-coral"
+                        :aria-label="$store.radio.audioPlaying ? 'Pause live radio' : 'Play live radio'">
+                        <i class="fas" :class="$store.radio.audioPlaying ? 'fa-pause' : 'fa-play'" aria-hidden="true"></i>
+                    </button>
+                    <div class="min-w-0 flex-1">
+                        <p class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-glow-amber">
+                            <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span> On air now
+                        </p>
+                        <p class="mt-1 truncate text-sm font-extrabold">{{ $currentProgramTitle }}</p>
+                        <p class="mt-0.5 truncate text-[11px] text-slate-300">{{ $currentProgramHost }} · {{ $currentProgramTime }} WAT</p>
                     </div>
+                    <a href="{{ route('listen.live') }}" @click="closeMobileChrome()"
+                        class="text-xs font-bold text-white transition hover:text-glow-amber">
+                        Details
+                    </a>
                 </div>
-                <div class="rounded-[1.5rem] bg-slate-900 px-4 py-4 text-white">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">Current Stream</p>
-                    <p class="mt-2 text-sm font-semibold">{{ $streamTitle }}</p>
-                    <p class="mt-1 text-xs text-slate-300">{{ $streamArtist }} • {{ $streamStatusMessage }}</p>
+
+                <div>
+                    <p class="public-kicker mb-2">Main menu</p>
+                    <nav class="grid grid-cols-2 gap-x-5">
+                        @foreach ($primaryNavigation as $navItem)
+                            <a href="{{ $navItem['href'] }}" @click="closeMobileChrome()"
+                                @if ($navItem['active']) aria-current="page" @endif
+                                class="public-menu-link {{ $navItem['active'] ? 'text-glow-orange' : '' }}">
+                                {{ $navItem['label'] }}
+                                <i class="fas fa-arrow-up-right-from-square text-[9px] text-slate-400" aria-hidden="true"></i>
+                            </a>
+                        @endforeach
+                    </nav>
                 </div>
+                <div>
+                    <p class="public-kicker mb-2">Explore</p>
+                    <nav class="grid grid-cols-2 gap-x-5">
+                        @foreach ($exploreNavigation as $navItem)
+                            <a href="{{ $navItem['href'] }}" @click="closeMobileChrome()"
+                                @if ($navItem['active']) aria-current="page" @endif
+                                class="public-menu-link {{ $navItem['active'] ? 'text-glow-orange' : '' }}">
+                                <span class="flex min-w-0 items-center gap-2.5">
+                                    <i class="{{ $navItem['icon'] }} w-4 shrink-0 text-center text-[11px] text-glow-orange" aria-hidden="true"></i>
+                                    <span class="truncate">{{ $navItem['label'] }}</span>
+                                </span>
+                            </a>
+                        @endforeach
+                    </nav>
+                </div>
+
                 @auth
-                    <div class="space-y-2">
+                    <div class="grid grid-cols-2 gap-2 border-t border-slate-200 pt-5">
                         @if($canAccessDashboard)
                             <a href="{{ route('dashboard') }}" @click="closeMobileChrome()"
-                                class="block rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-emerald-700">
-                                <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                                class="rounded-lg bg-glow-midnight px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-glow-navy">
+                                <i class="fas fa-tachometer-alt mr-2 text-xs" aria-hidden="true"></i>Dashboard
                             </a>
                         @endif
-                        <a href="/profile" @click="closeMobileChrome()"
-                            class="block rounded-xl px-4 py-3 font-medium text-gray-700 transition-colors hover:bg-emerald-50 hover:text-emerald-600">
-                            <i class="fas fa-user-circle mr-2"></i> My Profile
+                        <a href="{{ route('profile') }}" @click="closeMobileChrome()"
+                            class="rounded-lg border border-slate-200 px-4 py-3 text-center text-sm font-bold text-glow-ink transition hover:border-orange-200 hover:text-glow-orange">
+                            <i class="fas fa-user-circle mr-2 text-xs" aria-hidden="true"></i>Profile
                         </a>
-                        <a href="/settings" @click="closeMobileChrome()"
-                            class="block rounded-xl px-4 py-3 font-medium text-gray-700 transition-colors hover:bg-emerald-50 hover:text-emerald-600">
-                            <i class="fas fa-cog mr-2"></i> Settings
+                        <a href="{{ route('settings') }}" @click="closeMobileChrome()"
+                            class="rounded-lg border border-slate-200 px-4 py-3 text-center text-sm font-bold text-glow-ink transition hover:border-orange-200 hover:text-glow-orange">
+                            <i class="fas fa-cog mr-2 text-xs" aria-hidden="true"></i>Settings
                         </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
-                                class="w-full rounded-xl px-4 py-3 text-left font-medium text-red-600 transition-colors hover:bg-red-50">
-                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                                class="w-full rounded-lg border border-red-200 px-4 py-3 text-center text-sm font-bold text-red-600 transition hover:bg-red-50">
+                                <i class="fas fa-sign-out-alt mr-2 text-xs" aria-hidden="true"></i>Logout
                             </button>
                         </form>
                     </div>
                 @else
-                    <div class="space-y-2">
+                    <div class="grid grid-cols-2 gap-2 border-t border-slate-200 pt-5">
                         <a href="{{ route('login') }}" @click="closeMobileChrome()"
-                            class="block rounded-xl px-4 py-3 font-medium text-emerald-600 transition-colors hover:bg-emerald-50">
-                            <i class="fas fa-right-to-bracket mr-2"></i> Login
+                            class="rounded-lg border border-slate-200 px-4 py-3 text-center text-sm font-bold text-glow-ink transition hover:border-orange-200 hover:text-glow-orange">
+                            <i class="fas fa-right-to-bracket mr-2 text-xs" aria-hidden="true"></i>Login
                         </a>
                         <a href="{{ route('register') }}" @click="closeMobileChrome()"
-                            class="block rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-emerald-700">
-                            <i class="fas fa-user-plus mr-2"></i> Sign Up
+                            class="rounded-lg bg-glow-orange px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-glow-coral">
+                            <i class="fas fa-user-plus mr-2 text-xs" aria-hidden="true"></i>Sign up
                         </a>
                     </div>
                 @endauth
-                <button type="button" @click="startLive; closeMobileChrome()"
-                    class="block rounded-full bg-emerald-600 px-6 py-3 text-center font-semibold text-white shadow-lg transition hover:bg-emerald-700">
-                    <i class="fas fa-play-circle mr-2"></i> Listen Live
+
+                <button type="button" x-cloak x-show="canInstallApp && !appInstalled" @click="installApp"
+                    :disabled="installInProgress"
+                    class="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm font-bold text-glow-ink transition hover:border-orange-200 hover:bg-orange-50 disabled:opacity-50">
+                    <i class="fas fa-download text-xs text-glow-orange" aria-hidden="true"></i>
+                    <span x-text="installInProgress ? 'Installing Glow FM...' : 'Install the Glow FM app'"></span>
                 </button>
             </div>
         </div>
     </header>
 
-    @if($streamIsLive)
-        <div class="hidden lg:block bg-emerald-600 text-white">
-            <div class="container mx-auto px-4 py-2">
-                <div class="flex items-center space-x-4 text-sm">
-                    <span class="flex items-center space-x-2 font-semibold">
-                        <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                        <span>NOW PLAYING</span>
-                    </span>
-                    <marquee class="flex-1">
-                        {{ $streamTitle }} — {{ $streamArtist }} • {{ $streamShowName }} • {{ $streamStatusMessage }}
-                    </marquee>
-                    <button type="button" @click="startLive"
-                        class="hidden sm:inline-flex items-center space-x-2 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-xs font-semibold">
-                        <i class="fas fa-play-circle"></i>
-                        <span>Listen Live</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    @endif
-
     <!-- Spacer for Fixed Header -->
-    <div class="h-36 lg:h-28"></div>
+    <div class="h-[calc(env(safe-area-inset-top)+4.5rem)] lg:h-[6.75rem]"></div>
 
     <div x-cloak x-show="mobileMenuOpen || searchOpen"
         x-transition:enter="transition-opacity ease-out duration-200"
@@ -868,7 +713,7 @@
     @endif
 
     @if (session()->has('success'))
-        <div class="mobile-app-surface mx-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/95 text-emerald-700 flash-auto-dismiss lg:mx-0 lg:rounded-none lg:border-x-0">
+        <div class="mobile-app-surface mx-3 rounded-xl border border-green-200/80 bg-green-50/95 text-green-700 flash-auto-dismiss lg:mx-0 lg:rounded-none lg:border-x-0">
             <div class="container mx-auto px-4 py-3 flex items-start space-x-3 text-sm">
                 <i class="fas fa-circle-check mt-0.5"></i>
                 <span>{{ session('success') }}</span>
@@ -881,153 +726,158 @@
         {{ $slot }}
     </main>
 
-    <nav x-cloak x-show="!mobileNavCollapsed"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 translate-y-4"
-        x-transition:enter-end="opacity-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 translate-y-4"
-        class="mobile-app-surface mobile-dock-shadow fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] z-40 mx-auto max-w-md rounded-[1.4rem] border border-white/70 px-2 py-1.5 lg:hidden">
-        <div class="grid grid-cols-4 gap-1">
-            @foreach ($publicMobileNav as $navItem)
-                <a href="{{ $navItem['href'] }}" @click="closeMobileChrome()"
-                    class="flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-1.5 text-[10px] font-semibold leading-none transition {{ $navItem['active'] ? $navItem['active_classes'] : $navItem['inactive_classes'] }}">
-                    <i class="{{ $navItem['icon'] }} mb-0.5 text-xs"></i>
-                    <span class="max-w-full truncate whitespace-nowrap">{{ $navItem['label'] }}</span>
-                </a>
-            @endforeach
+    <nav aria-label="Mobile primary navigation"
+        class="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] z-[75] mx-auto max-w-md rounded-xl border border-white/10 bg-glow-ink px-2 py-1.5 shadow-[0_20px_55px_rgba(7,22,47,0.3)] lg:hidden">
+        <div class="grid grid-cols-5 items-end">
+            <a href="{{ route('home') }}" @click="closeMobileChrome()"
+                @if (request()->routeIs('home')) aria-current="page" @endif
+                class="flex h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-[9px] font-bold {{ request()->routeIs('home') ? 'text-glow-amber' : 'text-slate-300' }}">
+                <i class="fas fa-house text-sm" aria-hidden="true"></i>
+                <span>Home</span>
+            </a>
+            <a href="{{ route('news') }}" @click="closeMobileChrome()"
+                @if (request()->routeIs('news', 'news.show')) aria-current="page" @endif
+                class="flex h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-[9px] font-bold {{ request()->routeIs('news', 'news.show') ? 'text-glow-amber' : 'text-slate-300' }}">
+                <i class="fas fa-newspaper text-sm" aria-hidden="true"></i>
+                <span>News</span>
+            </a>
+            <button type="button" @click="toggleLive"
+                class="-mt-5 flex min-w-0 flex-col items-center justify-end gap-1 text-[9px] font-extrabold text-white"
+                :aria-label="$store.radio.audioPlaying ? 'Pause live radio' : 'Play live radio'">
+                <span class="flex h-14 w-14 items-center justify-center rounded-full border-4 border-glow-ink bg-glow-orange text-base shadow-[0_10px_28px_rgba(242,106,46,0.38)] transition hover:bg-glow-coral">
+                    <i x-show="!$store.radio.audioPlaying" class="fas fa-play" aria-hidden="true"></i>
+                    <i x-cloak x-show="$store.radio.audioPlaying" class="fas fa-pause" aria-hidden="true"></i>
+                </span>
+                <span x-text="$store.radio.audioPlaying ? 'Playing' : 'Listen'">Listen</span>
+            </button>
+            <a href="{{ route('schedule') }}" @click="closeMobileChrome()"
+                @if (request()->routeIs('schedule')) aria-current="page" @endif
+                class="flex h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-[9px] font-bold {{ request()->routeIs('schedule') ? 'text-glow-amber' : 'text-slate-300' }}">
+                <i class="fas fa-calendar-days text-sm" aria-hidden="true"></i>
+                <span>Schedule</span>
+            </a>
+            <button type="button" @click="mobileMenuOpen = !mobileMenuOpen; searchOpen = false"
+                class="flex h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-[9px] font-bold text-slate-300"
+                :class="mobileMenuOpen ? '!text-glow-amber' : 'text-slate-300'"
+                :aria-expanded="mobileMenuOpen.toString()" aria-label="Toggle site menu">
+                <i x-show="!mobileMenuOpen" class="fas fa-bars text-sm" aria-hidden="true"></i>
+                <i x-cloak x-show="mobileMenuOpen" class="fas fa-times text-sm" aria-hidden="true"></i>
+                <span>Menu</span>
+            </button>
         </div>
     </nav>
 
-    <button type="button" x-cloak x-show="mobileNavCollapsed"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 translate-y-4"
-        x-transition:enter-end="opacity-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 translate-y-4"
-        @click="toggleMobileNav()"
-        class="mobile-app-surface mobile-dock-shadow fixed bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/70 px-3.5 py-1.5 text-xs font-semibold text-slate-700 lg:hidden">
-        <i class="fas fa-chevron-up text-xs"></i>
-        <span>Menu</span>
-    </button>
-
     <!-- Footer -->
-    <footer class="mt-14 bg-gray-900 pt-16 pb-8 text-white lg:mt-20" @click="closeMobileChrome()">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+    <footer class="public-site-footer mt-16 border-t-4 border-glow-orange bg-glow-ink pb-28 pt-14 text-white lg:mt-24 lg:pb-8 lg:pt-16"
+        @click="closeMobileChrome()">
+        <div class="mx-auto max-w-7xl px-5">
+            <div class="mb-12 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
 
                 <!-- About Section -->
-                <div>
-                    <div class="flex items-center space-x-3 mb-6">
+                <div class="lg:col-span-4">
+                    <div class="mb-6 flex items-center gap-3">
                         @if (!empty($stationLogoUrl))
                             <img src="{{ $stationLogoUrl }}" alt="{{ $stationName }} logo"
-                                class="w-12 h-12 rounded-xl object-contain bg-white shadow-lg p-1">
+                                width="48" height="48" loading="lazy" decoding="async"
+                                class="h-12 w-12 rounded-lg border border-white/10 bg-white object-contain p-0.5">
                         @else
-                            <div class="w-12 h-12 bg-emerald-600 rounded-xl shadow-lg flex items-center justify-center">
-                                <i class="fas fa-radio text-white text-2xl"></i>
+                            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-glow-orange">
+                                <i class="fas fa-radio text-xl text-white" aria-hidden="true"></i>
                             </div>
                         @endif
                         <div>
-                            <h3 class="text-xl font-bold">{{ $stationName }}</h3>
-                            <p class="text-sm text-emerald-400">{{ $stationFrequency }}</p>
+                            <h2 class="text-xl font-extrabold tracking-[-0.03em]">{{ $stationName }}</h2>
+                            <p class="mt-0.5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-glow-amber">
+                                {{ $stationFrequency }} · Akure
+                            </p>
                         </div>
                     </div>
-                    <p class="text-gray-400 mb-6 leading-relaxed">
+                    <p class="mb-6 max-w-md text-sm leading-7 text-slate-300">
                         {{ $stationTagline }}. Broadcasting the heartbeat of the city of Akure with the best music, engaging
                         shows, and vibrant community connection.
                     </p>
-                    <div class="flex items-center space-x-3">
-                        <a href="{{ data_get($stationSocials, 'facebook', '#') }}"
-                            class="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-lg flex items-center justify-center transition-colors duration-300">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="{{ data_get($stationSocials, 'x', data_get($stationSocials, 'twitter', '#')) }}"
-                            class="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-lg flex items-center justify-center transition-colors duration-300">
-                            <i class="fab fa-x-twitter"></i>
-                        </a>
-                        <a href="{{ data_get($stationSocials, 'instagram', '#') }}"
-                            class="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-lg flex items-center justify-center transition-colors duration-300">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="{{ data_get($stationSocials, 'youtube', '#') }}"
-                            class="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-lg flex items-center justify-center transition-colors duration-300">
-                            <i class="fab fa-youtube"></i>
-                        </a>
+                    <div class="flex items-center gap-2.5">
+                        <x-public.social-link :href="data_get($stationSocials, 'facebook', '#')" label="Facebook"
+                            icon="fab fa-facebook-f" />
+                        <x-public.social-link :href="data_get($stationSocials, 'x', data_get($stationSocials, 'twitter', '#'))" label="X"
+                            icon="fab fa-x-twitter" />
+                        <x-public.social-link :href="data_get($stationSocials, 'instagram', '#')" label="Instagram"
+                            icon="fab fa-instagram" />
+                        <x-public.social-link :href="data_get($stationSocials, 'youtube', '#')" label="YouTube"
+                            icon="fab fa-youtube" />
                     </div>
                 </div>
 
                 <!-- Quick Links -->
-                <div>
-                    <h3 class="text-lg font-bold mb-6">Quick Links</h3>
+                <div class="public-footer-nav lg:col-span-2">
+                    <h2 class="mb-5 text-sm font-extrabold uppercase tracking-[0.16em] text-white">Explore</h2>
                     <ul class="space-y-3">
                         <li>
-                            <a href="/about"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('about') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 About Us
                             </a>
                         </li>
                         <li>
-                            <a href="/shows"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('shows.index') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Our Shows
                             </a>
                         </li>
                         <li>
-                            <a href="/schedule"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('schedule') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Schedule
                             </a>
                         </li>
                         <li>
-                            <a href="/listen-live"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('listen.live') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Listen Live
                             </a>
                         </li>
                         <li>
-                            <a href="/podcasts"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('podcasts.index') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Our Podcasts
                             </a>
                         </li>
                         <li>
-                            <a href="/news"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('news') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 News & Blog
                             </a>
                         </li>
                         <li>
-                            <a href="/contact"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('contact') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Contact Us
                             </a>
                         </li>
                         <li>
-                            <a href="/advertise"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('advertise') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Advertise
                             </a>
                         </li>
                         <li>
-                            <a href="/vettas"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('vettas.index') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Vettas
                             </a>
                         </li>
                         <li>
-                            <a href="/careers"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors duration-200 flex items-center">
+                            <a href="{{ route('careers.index') }}"
+                                class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Careers
                             </a>
@@ -1036,31 +886,31 @@
                 </div>
 
                 <!-- Contact Info -->
-                <div>
-                    <h3 class="text-lg font-bold mb-6">Contact Info</h3>
-                    <ul class="space-y-4">
+                <div class="lg:col-span-3">
+                    <h2 class="mb-5 text-sm font-extrabold uppercase tracking-[0.16em] text-white">Contact</h2>
+                    <ul class="space-y-4 text-sm">
                         <li class="flex items-start space-x-3">
-                            <i class="fas fa-map-marker-alt text-emerald-400 mt-1"></i>
-                            <span class="text-gray-400">
+                            <i class="fas fa-map-marker-alt mt-1 w-4 text-glow-orange" aria-hidden="true"></i>
+                            <span class="leading-6 text-slate-300">
                                 {{ $stationAddress }}
                             </span>
                         </li>
                         <li class="flex items-center space-x-3">
-                            <i class="fas fa-phone text-emerald-400"></i>
-                            <a href="tel:{{ $stationPhone }}" class="text-gray-400 hover:text-emerald-400 transition-colors">
+                            <i class="fas fa-phone w-4 text-glow-orange" aria-hidden="true"></i>
+                            <a href="tel:{{ $stationPhone }}" class="text-slate-300 transition hover:text-white">
                                 {{ $stationPhone }}
                             </a>
                         </li>
                         <li class="flex items-center space-x-3">
-                            <i class="fas fa-envelope text-emerald-400"></i>
+                            <i class="fas fa-envelope w-4 text-glow-orange" aria-hidden="true"></i>
                             <a href="mailto:{{ $stationEmail }}"
-                                class="text-gray-400 hover:text-emerald-400 transition-colors">
+                                class="break-all text-slate-300 transition hover:text-white">
                                 {{ $stationEmail }}
                             </a>
                         </li>
                         <li class="flex items-start space-x-3">
-                            <i class="fas fa-clock text-emerald-400 mt-1"></i>
-                            <span class="text-gray-400">
+                            <i class="fas fa-clock mt-1 w-4 text-glow-orange" aria-hidden="true"></i>
+                            <span class="leading-6 text-slate-300">
                                 24/7 Broadcasting<br>
                                 Office: Mon-Fri, 9AM - 6PM
                             </span>
@@ -1069,34 +919,29 @@
                 </div>
 
                 <!-- Newsletter -->
-                <div>
-                    <h3 class="text-lg font-bold mb-6">Newsletter</h3>
-                    <p class="text-gray-400 mb-4">
-                        Subscribe to get updates on shows, events, and exclusive content!
+                <div class="lg:col-span-3">
+                    <h2 class="mb-5 text-sm font-extrabold uppercase tracking-[0.16em] text-white">Stay connected</h2>
+                    <p class="mb-4 text-sm leading-6 text-slate-300">
+                        Get the stories, shows and community updates that matter, straight from Glow FM.
                     </p>
-                    <form method="POST" action="{{ route('newsletter.subscribe') }}" class="space-y-3">
-                        @csrf
-                        <input type="hidden" name="source" value="footer">
-                        <input type="email" name="email" required placeholder="Your email address"
-                            class="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
-                        <button type="submit"
-                            class="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors duration-300">
-                            Subscribe
-                        </button>
-                    </form>
+                    <a href="{{ route('home') }}#newsletter"
+                        class="inline-flex h-11 items-center gap-2 rounded-lg bg-glow-orange px-4 text-sm font-extrabold text-white transition hover:bg-glow-coral">
+                        Get Glow updates
+                        <i class="fas fa-arrow-right text-[10px]" aria-hidden="true"></i>
+                    </a>
 
                     <!-- Recent Shows -->
-                    <div class="mt-6 pt-6 border-t border-gray-800">
-                        <h4 class="text-sm font-semibold mb-3 text-gray-300">Recent Shows</h4>
+                    <div class="mt-6 border-t border-white/10 pt-5">
+                        <h3 class="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-300">Latest shows</h3>
                         <div class="space-y-2">
                             @forelse($recentShows as $show)
                                 <a href="{{ route('shows.show', $show->slug) }}"
-                                    class="flex items-center space-x-2 text-gray-400 hover:text-emerald-400 transition-colors text-sm">
-                                    <i class="fas fa-microphone text-xs"></i>
+                                    class="flex items-center space-x-2 text-sm text-slate-300 transition hover:text-white">
+                                    <i class="fas fa-microphone text-[10px] text-glow-orange" aria-hidden="true"></i>
                                     <span>{{ $show->title }}</span>
                                 </a>
                             @empty
-                                <span class="text-gray-500 text-sm">No shows yet.</span>
+                                <span class="text-sm text-slate-500">No shows yet.</span>
                             @endforelse
                         </div>
                     </div>
@@ -1104,20 +949,21 @@
             </div>
 
             <!-- Bottom Bar -->
-            <div class="pt-8 border-t border-gray-800">
-                <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-                    <p class="text-gray-400 text-sm">
+            <div class="border-t border-white/10 pt-7">
+                <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+                    <p class="text-xs text-slate-400">
                         &copy; {{ date('Y') }}
                         <a href="https://dayoebe.github.io" target="_blank" rel="noopener noreferrer"
-                            class="hover:text-emerald-400 transition-colors">
+                            class="transition hover:text-white">
                             {{ $stationName }} {{ $stationFrequency }}
                         </a>.
                         All rights reserved.
                     </p>
-                    <div class="flex items-center space-x-6 text-sm">
-                        <a href="privacy-policy" class="text-gray-400 hover:text-emerald-400 transition-colors">Privacy Policy</a>
-                        <a href="#" class="text-gray-400 hover:text-emerald-400 transition-colors">Terms of Service</a>
-                        <a href="#" class="text-gray-400 hover:text-emerald-400 transition-colors">Cookie Policy</a>
+                    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
+                        <a href="{{ route('editorial.standards') }}" class="text-slate-400 transition hover:text-white">Editorial Standards</a>
+                        <a href="{{ route('privacy.policy') }}" class="text-slate-400 transition hover:text-white">Privacy Policy</a>
+                        <button type="button" @click="consentBannerOpen = true"
+                            class="text-slate-400 transition hover:text-white">Cookie settings</button>
                     </div>
                 </div>
             </div>
@@ -1125,77 +971,57 @@
     </footer>
 
     <!-- Floating Listen Live Player -->
-    <div x-show="$store.radio.playerOpen" x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
+    <div x-cloak x-show="$store.radio.playerOpen && !consentBannerOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-6" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 translate-y-full"
-        class="hidden fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+6.5rem)] z-50 sm:left-auto sm:right-4 sm:inset-x-auto sm:bottom-[calc(env(safe-area-inset-bottom)+6.25rem)] lg:block lg:bottom-6 lg:right-6">
-        <div class="overflow-hidden rounded-2xl bg-gray-900 text-white shadow-2xl w-full max-w-none sm:max-w-sm">
-            <!-- Player Header -->
-            <div class="bg-emerald-600 px-3 py-1.5 sm:px-4 sm:py-2 flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
-                        <span class="absolute inline-flex h-full w-full rounded-full bg-white opacity-60"
-                            :class="$store.radio.audioPlaying ? 'animate-ping' : ''"></span>
-                        <span class="relative inline-flex h-2.5 w-2.5 rounded-full"
-                            :class="$store.radio.audioPlaying ? 'bg-lime-300' : 'bg-white'"></span>
-                    </span>
-                    <span class="text-xs sm:text-sm font-semibold" x-text="$store.radio.audioPlaying ? 'STREAMING LIVE' : 'LIVE NOW'"></span>
+        x-transition:leave-end="opacity-0 translate-y-6"
+        class="fixed bottom-5 right-5 z-[70] hidden w-[25rem] max-w-[calc(100vw-2.5rem)] lg:block">
+        <div class="overflow-hidden rounded-xl border border-white/10 bg-glow-ink text-white shadow-[0_24px_70px_rgba(7,22,47,0.35)]">
+            <div class="flex items-center gap-3 p-3.5">
+                <button type="button" @click="toggleLive"
+                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-glow-orange text-sm text-white transition hover:bg-glow-coral"
+                    :aria-label="$store.radio.audioPlaying ? 'Pause live radio' : 'Play live radio'">
+                    <i x-show="!$store.radio.audioPlaying" class="fas fa-play" aria-hidden="true"></i>
+                    <i x-cloak x-show="$store.radio.audioPlaying" class="fas fa-pause" aria-hidden="true"></i>
+                </button>
+
+                <div class="min-w-0 flex-1">
+                    <p class="flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.18em] text-glow-amber">
+                        <span class="relative flex h-1.5 w-1.5">
+                            <span class="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60"
+                                :class="$store.radio.audioPlaying ? 'animate-ping' : ''"></span>
+                            <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                        </span>
+                        <span x-text="$store.radio.audioPlaying ? 'Streaming live' : 'On air now'">On air now</span>
+                    </p>
+                    <p class="mt-1 truncate text-sm font-extrabold">{{ $currentProgramTitle }}</p>
+                    <p class="mt-0.5 truncate text-[11px] text-slate-300">{{ $streamTrackLabel ?: $streamStatusMessage }}</p>
                 </div>
-                <button @click="$store.radio.closePlayer()" class="text-white hover:text-gray-200 transition-colors">
-                    <i class="fas fa-times text-sm sm:text-base"></i>
+
+                <div class="flex h-6 items-end gap-0.5" x-show="$store.radio.audioPlaying" aria-hidden="true">
+                    <span class="h-3 w-0.5 rounded-full bg-glow-orange animate-pulse"></span>
+                    <span class="h-5 w-0.5 rounded-full bg-glow-amber animate-pulse"></span>
+                    <span class="h-4 w-0.5 rounded-full bg-glow-coral animate-pulse"></span>
+                </div>
+
+                <button type="button" @click="$store.radio.closePlayer()"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-white/10 hover:text-white"
+                    aria-label="Close player">
+                    <i class="fas fa-times text-xs" aria-hidden="true"></i>
                 </button>
             </div>
 
-            <!-- Player Content -->
-            <div class="p-3 sm:p-4">
-                <div class="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
-                    <div class="flex-shrink-0">
-                        <div
-                            class="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg shadow-lg flex items-center justify-center">
-                            <i class="fas fa-music text-white text-xl sm:text-2xl"></i>
-                        </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-xs sm:text-sm truncate">{{ $streamTitle }}</h4>
-                        <p class="text-xs text-gray-400 truncate">{{ $streamArtist }}</p>
-                        <div class="flex items-center space-x-2 mt-1">
-                            <i class="fas fa-microphone text-emerald-400 text-xs"></i>
-                            <span class="text-xs text-gray-400 truncate">{{ $currentProgramTitle }}</span>
-                        </div>
-                        <div class="flex items-center space-x-2 mt-1">
-                            <i class="fas fa-user text-emerald-400 text-[10px]"></i>
-                            <span class="text-[11px] text-gray-400 truncate">{{ $currentProgramHost }}</span>
-                        </div>
-                        <div class="flex items-center space-x-2 mt-1">
-                            <i class="fas fa-clock text-emerald-400 text-[10px]"></i>
-                            <span class="text-[11px] text-gray-400">{{ $currentProgramTime }}</span>
-                            <span class="text-[10px] text-emerald-300 font-semibold">WAT</span>
-                        </div>
-                    </div>
-                    <div class="flex items-end space-x-1" x-show="$store.radio.audioPlaying">
-                        <span class="w-1 h-3 bg-emerald-400 rounded-full animate-pulse"></span>
-                        <span class="w-1 h-5 bg-emerald-300 rounded-full animate-pulse"></span>
-                        <span class="w-1 h-4 bg-emerald-200 rounded-full animate-pulse"></span>
-                    </div>
+            <div class="flex items-center justify-between gap-3 border-t border-white/10 bg-white/[0.035] px-3.5 py-2.5">
+                <div class="min-w-0 text-[10px] text-slate-400">
+                    <span class="truncate">{{ $currentProgramHost }}</span>
+                    <span class="mx-1 text-slate-600">·</span>
+                    <span>{{ $currentProgramTime }} WAT</span>
                 </div>
-
-                <!-- Controls -->
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <button type="button" @click="toggleLive"
-                            class="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-600 hover:bg-emerald-700 rounded-full flex items-center justify-center transition-colors">
-                            <i class="fas text-white text-sm sm:text-base" :class="$store.radio.audioPlaying ? 'fa-pause' : 'fa-play'"></i>
-                        </button>
-                        <button
-                            class="w-7 h-7 sm:w-8 sm:h-8 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors">
-                            <i class="fas fa-volume-up text-white text-xs sm:text-sm"></i>
-                        </button>
-                    </div>
-                    <span class="text-[11px] sm:text-xs text-gray-400">{{ $streamStatusMessage }}</span>
-                    <a href="{{ $stationStreamUrl }}" target="_blank" rel="noopener"
-                        class="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-800 hover:bg-gray-700 text-white text-[11px] sm:text-xs font-medium rounded-lg transition-colors">
-                        Full Player
+                <div class="flex shrink-0 items-center gap-3 text-[10px] font-bold">
+                    <a href="{{ route('schedule') }}" class="text-slate-300 transition hover:text-white">Schedule</a>
+                    <a href="{{ route('listen.live') }}"
+                        class="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1.5 text-white transition hover:bg-white/15">
+                        Full player <i class="fas fa-arrow-right text-[8px]" aria-hidden="true"></i>
                     </a>
                 </div>
             </div>
@@ -1220,7 +1046,7 @@
     @endif
 
     @if (session()->has('newsletter_success'))
-        <div class="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+6.5rem)] z-50 rounded-2xl bg-emerald-600 px-6 py-3 text-white shadow-lg flash-auto-dismiss sm:left-4 sm:right-auto sm:max-w-sm lg:bottom-4">
+        <div class="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+6.5rem)] z-50 rounded-xl bg-glow-midnight px-6 py-3 text-white shadow-lg flash-auto-dismiss sm:left-4 sm:right-auto sm:max-w-sm lg:bottom-4">
             {{ session('newsletter_success') }}
         </div>
     @endif
@@ -1235,21 +1061,21 @@
         x-transition:enter-start="opacity-0 translate-y-6" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-6"
-        class="js-cookie-consent cookie-consent fixed inset-x-0 bottom-0 z-50 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] hover:uppercase lg:pb-2">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="p-2 rounded-lg bg-indigo-100">
-                <div class="flex flex-col sm:flex-row items-center justify-between flex-wrap">
-                    <div class="w-full sm:w-auto flex-1 items-center mb-2 sm:mb-0">
-                        <p class="ml-3 text-black cookie-consent__message">
-                            We use cookies to improve your experience.
+        class="js-cookie-consent cookie-consent fixed inset-x-0 bottom-0 z-[76] pb-[calc(env(safe-area-inset-bottom)+6rem)] lg:pb-4">
+        <div class="mx-auto max-w-3xl px-4">
+            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_20px_55px_rgba(7,22,47,0.2)]">
+                <div class="flex items-center justify-between gap-3 sm:gap-5">
+                    <div class="min-w-0 flex-1">
+                        <p class="cookie-consent__message text-sm font-bold text-glow-ink">
+                            We use cookies to improve your Glow FM experience.
                         </p>
-                        <a href="{{ route('privacy.policy') }}" class="ml-3 text-xs text-blue-800 hover:text-blue-900 underline">
-                            Privacy Policy
+                        <a href="{{ route('privacy.policy') }}" class="mt-1 inline-block text-xs font-semibold text-glow-orange hover:text-glow-coral">
+                            Read our privacy policy
                         </a>
                     </div>
-                    <div class="mt-2 flex-shrink-0 sm:mt-0 sm:ml-2 sm:order-last">
+                    <div class="shrink-0">
                         <button type="button" @click="setConsent('accept')"
-                            class="js-cookie-consent-agree cookie-consent__agree cursor-pointer flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white hover:text-black bg-blue-800 hover:bg-blue-300">
+                            class="js-cookie-consent-agree cookie-consent__agree flex h-10 cursor-pointer items-center justify-center rounded-lg bg-glow-orange px-4 text-sm font-extrabold text-white transition hover:bg-glow-coral sm:px-5">
                             {{ trans('Agree') }}
                         </button>
                     </div>
@@ -1258,73 +1084,7 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('click', async (event) => {
-            const button = event.target.closest('[data-copy-link]');
-            if (!button) return;
-
-            event.preventDefault();
-            const link = button.getAttribute('data-copy-link') || '';
-            if (!link) return;
-
-            const textTarget = button.querySelector('[data-copy-text]');
-            const originalText = textTarget ? textTarget.textContent : '';
-
-            try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(link);
-                } else {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = link;
-                    textarea.setAttribute('readonly', '');
-                    textarea.style.position = 'absolute';
-                    textarea.style.left = '-9999px';
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    textarea.remove();
-                }
-                if (textTarget) {
-                    textTarget.textContent = 'Copied!';
-                    setTimeout(() => {
-                        textTarget.textContent = originalText;
-                    }, 1500);
-                }
-            } catch (e) {
-                if (textTarget) {
-                    textTarget.textContent = 'Copy failed';
-                    setTimeout(() => {
-                        textTarget.textContent = originalText;
-                    }, 1500);
-                }
-            }
-        });
-    </script>
-    @livewireScripts
-    <script>
-        const openShareUrl = (url) => {
-            if (!url || typeof url !== 'string') return;
-            window.location.href = url;
-        };
-
-        window.addEventListener('open-share-url', (event) => {
-            openShareUrl(event?.detail?.url ?? event?.detail);
-        });
-
-        document.addEventListener('livewire:load', () => {
-            if (window.livewire && typeof window.livewire.on === 'function') {
-                window.livewire.on('open-share-url', (payload) => {
-                    openShareUrl(payload?.url ?? payload);
-                });
-            }
-        });
-
-        document.addEventListener('livewire:initialized', () => {
-            if (window.Livewire && typeof Livewire.on === 'function') {
-                Livewire.on('open-share-url', ({ url }) => openShareUrl(url));
-            }
-        });
-    </script>
+    <x-livewire-scripts />
 </body>
 
 </html>

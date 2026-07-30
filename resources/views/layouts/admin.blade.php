@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0f766e">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     @php
         $stationSettings = \App\Models\Setting::get('station', []);
         $stationName = data_get($stationSettings, 'name', 'Glow FM');
@@ -360,7 +362,7 @@
         <audio x-init="$store.radio.bind($el)" src="{{ $stationStreamUrl }}" preload="none"></audio>
     @endpersist
 
-    @livewireScripts
+    <x-livewire-scripts />
 </body>
 
 </html>
