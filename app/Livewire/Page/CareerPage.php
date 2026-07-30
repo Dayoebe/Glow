@@ -53,8 +53,7 @@ class CareerPage extends Component
     {
         $query = CareerPosition::query()
             ->published()
-            ->acceptingApplications()
-            ->withCount('applications');
+            ->acceptingApplications();
 
         if (!empty($this->search)) {
             $query->search($this->search);
@@ -90,17 +89,6 @@ class CareerPage extends Component
         }
 
         return $query->paginate(9);
-    }
-
-    public function getFeaturedPositionsProperty()
-    {
-        return CareerPosition::query()
-            ->published()
-            ->featured()
-            ->acceptingApplications()
-            ->latest('published_at')
-            ->take(2)
-            ->get();
     }
 
     public function getDepartmentsProperty()
@@ -140,11 +128,16 @@ class CareerPage extends Component
             ->values();
     }
 
+    public function clearFilters(): void
+    {
+        $this->reset(['search', 'department', 'employmentType', 'workplaceType', 'sortBy']);
+        $this->resetPage();
+    }
+
     public function render()
     {
         return view('livewire.page.career-page', [
             'positions' => $this->positions,
-            'featuredPositions' => $this->featuredPositions,
             'departments' => $this->departments,
             'employmentTypes' => $this->employmentTypes,
             'workplaceTypes' => $this->workplaceTypes,

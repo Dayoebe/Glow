@@ -1,150 +1,172 @@
-<div>
-    <section class="relative overflow-hidden bg-gradient-to-br from-emerald-700 via-emerald-800 to-slate-900 py-20 text-white">
-        <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 45%), radial-gradient(circle at 80% 0%, rgba(16,185,129,.35), transparent 35%);"></div>
-        <div class="container mx-auto px-4 relative z-10">
+<div class="min-h-screen bg-[#f6f2e9] text-[#0b1830]">
+    <section class="bg-[#07172f] text-white">
+        <div class="mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1fr_21rem] lg:px-10 lg:py-24">
             <div class="max-w-3xl">
-                <p class="text-xs uppercase tracking-[0.35em] text-emerald-200 font-semibold">Join Glow FM</p>
-                <h1 class="mt-4 text-4xl md:text-6xl font-black leading-tight">Build Your Career In Broadcasting</h1>
-                <p class="mt-5 text-lg md:text-xl text-emerald-100/90 leading-relaxed">
-                    Discover open roles across editorial, production, marketing, events, and operations.
+                <p class="text-xs font-bold uppercase tracking-[0.24em] text-[#ff8a2a]">Careers at Glow</p>
+                <h1 class="font-display mt-4 text-5xl font-semibold leading-[0.98] tracking-tight sm:text-6xl">
+                    Do work that moves the community.
+                </h1>
+                <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+                    Explore current opportunities across broadcasting, editorial, production, commercial and station operations.
+                </p>
+            </div>
+            <div class="self-end border-t border-white/20 pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Current openings</p>
+                <p class="font-display mt-2 text-5xl font-semibold text-[#ff8a2a]">{{ number_format($positions->total()) }}</p>
+                <p class="mt-2 text-sm leading-6 text-slate-300">
+                    Every role listed here is currently accepting applications.
                 </p>
             </div>
         </div>
     </section>
 
-    <section class="bg-white border-b border-gray-200">
-        <div class="container mx-auto px-4 py-6">
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
-                <div class="md:col-span-2">
-                    <label class="sr-only">Search careers</label>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by title, department, keyword..."
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="sr-only">Department</label>
+    <section class="border-b border-[#0b1830]/10 bg-white">
+        <div class="mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10">
+            <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
+                <label class="relative block">
+                    <span class="sr-only">Search careers</span>
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-xs text-slate-400" aria-hidden="true"></i>
+                    <input type="search" wire:model.live.debounce.300ms="search"
+                        placeholder="Search roles or keywords"
+                        class="w-full border border-[#0b1830]/20 bg-[#f6f2e9] py-3 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-500 focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]">
+                </label>
+                <label>
+                    <span class="sr-only">Department</span>
                     <select wire:model.live="department"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <option value="">All Departments</option>
+                        class="w-full border border-[#0b1830]/20 bg-[#f6f2e9] px-4 py-3 text-sm outline-none focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]">
+                        <option value="">All departments</option>
                         @foreach($departments as $dept)
                             <option value="{{ $dept }}">{{ $dept }}</option>
                         @endforeach
                     </select>
-                </div>
-                <div>
-                    <label class="sr-only">Employment Type</label>
+                </label>
+                <label>
+                    <span class="sr-only">Employment type</span>
                     <select wire:model.live="employmentType"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <option value="">All Types</option>
+                        class="w-full border border-[#0b1830]/20 bg-[#f6f2e9] px-4 py-3 text-sm outline-none focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]">
+                        <option value="">All job types</option>
                         @foreach($employmentTypes as $type)
                             <option value="{{ $type }}">{{ \Illuminate\Support\Str::of($type)->replace('-', ' ')->title() }}</option>
                         @endforeach
                     </select>
-                </div>
-                <div>
-                    <label class="sr-only">Sort</label>
-                    <select wire:model.live="sortBy"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <option value="latest">Latest</option>
-                        <option value="deadline">Closing Soon</option>
-                        <option value="salary">Highest Salary</option>
-                        <option value="oldest">Oldest</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="sr-only">Workplace Type</label>
+                </label>
+                <label>
+                    <span class="sr-only">Workplace type</span>
                     <select wire:model.live="workplaceType"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <option value="">All Workplace Types</option>
+                        class="w-full border border-[#0b1830]/20 bg-[#f6f2e9] px-4 py-3 text-sm outline-none focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]">
+                        <option value="">Any workplace</option>
                         @foreach($workplaceTypes as $type)
                             <option value="{{ $type }}">{{ \Illuminate\Support\Str::of($type)->replace('-', ' ')->title() }}</option>
                         @endforeach
                     </select>
-                </div>
+                </label>
+                <label>
+                    <span class="sr-only">Sort roles</span>
+                    <select wire:model.live="sortBy"
+                        class="w-full border border-[#0b1830]/20 bg-[#f6f2e9] px-4 py-3 text-sm outline-none focus:border-[#f36b21] focus:ring-1 focus:ring-[#f36b21]">
+                        <option value="latest">Newest first</option>
+                        <option value="deadline">Closing soon</option>
+                        <option value="salary">Salary</option>
+                        <option value="oldest">Oldest first</option>
+                    </select>
+                </label>
             </div>
+
+            @if($search !== '' || $department !== '' || $employmentType !== '' || $workplaceType !== '' || $sortBy !== 'latest')
+                <button type="button" wire:click="clearFilters"
+                    class="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#d95318] transition hover:text-[#0b1830]">
+                    <i class="fas fa-times text-[0.65rem]" aria-hidden="true"></i>
+                    Clear filters
+                </button>
+            @endif
         </div>
     </section>
 
-    <section class="bg-gray-50 py-12">
-        <div class="container mx-auto px-4">
-            @if($featuredPositions->isNotEmpty())
-                <div class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Featured Openings</h2>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                        @foreach($featuredPositions as $position)
-                            <a href="{{ route('careers.show', $position->slug) }}"
-                                class="group block rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm hover:shadow-lg transition-all">
-                                <div class="flex items-center justify-between gap-4">
-                                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">Featured</span>
-                                    <span class="text-xs font-semibold {{ $position->isAcceptingApplications() ? 'text-emerald-600' : 'text-amber-600' }}">
-                                        {{ $position->isAcceptingApplications() ? 'Accepting Applications' : 'Closed' }}
-                                    </span>
-                                </div>
-                                <h3 class="mt-3 text-xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">{{ $position->title }}</h3>
-                                <p class="mt-2 text-sm text-gray-600 line-clamp-2">{{ $position->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($position->description), 150) }}</p>
-                                <div class="mt-4 grid grid-cols-2 gap-3 text-xs text-gray-600">
-                                    <div><i class="fas fa-briefcase mr-1 text-emerald-600"></i>{{ \Illuminate\Support\Str::of($position->employment_type)->replace('-', ' ')->title() }}</div>
-                                    <div><i class="fas fa-location-dot mr-1 text-emerald-600"></i>{{ $position->location_label }}</div>
-                                    <div><i class="fas fa-money-bill-wave mr-1 text-emerald-600"></i>{{ $position->salary_range_label }}</div>
-                                    <div><i class="fas fa-clock mr-1 text-emerald-600"></i>{{ $position->application_deadline?->format('M d, Y') ?: 'No deadline' }}</div>
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
+    <main class="py-14 lg:py-20">
+        <div class="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+            <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">Open positions</p>
+                    <h2 class="font-display mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Find your place at Glow</h2>
                 </div>
-            @endif
-
-            <div class="flex items-center justify-between mb-5">
-                <h2 class="text-2xl font-bold text-gray-900">Open Roles</h2>
-                <p class="text-sm text-gray-600">{{ $positions->total() }} role(s) found</p>
+                <p class="text-sm text-slate-500">{{ $positions->total() }} {{ \Illuminate\Support\Str::plural('role', $positions->total()) }} found</p>
             </div>
 
-            @if($positions->count() > 0)
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            @if($positions->isNotEmpty())
+                <div class="divide-y divide-[#0b1830]/10 border-y border-[#0b1830]/10">
                     @foreach($positions as $position)
-                        <article class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
-                            <div class="flex items-start justify-between gap-3">
-                                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">
-                                    {{ $position->department ?: 'General' }}
-                                </span>
-                                <span class="text-xs font-semibold {{ $position->status === 'open' ? 'text-emerald-600' : 'text-amber-600' }}">
-                                    {{ \Illuminate\Support\Str::of($position->status)->title() }}
-                                </span>
+                        <article class="group grid gap-5 py-7 lg:grid-cols-[1fr_17rem_auto] lg:items-center">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-3 text-[0.68rem] font-bold uppercase tracking-[0.14em]">
+                                    <span class="text-[#d95318]">{{ $position->department ?: 'General' }}</span>
+                                    @if($position->is_featured)
+                                        <span class="border-l border-[#0b1830]/20 pl-3 text-slate-500">Featured</span>
+                                    @endif
+                                </div>
+                                <h3 class="font-display mt-2 text-2xl font-semibold leading-tight transition group-hover:text-[#d95318] sm:text-3xl">
+                                    <a href="{{ route('careers.show', $position->slug) }}"
+                                        class="focus:outline-none focus:underline">{{ $position->title }}</a>
+                                </h3>
+                                <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                                    {{ $position->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($position->description), 175) }}
+                                </p>
                             </div>
 
-                            <h3 class="mt-4 text-xl font-bold text-gray-900">{{ $position->title }}</h3>
-                            <p class="mt-2 text-sm text-gray-600 line-clamp-3">
-                                {{ $position->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($position->description), 150) }}
-                            </p>
+                            <dl class="grid grid-cols-2 gap-x-5 gap-y-3 text-xs lg:grid-cols-1">
+                                <div>
+                                    <dt class="text-slate-500">Working arrangement</dt>
+                                    <dd class="mt-1 font-semibold text-[#0b1830]">
+                                        {{ \Illuminate\Support\Str::of($position->employment_type)->replace('-', ' ')->title() }}
+                                        · {{ \Illuminate\Support\Str::of($position->workplace_type)->replace('-', ' ')->title() }}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-slate-500">Location</dt>
+                                    <dd class="mt-1 font-semibold text-[#0b1830]">{{ $position->location_label }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-slate-500">Apply by</dt>
+                                    <dd class="mt-1 font-semibold text-[#0b1830]">{{ $position->application_deadline?->format('M j, Y') ?: 'Open until filled' }}</dd>
+                                </div>
+                            </dl>
 
-                            <div class="mt-4 space-y-2 text-sm text-gray-600">
-                                <p><i class="fas fa-briefcase mr-2 text-emerald-600"></i>{{ \Illuminate\Support\Str::of($position->employment_type)->replace('-', ' ')->title() }} • {{ \Illuminate\Support\Str::of($position->workplace_type)->replace('-', ' ')->title() }}</p>
-                                <p><i class="fas fa-location-dot mr-2 text-emerald-600"></i>{{ $position->location_label }}</p>
-                                <p><i class="fas fa-money-bill-wave mr-2 text-emerald-600"></i>{{ $position->salary_range_label }}</p>
-                                <p><i class="fas fa-hourglass-half mr-2 text-emerald-600"></i>{{ $position->application_deadline?->format('M d, Y') ?: 'No deadline' }}</p>
-                            </div>
-
-                            <div class="mt-6 flex items-center justify-between">
-                                {{-- <p class="text-xs text-gray-500">{{ $position->applications_count }} application(s)</p> --}}
-                                <a href="{{ route('careers.show', $position->slug) }}"
-                                    class="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors">
-                                    {{ $position->isAcceptingApplications() ? 'Apply Now' : 'View Details' }}
-                                    <i class="fas fa-arrow-right ml-2 text-xs"></i>
-                                </a>
-                            </div>
+                            <a href="{{ route('careers.show', $position->slug) }}"
+                                class="inline-flex items-center gap-3 justify-self-start border border-[#0b1830] px-5 py-3 text-sm font-bold transition hover:bg-[#0b1830] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#f36b21] lg:justify-self-end">
+                                View role
+                                <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                            </a>
                         </article>
                     @endforeach
                 </div>
 
-                <div class="mt-8">
+                <div class="mt-10">
                     {{ $positions->links() }}
                 </div>
             @else
-                <div class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center">
-                    <i class="fas fa-briefcase text-4xl text-gray-300"></i>
-                    <h3 class="mt-4 text-xl font-bold text-gray-900">No roles match your filters</h3>
-                    <p class="mt-2 text-gray-600">Try changing your search or filter options.</p>
+                <div class="border border-dashed border-[#0b1830]/20 bg-white px-6 py-16 text-center">
+                    <i class="fas fa-briefcase text-3xl text-slate-300" aria-hidden="true"></i>
+                    <h3 class="font-display mt-4 text-2xl font-semibold">No roles match those filters</h3>
+                    <p class="mt-2 text-sm text-slate-600">Clear a filter or try a broader search.</p>
+                    <button type="button" wire:click="clearFilters"
+                        class="mt-6 bg-[#0b1830] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#18375f]">
+                        View all roles
+                    </button>
                 </div>
             @endif
+        </div>
+    </main>
+
+    <section class="border-t border-[#0b1830]/10 bg-white">
+        <div class="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-[#d95318]">Nothing suitable yet?</p>
+                <p class="font-display mt-1 text-2xl font-semibold">Follow our latest opportunities.</p>
+            </div>
+            <a href="{{ route('contact') }}"
+                class="inline-flex items-center gap-3 self-start text-sm font-bold text-[#0b1830] transition hover:text-[#d95318] md:self-auto">
+                Contact the station
+                <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+            </a>
         </div>
     </section>
 </div>
