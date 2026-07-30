@@ -1,70 +1,80 @@
-<div class="min-h-screen bg-gray-50">
-    <section class="relative bg-gradient-to-br from-emerald-700 via-emerald-800 to-slate-900 text-white py-16">
-        <div class="container mx-auto px-4">
+<div class="min-h-screen bg-[#f6f2e9] text-[#0b1830]">
+    <section class="bg-[#07172f] text-white">
+        <div class="mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10">
             <x-ad-slot placement="staff-detail" />
-            <div class="max-w-4xl mx-auto">
-                <nav class="flex items-center space-x-2 text-sm text-emerald-100 mb-6">
-                    <a href="{{ route('staff.index') }}" class="hover:text-white">Team</a>
-                    <span>›</span>
-                    <span class="text-white">{{ $staff->name }}</span>
-                </nav>
+            <nav class="flex items-center gap-2 text-xs text-slate-400" aria-label="Breadcrumb">
+                <a href="{{ route('staff.index') }}" class="transition hover:text-white">Team</a>
+                <i class="fas fa-chevron-right text-[0.55rem]" aria-hidden="true"></i>
+                <span class="text-slate-200">{{ $staff->name }}</span>
+            </nav>
+        </div>
 
-                <div class="flex flex-col md:flex-row md:items-center md:space-x-6">
-                    <div class="relative w-24 h-24 rounded-full overflow-hidden border-2 border-white/40">
-                        <x-initials-image
-                            :src="$staff->photo_url"
-                            :title="$staff->name"
-                            imgClass="w-full h-full object-cover"
-                            fallbackClass="bg-slate-700/90"
-                            textClass="text-2xl font-bold text-white"
-                        />
-                    </div>
-                    <div class="mt-4 md:mt-0">
-                        <h1 class="text-4xl font-bold">{{ $staff->name }}</h1>
-                        <p class="text-emerald-200 mt-2">{{ $staff->teamRole?->name ?? ($staff->role ?? 'Staff Member') }}</p>
-                        <p class="text-sm text-emerald-100">{{ $staff->departmentRelation?->name ?? ($staff->department ?? 'General') }}</p>
-                    </div>
-                </div>
+        <div class="mx-auto grid max-w-7xl gap-10 px-5 pb-16 sm:px-8 md:grid-cols-[18rem_1fr] lg:gap-16 lg:px-10 lg:pb-20">
+            <div class="aspect-[4/5] overflow-hidden bg-white/5">
+                <x-initials-image
+                    :src="$staff->photo_url"
+                    :title="$staff->name"
+                    imgClass="h-full w-full object-cover"
+                    fallbackClass="h-full w-full bg-[#17375f]"
+                    textClass="text-6xl font-display font-semibold text-white"
+                />
+            </div>
+            <div class="self-center">
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#ff8a2a]">{{ $staff->departmentRelation?->name ?? ($staff->department ?? 'Glow FM') }}</p>
+                <h1 class="font-display mt-3 text-5xl font-semibold leading-none tracking-tight sm:text-6xl">{{ $staff->name }}</h1>
+                <p class="mt-4 text-lg text-slate-300">{{ $staff->teamRole?->name ?? ($staff->role ?? 'Team member') }}</p>
             </div>
         </div>
     </section>
 
-    <section class="py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <main class="lg:col-span-8">
-                    <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4">About</h2>
-                        <p class="text-gray-700 leading-relaxed">{{ $staff->bio ?? 'No bio provided.' }}</p>
-                    </div>
-                </main>
+    <main class="py-14 lg:py-20">
+        <div class="mx-auto grid max-w-5xl gap-12 px-5 sm:px-8 lg:grid-cols-[1fr_18rem]">
+            <section>
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">Profile</p>
+                <h2 class="font-display mt-2 text-3xl font-semibold">About {{ $staff->name }}</h2>
+                <p class="mt-6 whitespace-pre-line text-base leading-8 text-slate-700">
+                    {{ $staff->bio ?: 'More profile information is coming soon.' }}
+                </p>
+            </section>
 
-                <aside class="lg:col-span-4 space-y-6">
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="font-bold text-gray-900 mb-4">Contact</h3>
-                        <div class="space-y-2 text-sm text-gray-600">
-                            <div><i class="fas fa-envelope mr-2 text-emerald-600"></i>{{ $staff->email ?? 'N/A' }}</div>
-                            <div><i class="fas fa-phone mr-2 text-emerald-600"></i>{{ $staff->phone ?? 'N/A' }}</div>
-                        </div>
+            <aside class="self-start border-t-4 border-[#f36b21] bg-white p-6">
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-[#d95318]">Details</p>
+                <dl class="mt-4 divide-y divide-[#0b1830]/10 text-sm">
+                    <div class="py-4">
+                        <dt class="text-xs text-slate-500">Role</dt>
+                        <dd class="mt-1 font-semibold">{{ $staff->teamRole?->name ?? ($staff->role ?? 'Team member') }}</dd>
                     </div>
-
-                    @if(!empty($staff->social_links))
-                        <div class="bg-white rounded-2xl shadow-lg p-6">
-                            <h3 class="font-bold text-gray-900 mb-4">Social</h3>
-                            <div class="flex flex-wrap gap-3 text-gray-500">
-                                @foreach($staff->social_links as $key => $url)
-                                    @if(!empty($url))
-                                        <a href="{{ $url }}" target="_blank" rel="noopener"
-                                            class="hover:text-emerald-600 transition-colors" aria-label="{{ ucfirst($key) }}">
-                                            <i class="fab fa-{{ $key === 'linkedin' ? 'linkedin-in' : $key }}"></i>
-                                        </a>
-                                    @endif
-                                @endforeach
-                            </div>
+                    <div class="py-4">
+                        <dt class="text-xs text-slate-500">Department</dt>
+                        <dd class="mt-1 font-semibold">{{ $staff->departmentRelation?->name ?? ($staff->department ?? 'General') }}</dd>
+                    </div>
+                    @if($staff->email)
+                        <div class="py-4">
+                            <dt class="text-xs text-slate-500">Email</dt>
+                            <dd class="mt-1 break-all font-semibold"><a href="mailto:{{ $staff->email }}" class="hover:text-[#d95318]">{{ $staff->email }}</a></dd>
                         </div>
                     @endif
-                </aside>
-            </div>
+                    @if($staff->phone)
+                        <div class="py-4">
+                            <dt class="text-xs text-slate-500">Phone</dt>
+                            <dd class="mt-1 font-semibold"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $staff->phone) }}" class="hover:text-[#d95318]">{{ $staff->phone }}</a></dd>
+                        </div>
+                    @endif
+                </dl>
+
+                @php($socialLinks = is_array($staff->social_links) ? array_filter($staff->social_links) : [])
+                @if(count($socialLinks))
+                    <div class="mt-5 flex flex-wrap gap-2 border-t border-[#0b1830]/10 pt-5">
+                        @foreach($socialLinks as $platform => $url)
+                            <a href="{{ $url }}" target="_blank" rel="noopener noreferrer"
+                                class="inline-flex h-10 w-10 items-center justify-center border border-[#0b1830]/15 text-slate-500 transition hover:border-[#f36b21] hover:text-[#d95318]"
+                                aria-label="{{ ucfirst($platform) }}">
+                                <i class="fab fa-{{ $platform === 'linkedin' ? 'linkedin-in' : $platform }}" aria-hidden="true"></i>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+            </aside>
         </div>
-    </section>
+    </main>
 </div>

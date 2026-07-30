@@ -3,6 +3,7 @@
 namespace App\Livewire\Page;
 
 use App\Models\Staff\StaffMember;
+use App\Support\Seo;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -52,10 +53,8 @@ class StaffDirectory extends Component
                 'department' => $staff->departmentRelation?->name ?? ($staff->department ?? 'General'),
                 'photo' => $staff->photo_url,
                 'bio' => $staff->bio,
-                'email' => $staff->email,
-                'phone' => $staff->phone,
                 'social_links' => $staff->social_links ?? [],
-                'profile_url' => route('staff.profile', ['type' => 'staff', 'identifier' => $staff->slug]),
+                'profile_url' => route('staff.show', $staff->slug),
             ];
         });
 
@@ -64,8 +63,49 @@ class StaffDirectory extends Component
 
     public function render()
     {
+        $staffProfiles = $this->staffProfiles;
+        $page = max(1, (int) request()->query('page', 1));
+        $canonical = Seo::canonicalUrl(route('staff.index'), $page > 1 ? ['page' => $page] : []);
+        $title = $page > 1
+            ? "Glow FM Team - Page {$page}"
+            : 'Glow FM Team and Editorial Staff';
+        $description = 'Meet the presenters, journalists, producers, and professionals responsible for Glow 99.1 FM radio and digital media in Akure.';
+        $firstPosition = $staffProfiles->firstItem() ?: 1;
+        $people = $staffProfiles->getCollection()
+            ->values()
+            ->map(function (array $staff, int $index) use ($firstPosition) {
+                return [
+                    '@type' => 'ListItem',
+                    'position' => $firstPosition + $index,
+                    'url' => $staff['profile_url'],
+                    'item' => Seo::person($staff, $staff['profile_url']),
+                ];
+            })
+            ->all();
+
         return view('livewire.page.staff-directory', [
-            'staffProfiles' => $this->staffProfiles,
-        ])->layout('layouts.app', ['title' => 'Staff Directory - Glow FM']);
+            'staffProfiles' => $staffProfiles,
+        ])->layout('layouts.app', [
+            'title' => $title,
+            'meta_title' => $title,
+            'meta_description' => $description,
+            'canonical_url' => $canonical,
+            'structured_data' => Seo::siteGraph([
+                'title' => $title,
+                'description' => $description,
+                'url' => $canonical,
+                'type' => 'CollectionPage',
+                'breadcrumbs' => [
+                    ['name' => 'Home', 'url' => route('home')],
+                    ['name' => 'Team', 'url' => route('staff.index')],
+                ],
+                'mainEntity' => [
+                    '@type' => 'ItemList',
+                    'name' => 'Glow FM team',
+                    'numberOfItems' => $staffProfiles->total(),
+                    'itemListElement' => $people,
+                ],
+            ]),
+        ]);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Livewire\Page;
 
 use App\Models\Show\OAP;
 use App\Models\Staff\StaffMember;
-use App\Models\User;
+use App\Support\Seo;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -48,22 +48,6 @@ class StaffProfile extends Component
                 'social_links' => $oap->social_media ?? [],
                 'type_label' => 'On-Air Personality',
             ];
-        } elseif ($type === 'user') {
-            $user = User::with(['department', 'teamRole'])
-                ->where('is_active', true)
-                ->findOrFail($identifier);
-
-            $this->profile = [
-                'name' => $user->name,
-                'role' => $user->teamRole?->name ?? ($user->role_label ?? 'User'),
-                'department' => $user->department?->name ?? 'General',
-                'bio' => null,
-                'photo' => $user->avatar,
-                'email' => $user->email,
-                'phone' => null,
-                'social_links' => [],
-                'type_label' => 'Staff',
-            ];
         } else {
             abort(404);
         }
@@ -72,14 +56,33 @@ class StaffProfile extends Component
     public function render()
     {
         $description = Str::limit(strip_tags($this->profile['bio'] ?? ''), 160);
+        $description = $description ?: "Meet {$this->profile['name']}, part of the Glow 99.1 FM team in Akure.";
+        $canonical = request()->url();
+        $title = "{$this->profile['name']}, {$this->profile['role']} - Glow FM";
 
         return view('livewire.page.staff-profile', [
             'profile' => $this->profile,
         ])->layout('layouts.app', [
-            'title' => $this->profile['name'] . ' - Glow FM',
-            'meta_description' => $description ?: 'Meet our team at Glow FM.',
+            'title' => $title,
+            'meta_title' => $title,
+            'meta_description' => $description,
             'meta_image' => $this->profile['photo'],
+            'meta_image_alt' => $this->profile['name'] . ', ' . $this->profile['role'] . ' at Glow FM',
             'meta_type' => 'profile',
+            'canonical_url' => $canonical,
+            'structured_data' => Seo::siteGraph([
+                'title' => $title,
+                'description' => $description,
+                'url' => $canonical,
+                'image' => $this->profile['photo'],
+                'type' => 'ProfilePage',
+                'breadcrumbs' => [
+                    ['name' => 'Home', 'url' => route('home')],
+                    ['name' => 'Team', 'url' => route('staff.index')],
+                    ['name' => $this->profile['name'], 'url' => $canonical],
+                ],
+                'mainEntity' => Seo::person($this->profile, $canonical),
+            ]),
         ]);
     }
 }
