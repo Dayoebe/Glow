@@ -4,6 +4,7 @@ namespace App\Livewire\Page;
 
 use App\Models\Show\Show;
 use App\Models\Show\Category;
+use App\Models\Show\ScheduleSlot;
 use App\Support\Seo;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -11,6 +12,8 @@ use Livewire\WithPagination;
 class ShowPage extends Component
 {
     use WithPagination;
+
+    private const SORT_OPTIONS = ['featured', 'popular', 'latest', 'title_asc'];
 
     public $selectedCategory = 'all';
     public $searchQuery = '';
@@ -22,6 +25,16 @@ class ShowPage extends Component
         'sortBy' => ['except' => 'featured'],
     ];
 
+    public function mount(): void
+    {
+        $this->normalizeSortBy();
+    }
+
+    public function hydrate(): void
+    {
+        $this->normalizeSortBy();
+    }
+
     public function updatingSearchQuery()
     {
         $this->resetPage();
@@ -32,14 +45,30 @@ class ShowPage extends Component
         $this->resetPage();
     }
 
-    public function updatingSortBy()
+    public function updatedSortBy()
     {
+        $this->normalizeSortBy();
         $this->resetPage();
+    }
+
+    public function refreshSchedule(): void
+    {
+        // The on-air widget is derived in render; this targeted poll refreshes it.
     }
 
     public function getShowsProperty()
     {
-        $query = Show::with(['category', 'primaryHost'])
+        $sortBy = $this->normalizeSortBy();
+        $query = Show::with([
+                'category',
+                'primaryHost',
+                'scheduleSlots' => fn ($slots) => $slots->active()
+                    ->orderByRaw("case day_of_week
+                        when 'monday' then 1 when 'tuesday' then 2 when 'wednesday' then 3
+                        when 'thursday' then 4 when 'friday' then 5 when 'saturday' then 6
+                        when 'sunday' then 7 else 99 end")
+                    ->orderBy('start_time'),
+            ])
             ->active();
 
         if ($this->selectedCategory !== 'all') {
@@ -53,7 +82,7 @@ class ShowPage extends Component
             });
         }
 
-        switch ($this->sortBy) {
+        switch ($sortBy) {
             case 'popular':
                 $query->orderBy('shows.total_listeners', 'desc');
                 break;
@@ -62,71 +91,6 @@ class ShowPage extends Component
                 break;
             case 'title_asc':
                 $query->orderBy('shows.title');
-                break;
-            case 'title_desc':
-                $query->orderBy('shows.title', 'desc');
-                break;
-            case 'duration_asc':
-                $query->orderBy('shows.typical_duration');
-                break;
-            case 'duration_desc':
-                $query->orderBy('shows.typical_duration', 'desc');
-                break;
-            case 'format_asc':
-                $query->orderBy('shows.format');
-                break;
-            case 'format_desc':
-                $query->orderBy('shows.format', 'desc');
-                break;
-            case 'category_asc':
-            case 'category_desc':
-                $query->leftJoin('show_categories', 'shows.category_id', '=', 'show_categories.id')
-                    ->select('shows.*');
-                if ($this->sortBy === 'category_asc') {
-                    $query->orderBy('show_categories.name');
-                } else {
-                    $query->orderBy('show_categories.name', 'desc');
-                }
-                break;
-            case 'host_asc':
-            case 'host_desc':
-                $query->leftJoin('oaps', 'shows.primary_host_id', '=', 'oaps.id')
-                    ->select('shows.*')
-                    ->orderByRaw('oaps.name is null');
-                if ($this->sortBy === 'host_asc') {
-                    $query->orderBy('oaps.name');
-                } else {
-                    $query->orderBy('oaps.name', 'desc');
-                }
-                break;
-            case 'day_asc':
-            case 'day_desc':
-                $dayOrder = "case schedule_slots.day_of_week
-                    when 'monday' then 1
-                    when 'tuesday' then 2
-                    when 'wednesday' then 3
-                    when 'thursday' then 4
-                    when 'friday' then 5
-                    when 'saturday' then 6
-                    when 'sunday' then 7
-                    else 99 end";
-                $slotSub = \App\Models\Show\ScheduleSlot::select('show_id')
-                    ->selectRaw("min($dayOrder) as min_day_order")
-                    ->selectRaw('min(start_time) as min_start_time')
-                    ->where('status', 'active')
-                    ->groupBy('show_id');
-                $query->leftJoinSub($slotSub, 'slot_sort', function ($join) {
-                        $join->on('shows.id', '=', 'slot_sort.show_id');
-                    })
-                    ->select('shows.*')
-                    ->orderByRaw('slot_sort.min_day_order is null');
-                if ($this->sortBy === 'day_asc') {
-                    $query->orderBy('slot_sort.min_day_order')
-                        ->orderBy('slot_sort.min_start_time');
-                } else {
-                    $query->orderBy('slot_sort.min_day_order', 'desc')
-                        ->orderBy('slot_sort.min_start_time', 'desc');
-                }
                 break;
             default:
                 $query->orderBy('shows.is_featured', 'desc')->orderBy('shows.title');
@@ -137,7 +101,11 @@ class ShowPage extends Component
 
     public function getFeaturedShowProperty()
     {
-        return Show::with(['category', 'primaryHost'])
+        return Show::with([
+                'category',
+                'primaryHost',
+                'scheduleSlots' => fn ($slots) => $slots->active()->orderBy('start_time'),
+            ])
             ->active()
             ->featured()
             ->latest()
@@ -153,23 +121,69 @@ class ShowPage extends Component
 
     public function render()
     {
-        $description = 'Browse Glow 99.1 FM programs and shows from Akure, including public affairs, Yoruba programming, entertainment, sports, interviews, and community radio content.';
         $shows = $this->shows;
+        $currentPage = $shows->currentPage();
+        $currentCategory = $this->selectedCategory !== 'all'
+            ? $this->categories->firstWhere('slug', $this->selectedCategory)
+            : null;
+        $hasInvalidCategory = $this->selectedCategory !== 'all' && !$currentCategory;
+        $hasNonIndexableFilters = filled($this->searchQuery)
+            || $this->sortBy !== 'featured'
+            || $hasInvalidCategory;
+
+        $canonicalQuery = [];
+        if ($currentCategory) {
+            $canonicalQuery['selectedCategory'] = $currentCategory->slug;
+        }
+        if (!$hasNonIndexableFilters && $currentPage > 1) {
+            $canonicalQuery['page'] = $currentPage;
+        }
+
+        $canonical = Seo::canonicalUrl(route('shows.index', [], false), $canonicalQuery);
+        $pageLabel = $currentPage > 1 && !$hasNonIndexableFilters ? ' - Page ' . $currentPage : '';
+        $landingTitle = $currentCategory
+            ? $currentCategory->name . ' Programs - Glow 99.1 FM'
+            : 'Glow 99.1 FM Programs And Shows';
+        $description = $currentCategory
+            ? Seo::text(
+                $currentCategory->description
+                    ?: "Listen to {$currentCategory->name} programs and presenters on Glow 99.1 FM in Akure, Ondo State, Nigeria.",
+                165
+            )
+            : 'Browse Glow 99.1 FM programs and shows from Akure, including public affairs, Yoruba programming, entertainment, sports, interviews, and community radio content.';
+
         $showItems = $shows->getCollection()
             ->take(40)
             ->values()
             ->map(fn ($show, $index) => [
                 '@type' => 'ListItem',
-                'position' => $index + 1,
+                'position' => ($shows->firstItem() ?? 1) + $index,
                 'name' => $show->title,
-                'url' => route('shows.show', $show->slug),
+                'url' => Seo::absoluteUrl(route('shows.show', $show->slug)),
                 'description' => Seo::text($show->description, 140),
             ])
             ->all();
 
+        $now = now('Africa/Lagos');
+        $today = strtolower($now->format('l'));
+        $time = $now->format('H:i:s');
+        $todaySlots = ScheduleSlot::with(['show', 'oap'])
+            ->active()
+            ->whereHas('show', fn ($query) => $query->active())
+            ->forDay($today)
+            ->overlappingDates($now)
+            ->orderBy('start_time')
+            ->get()
+            ->filter(fn ($slot) => $slot->isActiveOn($now))
+            ->values();
+
         return view('livewire.page.show-page', [
             'shows' => $shows,
             'featuredShow' => $this->featuredShow,
+            'currentSlot' => $todaySlots->last(
+                fn ($slot) => $slot->start_time <= $time && $slot->end_time > $time
+            ),
+            'nextSlot' => $todaySlots->first(fn ($slot) => $slot->start_time > $time),
             'categories' => $this->categories->map(function ($cat) {
                 return [
                     'slug' => $cat->slug,
@@ -186,27 +200,46 @@ class ShowPage extends Component
                 'color' => 'emerald',
             ])->toArray(),
         ])->layout('layouts.app', [
-            'title' => 'Shows & Programs - Glow 99.1 FM',
-            'meta_title' => 'Glow 99.1 FM Programs And Shows',
+            'title' => $landingTitle . $pageLabel,
+            'meta_title' => $landingTitle . $pageLabel,
             'meta_description' => $description,
-            'canonical_url' => route('shows.index'),
+            'canonical_url' => $canonical,
+            'meta_robots' => $hasNonIndexableFilters
+                ? config('seo.filtered_robots', 'noindex, follow, noarchive')
+                : null,
             'structured_data' => Seo::siteGraph([
-                'title' => 'Glow 99.1 FM Programs And Shows',
+                'title' => $landingTitle . $pageLabel,
                 'description' => $description,
-                'url' => route('shows.index'),
+                'url' => $canonical,
+                'type' => 'CollectionPage',
+                'mainEntity' => ['@id' => $canonical . '#program-list'],
                 'breadcrumbs' => [
                     ['name' => 'Home', 'url' => route('home')],
                     ['name' => 'Programs', 'url' => route('shows.index')],
+                    ...($currentCategory ? [[
+                        'name' => $currentCategory->name,
+                        'url' => $canonical,
+                    ]] : []),
                 ],
                 'extra' => [
                     [
                         '@type' => 'ItemList',
-                        '@id' => route('shows.index') . '#program-list',
-                        'name' => 'Glow 99.1 FM Programs',
+                        '@id' => $canonical . '#program-list',
+                        'name' => $landingTitle,
+                        'numberOfItems' => count($showItems),
                         'itemListElement' => $showItems,
                     ],
                 ],
             ]),
         ]);
+    }
+
+    private function normalizeSortBy(): string
+    {
+        if (!in_array($this->sortBy, self::SORT_OPTIONS, true)) {
+            $this->sortBy = 'featured';
+        }
+
+        return $this->sortBy;
     }
 }

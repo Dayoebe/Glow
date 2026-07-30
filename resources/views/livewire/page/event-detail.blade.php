@@ -1,369 +1,363 @@
-<div class="min-h-screen bg-gray-50">
-    <!-- Hero Section -->
-    <section class="relative bg-gradient-to-br from-amber-900 via-amber-800 to-orange-900 text-white py-16">
-        <div class="absolute inset-0 opacity-20">
-            <x-initials-image
-                :src="$event->featured_image"
-                :title="$event->title"
-                imgClass="w-full h-full object-cover"
-                fallbackClass="bg-amber-800/60"
-                textClass="text-6xl font-bold text-white/80"
-            />
-        </div>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="min-h-screen bg-glow-ivory text-glow-ink">
+    <header class="border-b border-white/10 bg-glow-midnight text-white">
+        <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+            <nav class="mb-8 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-400"
+                 aria-label="Breadcrumb">
+                <a href="{{ route('home') }}" class="transition hover:text-glow-amber">Home</a>
+                <i class="fas fa-chevron-right text-[8px] text-slate-600" aria-hidden="true"></i>
+                <a href="{{ route('events.index') }}" class="transition hover:text-glow-amber">Events</a>
+                <i class="fas fa-chevron-right text-[8px] text-slate-600" aria-hidden="true"></i>
+                <a href="{{ route('events.index', ['selectedCategory' => $event->category->slug]) }}"
+                   class="text-glow-amber transition hover:text-white">
+                    {{ $event->category->name }}
+                </a>
+            </nav>
 
-        <div class="container mx-auto px-4 relative z-10">
-            <x-ad-slot placement="event-detail" />
-            <div class="max-w-4xl mx-auto">
-                <nav class="flex items-center space-x-2 text-sm text-amber-200 mb-6">
-                    <a href="{{ route('events.index') }}" class="hover:text-white">Events</a>
-                    <span>›</span>
-                    <a href="{{ route('events.index') }}?selectedCategory={{ $event->category->slug }}" class="hover:text-white">
-                        {{ $event->category->name }}
-                    </a>
-                    <span>›</span>
-                    <span class="text-white">Event</span>
-                </nav>
+            <div class="flex flex-wrap items-center gap-3 text-xs font-black uppercase tracking-[0.16em]">
+                <span class="border-l-4 border-glow-orange pl-3 text-glow-amber">{{ $event->category->name }}</span>
+                @if($event->is_featured)
+                    <span class="text-slate-300">Featured event</span>
+                @endif
+                @if($event->start_at?->isPast())
+                    <span class="border border-white/20 px-2 py-1 text-slate-300">Past event</span>
+                @endif
+            </div>
 
-                <div class="flex flex-wrap items-center gap-3 mb-6">
-                    <span class="px-4 py-2 bg-{{ $event->category->color }}-600 text-white font-bold rounded-full">
-                        {{ $event->category->name }}
-                    </span>
-                    @if($event->is_featured)
-                        <span class="px-4 py-2 bg-purple-600 text-white font-bold rounded-full">
-                            <i class="fas fa-star mr-2"></i>Featured
-                        </span>
+            <h1 class="font-editorial mt-6 max-w-5xl text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
+                {{ $event->title }}
+            </h1>
+
+            @if($event->excerpt)
+                <p class="mt-6 max-w-3xl text-lg leading-8 text-slate-300 sm:text-xl">{{ $event->excerpt }}</p>
+            @endif
+
+            <div class="mt-8 grid gap-5 border-t border-white/15 pt-6 sm:grid-cols-3">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-[0.14em] text-glow-amber">Date &amp; time</p>
+                    <p class="mt-2 font-bold text-white">{{ $event->formatted_date }}</p>
+                    <p class="mt-1 text-sm text-slate-300">{{ $event->formatted_time }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-black uppercase tracking-[0.14em] text-glow-amber">Venue</p>
+                    <p class="mt-2 font-bold text-white">{{ $event->venue_name ?? 'Venue to be announced' }}</p>
+                    @if($event->city || $event->state)
+                        <p class="mt-1 text-sm text-slate-300">{{ collect([$event->city, $event->state])->filter()->join(', ') }}</p>
                     @endif
                 </div>
-
-                <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">{{ $event->title }}</h1>
-
-                <div class="flex flex-wrap items-center gap-6 mb-8">
-                    <div class="flex items-center space-x-3">
-                        <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-amber-300">
-                            <x-initials-image
-                                :src="$event->author->avatar ?? null"
-                                :title="$event->author->name ?? ''"
-                                imgClass="w-full h-full object-cover"
-                                fallbackClass="bg-amber-700/90"
-                                textClass="text-sm font-bold text-white"
-                            />
-                        </div>
-                        <div>
-                            <p class="font-semibold">{{ $event->author->name }}</p>
-                            <p class="text-sm text-amber-200">Organizer</p>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-4 text-sm text-amber-200">
-                        <span><i class="fas fa-calendar mr-1"></i>{{ $event->formatted_date }}</span>
-                        <span><i class="fas fa-clock mr-1"></i>{{ $event->formatted_time }}</span>
-                        <span><i class="fas fa-map-marker-alt mr-1"></i>{{ $event->venue_name ?? 'Venue TBA' }}</span>
-                        <span><i class="fas fa-eye mr-1"></i>{{ number_format($event->views) }} views</span>
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap gap-3">
+                <div class="flex flex-wrap items-start gap-2 sm:justify-end">
                     @if($event->registration_url)
-                        <a href="{{ $event->registration_url }}" target="_blank"
-                            class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-full transition-colors">
-                            <i class="fas fa-clipboard-check mr-2"></i>Register
+                        <a href="{{ $event->registration_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="inline-flex h-11 items-center gap-2 bg-glow-orange px-5 text-sm font-black text-white transition hover:bg-glow-coral">
+                            Register <i class="fas fa-arrow-up-right-from-square text-[9px]" aria-hidden="true"></i>
                         </a>
                     @endif
                     @if($event->ticket_url)
-                        <a href="{{ $event->ticket_url }}" target="_blank"
-                            class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-full transition-colors">
-                            <i class="fas fa-ticket-alt mr-2"></i>Get Tickets
+                        <a href="{{ $event->ticket_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="inline-flex h-11 items-center gap-2 border border-white/30 px-5 text-sm font-black text-white transition hover:border-glow-orange hover:text-glow-amber">
+                            Get tickets <i class="fas fa-arrow-up-right-from-square text-[9px]" aria-hidden="true"></i>
                         </a>
                     @endif
                 </div>
             </div>
         </div>
-    </section>
+    </header>
 
-    <div class="container mx-auto px-4 py-12">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- Actions -->
-            <aside class="hidden lg:block lg:col-span-1">
-                <div class="sticky top-24 space-y-3">
-                    @foreach(['love' => ['❤️', 'Love'], 'fire' => ['🔥', 'Fire'], 'wow' => ['😮', 'Wow'], 'insightful' => ['💡', 'Smart']] as $type => $data)
-                        <button wire:click="toggleReaction('{{ $type }}')"
-                            class="group relative flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all {{ isset($userReactions[$type]) ? 'bg-amber-100 ring-2 ring-amber-500' : 'bg-white hover:bg-gray-50' }}">
-                            <span class="text-2xl">{{ $data[0] }}</span>
-                            @if(($reactions[$type] ?? 0) > 0)
-                                <span class="absolute -right-1 -top-1 w-6 h-6 bg-amber-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                                    {{ $reactions[$type] }}
-                                </span>
-                            @endif
-                            <span class="absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">
-                                {{ $data[1] }}
-                            </span>
-                        </button>
-                    @endforeach
+    <div class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8 lg:pt-10">
+        <figure class="aspect-[16/9] max-h-[680px] overflow-hidden bg-glow-navy">
+            <x-initials-image
+                :src="$event->featured_image"
+                :title="$event->title"
+                imgClass="h-full w-full object-cover"
+                fallbackClass="bg-glow-navy"
+                textClass="text-6xl font-black text-white"
+                loading="eager"
+                fetchpriority="high"
+                width="1600"
+                height="900"
+                sizes="(min-width: 1280px) 80rem, 100vw"
+            />
+        </figure>
+    </div>
 
-                    <button wire:click="toggleBookmark"
-                        class="group relative flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all {{ $isBookmarked ? 'bg-yellow-100 ring-2 ring-yellow-500' : 'bg-white hover:bg-gray-50' }}">
-                        <i class="fas fa-bookmark text-xl {{ $isBookmarked ? 'text-yellow-600' : 'text-gray-600' }}"></i>
-                        <span class="absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">
-                            {{ $isBookmarked ? 'Saved' : 'Save' }}
-                        </span>
-                    </button>
+    <div class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+        <x-ad-slot placement="event-detail" />
+    </div>
 
-                    <div class="relative group">
-                        <button class="flex flex-col items-center justify-center w-14 h-14 bg-white hover:bg-gray-50 rounded-full shadow-lg transition-all">
-                            <i class="fas fa-share-alt text-xl text-gray-600"></i>
-                        </button>
-                        <div class="absolute left-full ml-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div class="bg-white rounded-lg shadow-xl p-3 space-y-2 whitespace-nowrap">
-                                <button wire:click="shareEvent('x')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-x-twitter text-gray-900"></i><span class="text-sm">X</span>
-                                </button>
-                                <button wire:click="shareEvent('facebook')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-facebook text-blue-600"></i><span class="text-sm">Facebook</span>
-                                </button>
-                                <button wire:click="shareEvent('linkedin')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-linkedin text-blue-700"></i><span class="text-sm">LinkedIn</span>
-                                </button>
-                                <button wire:click="shareEvent('whatsapp')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-whatsapp text-green-500"></i><span class="text-sm">WhatsApp</span>
-                                </button>
-                                <button wire:click="shareEvent('telegram')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-telegram text-blue-400"></i><span class="text-sm">Telegram</span>
-                                </button>
-                                <button wire:click="shareEvent('reddit')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fab fa-reddit-alien text-orange-500"></i><span class="text-sm">Reddit</span>
-                                </button>
-                                <button wire:click="shareEvent('email')" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fas fa-envelope text-gray-600"></i><span class="text-sm">Email</span>
-                                </button>
-                                <button type="button" data-copy-link="{{ route('events.show', $event->slug) }}" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded w-full text-left">
-                                    <i class="fas fa-link text-gray-600"></i><span class="text-sm" data-copy-text>Copy link</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+    <main class="mx-auto grid max-w-7xl gap-12 px-4 pb-16 pt-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8 lg:pb-24 lg:pt-14">
+        <div class="min-w-0">
+            <article class="mx-auto max-w-[760px]">
+                <div class="max-w-none text-[1.0625rem] leading-8 text-slate-700
+                            [&_p]:mb-6
+                            [&_h2]:font-editorial [&_h2]:mb-4 [&_h2]:mt-12 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:text-glow-ink
+                            [&_h3]:font-editorial [&_h3]:mb-3 [&_h3]:mt-9 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:text-glow-ink
+                            [&_h4]:mb-3 [&_h4]:mt-8 [&_h4]:text-xl [&_h4]:font-black [&_h4]:text-glow-ink
+                            [&_a]:font-semibold [&_a]:text-glow-orange [&_a]:underline [&_a]:decoration-orange-300 [&_a]:underline-offset-4
+                            [&_strong]:font-black [&_strong]:text-glow-ink
+                            [&_ul]:my-6 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6
+                            [&_ol]:my-6 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6
+                            [&_blockquote]:my-8 [&_blockquote]:border-l-4 [&_blockquote]:border-glow-orange [&_blockquote]:bg-white [&_blockquote]:px-6 [&_blockquote]:py-4 [&_blockquote]:font-editorial [&_blockquote]:text-xl [&_blockquote]:italic [&_blockquote]:text-glow-ink
+                            [&_img]:my-8 [&_img]:h-auto [&_img]:w-full">
+                    {!! app(\App\Support\RichTextSanitizer::class)->sanitize($event->content) !!}
                 </div>
-            </aside>
 
-            <!-- Event Content -->
-            <main class="lg:col-span-8">
-                <article class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="relative h-96">
-                        <x-initials-image
-                            :src="$event->featured_image"
-                            :title="$event->title"
-                            imgClass="w-full h-full object-cover"
-                            fallbackClass="bg-amber-700/90"
-                            textClass="text-5xl font-bold text-white"
-                        />
-                    </div>
-
-                    <div class="p-8 md:p-12">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                            <div class="p-4 bg-amber-50 rounded-xl">
-                                <p class="text-sm text-amber-700 font-semibold mb-1">Date</p>
-                                <p class="text-gray-900 font-bold">{{ $event->formatted_date }}</p>
-                            </div>
-                            <div class="p-4 bg-amber-50 rounded-xl">
-                                <p class="text-sm text-amber-700 font-semibold mb-1">Time</p>
-                                <p class="text-gray-900 font-bold">{{ $event->formatted_time }}</p>
-                            </div>
-                            <div class="p-4 bg-amber-50 rounded-xl">
-                                <p class="text-sm text-amber-700 font-semibold mb-1">Location</p>
-                                <p class="text-gray-900 font-bold">{{ $event->venue_name ?? 'Venue TBA' }}</p>
-                                @if($event->venue_address)
-                                    <p class="text-sm text-gray-600">{{ $event->venue_address }}</p>
-                                @endif
-                            </div>
-                            <div class="p-4 bg-amber-50 rounded-xl">
-                                <p class="text-sm text-amber-700 font-semibold mb-1">Price</p>
-                                <p class="text-gray-900 font-bold">{{ $event->price ?? 'Free' }}</p>
-                                @if($event->capacity)
-                                    <p class="text-sm text-gray-600">{{ $event->capacity }} capacity</p>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="prose prose-lg max-w-none mb-12">
-                            {!! $event->content !!}
-                        </div>
-
-                        @if($event->tags && count($event->tags) > 0)
-                            <div class="mb-12 pb-8 border-b border-gray-200">
-                                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                                    <i class="fas fa-tags text-amber-600 mr-2"></i>
-                                    Tags
-                                </h3>
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach($event->tags as $tag)
-                                        <a href="{{ route('events.index') }}?searchQuery={{ urlencode($tag) }}"
-                                           class="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full transition-colors">
-                                            #{{ $tag }}
-                                        </a>
-                                    @endforeach
+                @if($event->gallery && count($event->gallery) > 0)
+                    <section class="mt-14 border-t border-slate-200 pt-8" aria-labelledby="event-gallery-heading">
+                        <p class="public-kicker">Event gallery</p>
+                        <h2 id="event-gallery-heading" class="font-editorial mt-1 text-2xl font-bold text-glow-ink">In pictures</h2>
+                        <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            @foreach($event->gallery as $image)
+                                <div class="aspect-square overflow-hidden bg-glow-navy">
+                                    <x-initials-image
+                                        :src="$image"
+                                        :title="$event->title"
+                                        imgClass="h-full w-full object-cover"
+                                        fallbackClass="bg-glow-navy"
+                                        textClass="text-3xl font-black text-white"
+                                    />
                                 </div>
-                            </div>
-                        @endif
-
-                        <div class="mb-12 pb-8 border-b border-gray-200">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4">How do you feel about this event?</h3>
-                            <div class="flex flex-wrap gap-3">
-                                @foreach(['love' => '❤️ Love it', 'fire' => '🔥 Excited', 'wow' => '😮 Can’t wait', 'insightful' => '💡 Interested'] as $type => $label)
-                                    <button wire:click="toggleReaction('{{ $type }}')"
-                                            class="px-6 py-3 rounded-lg font-semibold transition-all {{ isset($userReactions[$type]) ? 'bg-amber-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700' }}">
-                                        {{ $label }}
-                                        @if(($reactions[$type] ?? 0) > 0)
-                                            <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-sm">{{ $reactions[$type] }}</span>
-                                        @endif
-                                    </button>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        @if($event->allow_comments)
-                            <div>
-                                <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                    <i class="fas fa-comments text-amber-600 mr-3"></i>
-                                    Comments ({{ $event->comments()->approved()->count() }})
-                                </h3>
-
-                                <form wire:submit.prevent="submitComment" class="mb-8">
-                                    <div class="bg-gray-50 rounded-xl p-6">
-                                        <textarea wire:model="comment" rows="4"
-                                            placeholder="Share your thoughts..."
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 transition-colors"></textarea>
-                                        @error('comment') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
-                                        <div class="mt-4 flex justify-end">
-                                            <button type="submit"
-                                                class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-colors">
-                                                <i class="fas fa-paper-plane mr-2"></i>Post Comment
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-
-                                @if (session()->has('success'))
-                                    <div class="mb-6 p-4 bg-green-100 text-green-700 rounded-lg flex items-center flash-auto-dismiss">
-                                        <i class="fas fa-check-circle mr-3"></i>
-                                        {{ session('success') }}
-                                    </div>
-                                @endif
-
-                                <div class="space-y-6">
-                                    @forelse($event->comments()->approved()->get() as $comment)
-                                        <div class="bg-gray-50 rounded-xl p-6">
-                                            <div class="flex items-start space-x-4">
-                                                <div class="relative w-12 h-12 rounded-full overflow-hidden">
-                                                    <x-initials-image
-                                                        :src="$comment->user?->avatar ?? null"
-                                                        :title="$comment->user?->name ?? 'Anonymous'"
-                                                        imgClass="w-full h-full object-cover"
-                                                        fallbackClass="bg-amber-700/90"
-                                                        textClass="text-xs font-bold text-white"
-                                                    />
-                                                </div>
-                                                <div class="flex-1">
-                                                    <div class="flex items-center justify-between mb-2">
-                                                        <div>
-                                                            <h4 class="font-bold text-gray-900">{{ $comment->user?->name ?? 'Anonymous' }}</h4>
-                                                            <p class="text-sm text-gray-500">{{ $comment->created_at->diffForHumans() }}</p>
-                                                        </div>
-                                                    </div>
-                                                    <p class="text-gray-700 leading-relaxed">{{ $comment->comment }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @empty
-                                        <div class="text-center py-12">
-                                            <i class="fas fa-comments text-6xl text-gray-300 mb-4"></i>
-                                            <p class="text-gray-600 text-lg">Be the first to comment on this event!</p>
-                                        </div>
-                                    @endforelse
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </article>
-
-                @if($relatedEvents->count() > 0)
-                    <div class="mt-8">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-6">Related Events</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            @foreach($relatedEvents as $related)
-                                <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
-                                    <div class="h-48 overflow-hidden">
-                                        <div class="relative h-full">
-                                            <x-initials-image
-                                                :src="$related->featured_image"
-                                                :title="$related->title"
-                                                imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
-                                                fallbackClass="bg-amber-700/90"
-                                                textClass="text-3xl font-bold text-white"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div class="p-6">
-                                        <h4 class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors">
-                                            <a href="{{ route('events.show', $related->slug) }}">{{ $related->title }}</a>
-                                        </h4>
-                                        <p class="text-sm text-gray-600">{{ $related->formatted_date }}</p>
-                                    </div>
-                                </article>
                             @endforeach
                         </div>
+                    </section>
+                @endif
+
+                @if($event->tags && count($event->tags) > 0)
+                    <div class="mt-10 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-200 pt-6">
+                        <span class="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Topics</span>
+                        @foreach($event->tags as $tag)
+                            <a href="{{ route('events.index', ['searchQuery' => $tag]) }}"
+                               class="text-sm font-bold text-glow-ink underline decoration-slate-300 underline-offset-4 transition hover:text-glow-orange hover:decoration-glow-orange">
+                                #{{ $tag }}
+                            </a>
+                        @endforeach
                     </div>
                 @endif
-            </main>
 
-            <!-- Right Sidebar -->
-            <aside class="lg:col-span-3 space-y-6">
-                <div class="sticky top-24 space-y-6">
-                    <div class="bg-white rounded-xl shadow-lg p-6">
-                        <h3 class="font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-chart-line text-amber-600 mr-2"></i>
-                            Engagement
-                        </h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-600">Views</span>
-                                <span class="font-bold text-gray-900">{{ number_format($event->views) }}</span>
-                            </div>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-600">Shares</span>
-                                <span class="font-bold text-gray-900">{{ number_format($event->shares) }}</span>
-                            </div>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-600">Reactions</span>
-                                <span class="font-bold text-gray-900">{{ array_sum($reactions) }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-lg p-6">
-                        <h3 class="font-bold text-gray-900 mb-4">Quick Actions</h3>
-                        <div class="space-y-2">
-                            <button wire:click="toggleBookmark"
-                                    class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center">
-                                <i class="fas fa-bookmark {{ $isBookmarked ? 'text-yellow-600' : 'text-gray-400' }} mr-3"></i>
-                                <span>{{ $isBookmarked ? 'Saved' : 'Save for Later' }}</span>
+                <section class="mt-10 border-y border-slate-200 py-7" aria-labelledby="event-reactions-heading">
+                    <h2 id="event-reactions-heading" class="text-sm font-black uppercase tracking-[0.16em] text-glow-ink">Interested in this event?</h2>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        @foreach(['love' => ['❤️', 'Love'], 'fire' => ['🔥', 'Excited'], 'wow' => ['😮', 'Can’t wait'], 'insightful' => ['💡', 'Interested']] as $type => $reaction)
+                            <button type="button"
+                                    wire:click="toggleReaction('{{ $type }}')"
+                                    class="inline-flex h-10 items-center gap-2 border px-3 text-sm font-bold transition {{ isset($userReactions[$type]) ? 'border-glow-orange bg-orange-50 text-orange-700' : 'border-slate-300 bg-white text-slate-700 hover:border-glow-orange' }}">
+                                <span aria-hidden="true">{{ $reaction[0] }}</span>
+                                <span>{{ $reaction[1] }}</span>
+                                <span class="text-xs text-slate-400">{{ $reactions[$type] ?? 0 }}</span>
                             </button>
-                            @if($event->registration_url)
-                                <a href="{{ $event->registration_url }}" target="_blank"
-                                    class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center">
-                                    <i class="fas fa-clipboard-check text-gray-400 mr-3"></i>
-                                    <span>Register Now</span>
-                                </a>
-                            @endif
-                            @if($event->ticket_url)
-                                <a href="{{ $event->ticket_url }}" target="_blank"
-                                    class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center">
-                                    <i class="fas fa-ticket-alt text-gray-400 mr-3"></i>
-                                    <span>Get Tickets</span>
-                                </a>
-                            @endif
+                        @endforeach
+                    </div>
+
+                    <div class="mt-6 flex flex-wrap items-center gap-2">
+                        <span class="mr-1 text-sm font-bold text-slate-500">Share</span>
+                        @foreach([
+                            'x' => 'fab fa-x-twitter',
+                            'facebook' => 'fab fa-facebook-f',
+                            'linkedin' => 'fab fa-linkedin-in',
+                            'whatsapp' => 'fab fa-whatsapp',
+                            'telegram' => 'fab fa-telegram',
+                            'reddit' => 'fab fa-reddit-alien',
+                            'email' => 'fas fa-envelope',
+                        ] as $platform => $icon)
+                            <button type="button"
+                                    wire:click="shareEvent('{{ $platform }}')"
+                                    class="inline-flex h-10 w-10 items-center justify-center border border-slate-300 bg-white text-glow-ink transition hover:border-glow-orange hover:text-glow-orange"
+                                    aria-label="Share via {{ ucfirst($platform) }}">
+                                <i class="{{ $icon }}" aria-hidden="true"></i>
+                            </button>
+                        @endforeach
+                        <button type="button"
+                                data-copy-link="{{ route('events.show', $event->slug) }}"
+                                class="inline-flex h-10 items-center gap-2 border border-slate-300 bg-white px-3 text-sm font-bold text-glow-ink transition hover:border-glow-orange hover:text-glow-orange">
+                            <i class="fas fa-link" aria-hidden="true"></i><span data-copy-text>Copy link</span>
+                        </button>
+                    </div>
+                </section>
+
+                <aside class="mt-10 border-l-4 border-glow-orange bg-white px-5 py-5 sm:px-6" aria-label="Event organizer">
+                    <div class="flex items-center gap-4">
+                        <div class="relative h-12 w-12 shrink-0 overflow-hidden bg-glow-navy">
+                            <x-initials-image
+                                :src="$event->author?->avatar"
+                                :title="$event->author?->name ?? 'Glow FM'"
+                                imgClass="h-full w-full object-cover"
+                                fallbackClass="bg-glow-navy"
+                                textClass="text-sm font-black text-white"
+                            />
+                        </div>
+                        <div>
+                            <p class="public-kicker">Organized by</p>
+                            <h2 class="mt-1 font-black text-glow-ink">{{ $event->author?->name ?? 'Glow FM' }}</h2>
+                            <p class="mt-1 text-sm text-slate-500">{{ $event->author?->role_label ?? 'Organizer' }}</p>
                         </div>
                     </div>
-                </div>
-            </aside>
+                </aside>
+            </article>
+
+            @if($event->allow_comments)
+                @php
+                    $approvedComments = $event->comments()
+                        ->approved()
+                        ->parentOnly()
+                        ->with('user')
+                        ->get();
+                @endphp
+
+                <section class="mx-auto mt-16 max-w-[760px] border-t-2 border-glow-ink pt-7" aria-labelledby="event-comments-heading">
+                    <p class="public-kicker">Community conversation</p>
+                    <h2 id="event-comments-heading" class="font-editorial mt-1 text-2xl font-bold text-glow-ink">
+                        Comments <span class="text-slate-400">({{ $approvedComments->count() }})</span>
+                    </h2>
+
+                    @if(session()->has('success'))
+                        <div class="flash-auto-dismiss mt-6 border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    <form wire:submit.prevent="submitComment" class="mt-7 border border-slate-200 bg-white p-5 sm:p-6">
+                        <label for="event-comment" class="font-black text-glow-ink">Add your comment</label>
+                        <textarea id="event-comment"
+                                  wire:model="comment"
+                                  rows="4"
+                                  placeholder="Share your thoughts about this event"
+                                  class="mt-4 w-full border border-slate-300 bg-glow-paper px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-glow-orange focus:ring-2 focus:ring-orange-100"></textarea>
+                        @error('comment')
+                            <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
+                        <div class="mt-3 flex justify-end">
+                            <button type="submit"
+                                    wire:loading.attr="disabled"
+                                    wire:target="submitComment"
+                                    class="bg-glow-ink px-5 py-3 text-sm font-black text-white transition hover:bg-glow-orange disabled:cursor-wait disabled:opacity-60">
+                                Post comment
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="mt-8 divide-y divide-slate-200 border-t border-slate-200">
+                        @forelse($approvedComments as $approvedComment)
+                            <article class="flex gap-4 py-7">
+                                <div class="relative h-10 w-10 shrink-0 overflow-hidden bg-glow-navy">
+                                    <x-initials-image
+                                        :src="$approvedComment->user?->avatar"
+                                        :title="$approvedComment->user?->name ?? 'Anonymous'"
+                                        imgClass="h-full w-full object-cover"
+                                        fallbackClass="bg-glow-navy"
+                                        textClass="text-xs font-black text-white"
+                                    />
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-black text-glow-ink">{{ $approvedComment->user?->name ?? 'Anonymous' }}</h3>
+                                    <time class="text-xs text-slate-400">{{ $approvedComment->created_at->diffForHumans() }}</time>
+                                    <p class="mt-3 leading-7 text-slate-700">{{ $approvedComment->comment }}</p>
+                                </div>
+                            </article>
+                        @empty
+                            <div class="py-12 text-center text-slate-500">No comments yet. Start the conversation.</div>
+                        @endforelse
+                    </div>
+                </section>
+            @endif
+
+            @if($relatedEvents->count() > 0)
+                <section class="mt-16 border-t-2 border-glow-ink pt-7" aria-labelledby="related-events-heading">
+                    <div class="mb-6 flex items-end justify-between">
+                        <div>
+                            <p class="public-kicker">You may also like</p>
+                            <h2 id="related-events-heading" class="font-editorial mt-1 text-2xl font-bold text-glow-ink">Related events</h2>
+                        </div>
+                        <a href="{{ route('events.index') }}" class="hidden text-sm font-black text-glow-ink transition hover:text-glow-orange sm:inline">
+                            All events <i class="fas fa-arrow-right ml-1 text-xs" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                    <div class="grid gap-6 md:grid-cols-3">
+                        @foreach($relatedEvents as $related)
+                            <article class="group border-b border-slate-200 pb-5">
+                                <a href="{{ route('events.show', $related->slug) }}"
+                                   class="mb-4 block aspect-[16/10] overflow-hidden bg-glow-navy"
+                                   aria-label="View {{ $related->title }}">
+                                    <x-initials-image
+                                        :src="$related->featured_image"
+                                        :title="$related->title"
+                                        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                        fallbackClass="bg-glow-navy"
+                                        textClass="text-3xl font-black text-white"
+                                    />
+                                </a>
+                                <p class="text-xs font-black uppercase tracking-[0.14em] text-glow-orange">{{ $related->formatted_date }}</p>
+                                <h3 class="font-editorial mt-2 text-lg font-bold leading-snug text-glow-ink">
+                                    <a href="{{ route('events.show', $related->slug) }}" class="transition hover:text-glow-orange">{{ $related->title }}</a>
+                                </h3>
+                            </article>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
         </div>
-    </div>
+
+        <aside class="order-first lg:order-last">
+            <div class="sticky top-32 border-t-2 border-glow-orange pt-5">
+                <p class="public-kicker">Event essentials</p>
+                <h2 class="font-editorial mt-1 text-2xl font-bold text-glow-ink">Plan your visit</h2>
+
+                <dl class="mt-5 divide-y divide-slate-200 border-y border-slate-200">
+                    <div class="py-4">
+                        <dt class="text-xs font-black uppercase tracking-[0.13em] text-slate-400">Date</dt>
+                        <dd class="mt-1 font-bold text-glow-ink">{{ $event->formatted_date }}</dd>
+                    </div>
+                    <div class="py-4">
+                        <dt class="text-xs font-black uppercase tracking-[0.13em] text-slate-400">Time</dt>
+                        <dd class="mt-1 font-bold text-glow-ink">{{ $event->formatted_time }}</dd>
+                    </div>
+                    <div class="py-4">
+                        <dt class="text-xs font-black uppercase tracking-[0.13em] text-slate-400">Location</dt>
+                        <dd class="mt-1 font-bold text-glow-ink">{{ $event->venue_name ?? 'Venue to be announced' }}</dd>
+                        @if($event->venue_address)
+                            <dd class="mt-1 text-sm leading-6 text-slate-500">{{ $event->venue_address }}</dd>
+                        @endif
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 py-4">
+                        <div>
+                            <dt class="text-xs font-black uppercase tracking-[0.13em] text-slate-400">Price</dt>
+                            <dd class="mt-1 font-bold text-glow-ink">{{ $event->price ?: 'Free' }}</dd>
+                        </div>
+                        @if($event->capacity)
+                            <div>
+                                <dt class="text-xs font-black uppercase tracking-[0.13em] text-slate-400">Capacity</dt>
+                                <dd class="mt-1 font-bold text-glow-ink">{{ number_format($event->capacity) }}</dd>
+                            </div>
+                        @endif
+                    </div>
+                </dl>
+
+                <div class="mt-5 space-y-2">
+                    @if($event->registration_url)
+                        <a href="{{ $event->registration_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="flex h-12 w-full items-center justify-center gap-2 bg-glow-orange px-5 text-sm font-black text-white transition hover:bg-glow-coral">
+                            Register now <i class="fas fa-arrow-up-right-from-square text-[9px]" aria-hidden="true"></i>
+                        </a>
+                    @endif
+                    @if($event->ticket_url)
+                        <a href="{{ $event->ticket_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="flex h-12 w-full items-center justify-center gap-2 border border-glow-ink px-5 text-sm font-black text-glow-ink transition hover:bg-glow-ink hover:text-white">
+                            Get tickets <i class="fas fa-arrow-up-right-from-square text-[9px]" aria-hidden="true"></i>
+                        </a>
+                    @endif
+                    <button type="button"
+                            wire:click="toggleBookmark"
+                            class="flex h-11 w-full items-center justify-center gap-2 border border-slate-300 bg-white px-4 text-sm font-black text-glow-ink transition hover:border-glow-orange hover:text-glow-orange">
+                        <i class="{{ $isBookmarked ? 'fas' : 'far' }} fa-bookmark" aria-hidden="true"></i>
+                        {{ $isBookmarked ? 'Saved event' : 'Save event' }}
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </main>
 </div>

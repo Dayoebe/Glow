@@ -1,277 +1,248 @@
-<div>
+<div class="min-h-screen bg-glow-ivory text-glow-ink">
     @normalizeArray($featuredEvent)
-    <!-- Page Header -->
-    <section class="relative bg-gradient-to-br from-amber-600 via-amber-700 to-orange-700 text-white py-20 overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0"
-                style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
-            </div>
-        </div>
-        <div class="container mx-auto px-4 relative z-10">
-            <x-ad-slot placement="events" />
-            <div class="max-w-4xl mx-auto text-center">
-                <h1 class="text-5xl md:text-6xl font-bold mb-6">Events & Experiences</h1>
-                <p class="text-xl md:text-2xl text-amber-100 leading-relaxed">
-                    Live shows, community meetups, and special experiences hosted by Glow FM.
+
+    @php
+        $hasActiveFilters = filled($searchQuery) || $selectedCategory !== 'all' || $sortBy !== 'upcoming';
+        $sidebarUpcoming = $upcomingEvents
+            ->reject(fn ($upcoming) => $featuredEvent && $upcoming->id === $featuredEvent['id'])
+            ->values();
+    @endphp
+
+    <header class="border-b border-white/10 bg-glow-midnight text-white">
+        <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+            <div class="max-w-3xl">
+                <div class="mb-4 flex items-center gap-3 text-xs font-black uppercase tracking-[0.22em] text-glow-amber">
+                    <span class="h-px w-8 bg-glow-orange"></span>
+                    Meet. Listen. Belong.
+                </div>
+                <h1 class="font-editorial text-4xl font-bold tracking-tight sm:text-5xl">Events &amp; Experiences</h1>
+                <p class="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+                    Live broadcasts, community gatherings, and memorable experiences from Glow FM.
                 </p>
             </div>
         </div>
+    </header>
+
+    <section class="border-b border-slate-200 bg-white" aria-label="Event filters">
+        <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <nav class="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:pb-0" aria-label="Event categories">
+                    @foreach($categories as $category)
+                        @continueIfNotArray($category)
+                        <button type="button"
+                                wire:click="$set('selectedCategory', '{{ $category['slug'] }}')"
+                                wire:key="event-category-{{ $category['slug'] }}"
+                                class="shrink-0 border-b-2 px-3 py-2 text-sm font-bold transition {{ $selectedCategory === $category['slug'] ? 'border-glow-orange text-glow-ink' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-glow-ink' }}">
+                            {{ $category['name'] }}
+                            <span class="ml-1 text-xs font-normal text-slate-400">{{ $category['count'] }}</span>
+                        </button>
+                    @endforeach
+                </nav>
+
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <label class="relative block sm:w-72">
+                        <span class="sr-only">Search events</span>
+                        <i class="fas fa-search pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400" aria-hidden="true"></i>
+                        <input type="search"
+                               wire:model.live.debounce.400ms="searchQuery"
+                               placeholder="Search events"
+                               class="h-11 w-full border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-glow-orange focus:ring-2 focus:ring-orange-100">
+                    </label>
+
+                    <label>
+                        <span class="sr-only">Sort events</span>
+                        <select wire:model.live="sortBy"
+                                class="h-11 min-w-36 border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-glow-orange focus:ring-2 focus:ring-orange-100">
+                            <option value="upcoming">Upcoming</option>
+                            <option value="latest">Latest dates</option>
+                            <option value="past">Past events</option>
+                            <option value="popular">Most viewed</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            @if($hasActiveFilters)
+                <div class="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4 text-sm">
+                    <span class="text-slate-500">{{ $events->total() }} {{ \Illuminate\Support\Str::plural('event', $events->total()) }}</span>
+                    <button type="button"
+                            wire:click="$set('searchQuery', ''); $set('selectedCategory', 'all'); $set('sortBy', 'upcoming')"
+                            class="font-black text-glow-orange transition hover:text-glow-coral">
+                        Clear filters
+                    </button>
+                </div>
+            @endif
+        </div>
     </section>
 
-    @if($featuredEvent)
-        <section class="py-12 bg-white">
-            <div class="container mx-auto px-4">
-                <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl overflow-hidden shadow-2xl">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                        <div class="relative h-96 lg:h-auto">
+    @if($featuredEvent && !$hasActiveFilters)
+        <section class="bg-white">
+            <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+                <div class="grid gap-8 lg:grid-cols-12 lg:items-center">
+                    <article class="group lg:col-span-7">
+                        <a href="{{ route('events.show', $featuredEvent['slug']) }}"
+                           class="relative block aspect-[16/10] overflow-hidden bg-glow-navy"
+                           aria-label="View {{ $featuredEvent['title'] }}">
                             <x-initials-image
                                 :src="$featuredEvent['featured_image'] ?? null"
                                 :title="$featuredEvent['title'] ?? ''"
-                                imgClass="w-full h-full object-cover"
-                                fallbackClass="bg-emerald-700/90"
-                                textClass="text-4xl font-bold text-white"
+                                imgClass="h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"
+                                fallbackClass="bg-glow-navy"
+                                textClass="text-5xl font-black text-white"
                             />
-                            <div class="absolute top-6 left-6">
-                                <span class="px-4 py-2 bg-amber-600 text-white text-sm font-bold rounded-full shadow-lg">
-                                    <i class="fas fa-star mr-1"></i> FEATURED
-                                </span>
-                            </div>
-                        </div>
-                        <div class="p-8 lg:p-12 text-white flex flex-col justify-center">
-                            <div class="flex items-center space-x-4 mb-4">
-                                <span class="px-3 py-1 bg-amber-600 text-white text-xs font-semibold rounded-full">
-                                    {{ $featuredEvent['category']['name'] }}
-                                </span>
-                                <span class="text-amber-300 text-sm">
-                                    <i class="fas fa-calendar mr-1"></i> {{ $featuredEvent['formatted_date'] }}
-                                </span>
-                                <span class="text-amber-300 text-sm">
-                                    <i class="fas fa-clock mr-1"></i> {{ $featuredEvent['formatted_time'] }}
-                                </span>
-                            </div>
+                            <span class="absolute bottom-5 left-5 bg-glow-orange px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-white">
+                                Featured event
+                            </span>
+                        </a>
+                    </article>
 
-                            <h2 class="text-3xl lg:text-4xl font-bold mb-4 leading-tight">{{ $featuredEvent['title'] }}</h2>
-                            <p class="text-gray-300 text-lg mb-6 leading-relaxed">{{ $featuredEvent['excerpt'] }}</p>
-
-                            <div class="flex items-center space-x-4 mb-6">
-                                <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-amber-500">
-                                    <x-initials-image
-                                        :src="$featuredEvent['author']['avatar'] ?? null"
-                                        :title="$featuredEvent['author']['name'] ?? ''"
-                                        imgClass="w-full h-full object-cover"
-                                        fallbackClass="bg-amber-700/90"
-                                        textClass="text-xs font-bold text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <p class="font-semibold">{{ $featuredEvent['author']['name'] }}</p>
-                                    <p class="text-sm text-gray-400">{{ $featuredEvent['venue_name'] ?? 'Venue TBA' }}</p>
-                                </div>
-                            </div>
-
+                    <div class="lg:col-span-5 lg:pl-4">
+                        <p class="public-kicker">{{ $featuredEvent['category']['name'] }}</p>
+                        <h2 class="font-editorial mt-3 text-3xl font-bold leading-[1.12] text-glow-ink sm:text-4xl">
                             <a href="{{ route('events.show', $featuredEvent['slug']) }}"
-                                class="inline-flex items-center space-x-2 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-full transition-all duration-300 w-fit">
-                                <span>View Event</span>
-                                <i class="fas fa-arrow-right"></i>
+                               class="decoration-glow-orange decoration-2 underline-offset-4 transition hover:underline">
+                                {{ $featuredEvent['title'] }}
                             </a>
-                        </div>
+                        </h2>
+                        @if($featuredEvent['excerpt'])
+                            <p class="mt-5 text-base leading-7 text-slate-600 sm:text-lg">{{ $featuredEvent['excerpt'] }}</p>
+                        @endif
+                        <dl class="mt-6 grid gap-3 border-y border-slate-200 py-5 text-sm sm:grid-cols-2">
+                            <div>
+                                <dt class="text-xs font-black uppercase tracking-[0.12em] text-slate-400">Date</dt>
+                                <dd class="mt-1 font-bold text-glow-ink">{{ $featuredEvent['formatted_date'] }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs font-black uppercase tracking-[0.12em] text-slate-400">Time</dt>
+                                <dd class="mt-1 font-bold text-glow-ink">{{ $featuredEvent['formatted_time'] }}</dd>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <dt class="text-xs font-black uppercase tracking-[0.12em] text-slate-400">Venue</dt>
+                                <dd class="mt-1 font-bold text-glow-ink">{{ $featuredEvent['venue_name'] ?? 'Venue to be announced' }}</dd>
+                            </div>
+                        </dl>
+                        <a href="{{ route('events.show', $featuredEvent['slug']) }}"
+                           class="mt-6 inline-flex items-center gap-2 border-b-2 border-glow-orange pb-1 text-sm font-black text-glow-ink transition hover:text-glow-orange">
+                            View event <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </section>
     @endif
 
-    <section class="py-12 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <!-- Sidebar -->
-                <aside class="lg:col-span-1 space-y-8">
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-search text-amber-600 mr-2"></i>
-                            Search Events
-                        </h3>
-                        <div class="relative">
-                            <input type="text" wire:model.live.debounce.500ms="searchQuery"
-                                placeholder="Search events..."
-                                class="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-amber-500 transition-colors">
-                            <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        </div>
-                    </div>
+    <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+        <x-ad-slot placement="events" />
 
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-folder text-amber-600 mr-2"></i>
-                            Categories
-                        </h3>
-                        <div class="space-y-2">
-                            @foreach($categories as $category)
-                                @continueIfNotArray($category)
-                                <button wire:click="$set('selectedCategory', '{{ $category['slug'] }}')"
-                                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ $selectedCategory === $category['slug'] ? 'bg-amber-50 text-amber-700 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">
-                                    <span class="flex items-center space-x-2">
-                                        <i class="{{ $category['icon'] }} text-{{ $category['color'] }}-600"></i>
-                                        <span>{{ $category['name'] }}</span>
-                                    </span>
-                                    <span class="text-sm bg-gray-100 px-2 py-1 rounded-full">{{ $category['count'] }}</span>
-                                </button>
-                            @endforeach
-                        </div>
+        <div class="mt-8 grid gap-12 lg:grid-cols-[minmax(0,1fr)_19rem]">
+            <section aria-labelledby="events-feed-heading">
+                <div class="flex items-end justify-between border-b-2 border-glow-ink pb-3">
+                    <div>
+                        <p class="public-kicker">{{ $hasActiveFilters ? 'Event search' : 'Plan ahead' }}</p>
+                        <h2 id="events-feed-heading" class="font-editorial mt-1 text-2xl font-bold text-glow-ink">
+                            @if($selectedCategory === 'all')
+                                {{ $sortBy === 'past' ? 'Past events' : 'Upcoming events' }}
+                            @else
+                                {{ data_get(collect($categories)->firstWhere('slug', $selectedCategory), 'name', 'Events') }}
+                            @endif
+                        </h2>
                     </div>
+                    <span class="hidden text-sm text-slate-500 sm:block">
+                        {{ $events->total() }} {{ \Illuminate\Support\Str::plural('event', $events->total()) }}
+                    </span>
+                </div>
 
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-clock text-amber-600 mr-2"></i>
-                            Upcoming Events
-                        </h3>
-                        <div class="space-y-4">
-                            @foreach($upcomingEvents as $upcoming)
-                                <a href="{{ route('events.show', $upcoming->slug) }}" class="flex items-start space-x-3 group">
-                                    <span class="flex-shrink-0 w-10 h-10 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center font-bold text-xs">
-                                        {{ $upcoming->start_at?->format('M d') }}
-                                    </span>
-                                    <div class="flex-1">
-                                        <h4 class="text-sm font-semibold text-gray-900 group-hover:text-amber-600 transition-colors line-clamp-2">
-                                            {{ $upcoming->title }}
-                                        </h4>
-                                        <p class="text-xs text-gray-500 mt-1">
-                                            <i class="fas fa-map-marker-alt mr-1"></i> {{ $upcoming->venue_name ?? 'TBA' }}
-                                        </p>
-                                    </div>
+                <div wire:loading.delay class="border-b border-slate-200 py-4 text-sm font-bold text-glow-orange">
+                    <i class="fas fa-circle-notch mr-2 animate-spin" aria-hidden="true"></i>Updating events
+                </div>
+
+                @if($events->count() > 0)
+                    <div class="grid gap-x-7 gap-y-9 pt-7 md:grid-cols-2">
+                        @foreach($events as $event)
+                            <article class="group border-b border-slate-200 pb-6">
+                                <a href="{{ route('events.show', $event->slug) }}"
+                                   class="relative block aspect-[16/10] overflow-hidden bg-glow-navy"
+                                   aria-label="View {{ $event->title }}">
+                                    <x-initials-image
+                                        :src="$event->featured_image"
+                                        :title="$event->title"
+                                        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
+                                        fallbackClass="bg-glow-navy"
+                                        textClass="text-3xl font-black text-white"
+                                    />
+                                    @if($event->start_at)
+                                        <span class="absolute bottom-0 left-0 bg-glow-ink px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-white">
+                                            {{ $event->start_at->format('M j') }}
+                                        </span>
+                                    @endif
                                 </a>
-                            @endforeach
-                        </div>
+
+                                <p class="mt-4 text-xs font-black uppercase tracking-[0.14em] text-glow-orange">
+                                    {{ $event->category?->name ?? 'Glow FM Event' }}
+                                </p>
+                                <h3 class="font-editorial mt-2 text-2xl font-bold leading-tight text-glow-ink">
+                                    <a href="{{ route('events.show', $event->slug) }}" class="transition hover:text-glow-orange">
+                                        {{ $event->title }}
+                                    </a>
+                                </h3>
+                                @if($event->excerpt)
+                                    <p class="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{{ $event->excerpt }}</p>
+                                @endif
+                                <div class="mt-4 space-y-1.5 text-sm text-slate-500">
+                                    <p><i class="far fa-clock mr-2 w-4 text-glow-orange" aria-hidden="true"></i>{{ $event->formatted_time }}</p>
+                                    <p><i class="fas fa-location-dot mr-2 w-4 text-glow-orange" aria-hidden="true"></i>{{ $event->venue_name ?? 'Venue to be announced' }}</p>
+                                </div>
+                            </article>
+                        @endforeach
                     </div>
 
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-tags text-amber-600 mr-2"></i>
-                            Popular Tags
-                        </h3>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($popularTags as $tag)
-                                <a href="#"
-                                    class="px-3 py-1.5 bg-gray-100 hover:bg-amber-100 text-gray-700 hover:text-amber-700 text-sm rounded-full transition-colors">
-                                    #{{ $tag }}
+                    <div class="mt-10 border-t border-slate-200 pt-8">
+                        {{ $events->links() }}
+                    </div>
+                @else
+                    <div class="border-b border-slate-200 py-20 text-center">
+                        <span class="mx-auto flex h-14 w-14 items-center justify-center bg-slate-100 text-xl text-slate-400">
+                            <i class="far fa-calendar-xmark" aria-hidden="true"></i>
+                        </span>
+                        <h3 class="font-editorial mt-5 text-2xl font-bold text-glow-ink">No events matched</h3>
+                        <p class="mt-2 text-slate-500">Try another phrase, category, or date view.</p>
+                        <button type="button"
+                                wire:click="$set('searchQuery', ''); $set('selectedCategory', 'all'); $set('sortBy', 'upcoming')"
+                                class="mt-6 border border-glow-ink px-5 py-2.5 text-sm font-black text-glow-ink transition hover:bg-glow-ink hover:text-white">
+                            Reset filters
+                        </button>
+                    </div>
+                @endif
+            </section>
+
+            @if($sidebarUpcoming->isNotEmpty())
+                <aside class="hidden lg:block" aria-labelledby="event-calendar-heading">
+                    <div class="sticky top-32">
+                        <div class="border-b-2 border-glow-orange pb-3">
+                            <p class="public-kicker">Next on the calendar</p>
+                            <h2 id="event-calendar-heading" class="font-editorial mt-1 text-xl font-bold text-glow-ink">Coming soon</h2>
+                        </div>
+                        <div class="divide-y divide-slate-200">
+                            @foreach($sidebarUpcoming as $upcoming)
+                                <a href="{{ route('events.show', $upcoming->slug) }}"
+                                   class="group grid grid-cols-[3.25rem_minmax(0,1fr)] gap-3 py-5">
+                                    <time datetime="{{ $upcoming->start_at?->toDateString() }}"
+                                          class="flex h-12 flex-col items-center justify-center bg-glow-ink text-center text-white">
+                                        <span class="text-[9px] font-black uppercase tracking-wider text-glow-amber">{{ $upcoming->start_at?->format('M') }}</span>
+                                        <span class="text-lg font-black leading-none">{{ $upcoming->start_at?->format('d') }}</span>
+                                    </time>
+                                    <div>
+                                        <h3 class="text-sm font-black leading-snug text-glow-ink transition group-hover:text-glow-orange">
+                                            {{ $upcoming->title }}
+                                        </h3>
+                                        <p class="mt-2 line-clamp-1 text-xs text-slate-500">{{ $upcoming->venue_name ?? 'Venue TBA' }}</p>
+                                    </div>
                                 </a>
                             @endforeach
                         </div>
                     </div>
                 </aside>
-
-                <!-- Events Grid -->
-                <div class="lg:col-span-3">
-                    <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900">
-                                @if($selectedCategory === 'all')
-                                    All Events
-                                @else
-                                    {{ data_get(collect($categories)->firstWhere('slug', $selectedCategory), 'name', 'Events') }}
-                                @endif
-                            </h2>
-                            <p class="text-gray-600 mt-1">{{ $events->total() }} events found</p>
-                        </div>
-
-                        <select wire:model.live="sortBy"
-                            class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <option value="upcoming">Upcoming</option>
-                            <option value="latest">Latest</option>
-                            <option value="past">Past</option>
-                            <option value="popular">Most Viewed</option>
-                        </select>
-                    </div>
-
-                    @if($events->count() > 0)
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            @foreach($events as $event)
-                                <article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                                    <div class="relative h-56 overflow-hidden">
-                                        <x-initials-image
-                                            :src="$event->featured_image"
-                                            :title="$event->title"
-                                            imgClass="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                            fallbackClass="bg-emerald-700/90"
-                                            textClass="text-3xl font-bold text-white"
-                                        />
-                                        <div class="absolute top-4 left-4">
-                                            <span class="px-3 py-1 bg-{{ $event->category->color }}-600 text-white text-xs font-semibold rounded-full">
-                                                {{ $event->category->name }}
-                                            </span>
-                                        </div>
-                                        <div class="absolute bottom-4 right-4 flex items-center space-x-2">
-                                            <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                                                <i class="fas fa-eye mr-1"></i> {{ number_format($event->views) }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div class="p-6">
-                                        <div class="flex items-center space-x-4 text-sm text-gray-500 mb-3">
-                                            <span class="flex items-center space-x-1">
-                                                <i class="fas fa-calendar text-xs"></i>
-                                                <span>{{ $event->formatted_date }}</span>
-                                            </span>
-                                            <span class="flex items-center space-x-1">
-                                                <i class="fas fa-clock text-xs"></i>
-                                                <span>{{ $event->formatted_time }}</span>
-                                            </span>
-                                        </div>
-
-                                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-amber-600 transition-colors">
-                                            <a href="{{ route('events.show', $event->slug) }}">{{ $event->title }}</a>
-                                        </h3>
-
-                                        <p class="text-gray-600 mb-4 line-clamp-3">{{ $event->excerpt }}</p>
-
-                                        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                                            <div class="flex items-center space-x-3">
-                                                <div class="relative w-10 h-10 rounded-full overflow-hidden">
-                                                    <x-initials-image
-                                                        :src="$event->author->avatar ?? null"
-                                                        :title="$event->author->name ?? ''"
-                                                        imgClass="w-full h-full object-cover"
-                                                        fallbackClass="bg-amber-700/90"
-                                                        textClass="text-xs font-bold text-white"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <p class="text-sm font-semibold text-gray-900">{{ $event->author->name }}</p>
-                                                    <p class="text-xs text-gray-500">{{ $event->venue_name ?? 'Venue TBA' }}</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="flex items-center space-x-3 text-gray-500">
-                                                <button class="hover:text-amber-600 transition-colors">
-                                                    <i class="fas fa-bookmark"></i>
-                                                </button>
-                                                <button class="hover:text-amber-600 transition-colors">
-                                                    <i class="fas fa-share-alt"></i>
-                                                    <span class="text-xs ml-1">{{ number_format($event->shares) }}</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </article>
-                            @endforeach
-                        </div>
-
-                        <div class="mt-12 flex justify-center">
-                            {{ $events->links() }}
-                        </div>
-                    @else
-                        <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
-                            <i class="fas fa-calendar-times text-6xl text-gray-300 mb-4"></i>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">No events found</h3>
-                            <p class="text-gray-600 mb-6">Try adjusting your search or filters</p>
-                            <button wire:click="$set('searchQuery', ''); $set('selectedCategory', 'all')"
-                                class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-full transition-colors">
-                                Clear All Filters
-                            </button>
-                        </div>
-                    @endif
-                </div>
-            </div>
+            @endif
         </div>
-    </section>
+    </main>
 </div>

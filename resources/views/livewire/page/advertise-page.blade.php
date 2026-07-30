@@ -1,93 +1,142 @@
-<div class="bg-gray-50">
-    <section class="bg-slate-950 text-white">
-        <div class="container mx-auto px-4 py-16">
+<div class="bg-[#f7f4ee] text-slate-950">
+    @php
+        $stationName = trim((string) data_get($station, 'name', 'Glow 99.1 FM'));
+        $stationPhone = trim((string) data_get($station, 'phone', ''));
+        $stationPhoneHref = preg_replace('/[^0-9+]/', '', $stationPhone);
+        $stationEmail = trim((string) data_get($station, 'email', ''));
+        $stationAddress = trim((string) data_get($station, 'address', ''));
+    @endphp
+
+    <section class="relative isolate overflow-hidden bg-[#07182b] text-white">
+        <div
+            class="absolute inset-0 -z-10"
+            style="background-image: radial-gradient(circle at 84% 18%, rgba(243, 106, 33, .25), transparent 32%), radial-gradient(circle at 8% 92%, rgba(45, 87, 125, .4), transparent 34%);"
+        ></div>
+        <div class="mx-auto grid max-w-[1440px] gap-10 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1.12fr)_minmax(320px,0.88fr)] lg:items-end lg:gap-16 lg:px-8 lg:py-20">
             <div class="max-w-4xl">
-                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">Media Partnerships</p>
-                <h1 class="mt-4 text-4xl font-black leading-tight md:text-6xl">Advertise With {{ $station['name'] }}</h1>
-                <p class="mt-5 max-w-3xl text-lg leading-relaxed text-slate-200">
-                    Reach audiences in Akure, Ondo State, and online through radio advertising, sponsored programs,
-                    social media promotion, live coverage, interviews, jingles, podcasts, and Glow TV packages.
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">Advertising &amp; partnerships</p>
+                <h1 class="mt-4 text-4xl font-black leading-[1.02] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+                    Start a conversation with {{ $stationName }}
+                </h1>
+                <p class="mt-6 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
+                    Tell us what you want your campaign to achieve. The station team can explain the current opportunities, timing, and next steps relevant to your brief.
                 </p>
-                <div class="mt-8 flex flex-wrap gap-3">
-                    <a href="{{ route('contact', ['inquiry_type' => 'advertising']) }}"
-                        class="inline-flex items-center rounded-full bg-emerald-500 px-6 py-3 font-bold text-white shadow-lg transition hover:bg-emerald-600">
-                        <i class="fas fa-bullhorn mr-2"></i>
-                        Start A Campaign
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <a
+                        href="{{ route('contact', ['inquiry_type' => 'advertising']) }}#contact-form"
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#f36a21] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#ff7a30]"
+                    >
+                        Send a campaign brief
+                        <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
                     </a>
-                    <a href="tel:{{ $station['phone'] }}"
-                        class="inline-flex items-center rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
-                        <i class="fas fa-phone mr-2"></i>
-                        {{ $station['phone'] }}
-                    </a>
+                    @if($stationPhone !== '')
+                        <a
+                            href="tel:{{ $stationPhoneHref }}"
+                            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/[0.06] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-white/10"
+                        >
+                            <i class="fas fa-phone text-orange-300" aria-hidden="true"></i>
+                            {{ $stationPhone }}
+                        </a>
+                    @endif
                 </div>
             </div>
+
+            <aside class="rounded-xl border border-white/15 bg-white/[0.06] p-6 sm:p-7">
+                <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-orange-300">A useful first message</p>
+                <ul class="mt-5 space-y-4 text-sm text-slate-300">
+                    <li class="flex gap-3">
+                        <i class="fas fa-check mt-1 text-[10px] text-orange-300" aria-hidden="true"></i>
+                        <span>Your campaign goal and intended audience</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <i class="fas fa-check mt-1 text-[10px] text-orange-300" aria-hidden="true"></i>
+                        <span>Preferred dates or campaign period</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <i class="fas fa-check mt-1 text-[10px] text-orange-300" aria-hidden="true"></i>
+                        <span>Location or market you want to reach</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <i class="fas fa-check mt-1 text-[10px] text-orange-300" aria-hidden="true"></i>
+                        <span>Your contact details and budget range</span>
+                    </li>
+                </ul>
+            </aside>
         </div>
     </section>
 
-    <section class="py-14">
-        <div class="container mx-auto px-4">
-            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                @foreach([
-                    ['icon' => 'fas fa-radio', 'title' => 'Radio Advertising', 'body' => 'Commercial spots, campaign mentions, live reads, station IDs, and recurring airtime packages.'],
-                    ['icon' => 'fas fa-microphone-lines', 'title' => 'Sponsored Programs', 'body' => 'Brand-supported shows, public affairs segments, health messages, youth-focused conversations, and community development features.'],
-                    ['icon' => 'fas fa-video', 'title' => 'Glow TV Packages', 'body' => 'Video interviews, event coverage, studio conversations, and content packaged for digital audiences.'],
-                    ['icon' => 'fas fa-bullseye', 'title' => 'Jingles And Production', 'body' => 'Audio branding, promo production, campaign scripts, and professional broadcast-ready placements.'],
-                    ['icon' => 'fas fa-users-viewfinder', 'title' => 'Interviews And Features', 'body' => 'Guest appearances, executive interviews, product conversations, and issue-based advocacy slots.'],
-                    ['icon' => 'fas fa-share-nodes', 'title' => 'Digital Promotion', 'body' => 'Website visibility, podcast mentions, social media amplification, and multimedia campaign support.'],
-                ] as $offer)
-                    <article class="rounded-2xl bg-white p-6 shadow-lg">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-                            <i class="{{ $offer['icon'] }} text-xl"></i>
+    <section class="bg-white py-16 sm:py-20" aria-labelledby="planning-heading">
+        <div class="mx-auto grid max-w-[1200px] gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)] lg:gap-14 lg:px-8">
+            <div>
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Plan with clarity</p>
+                <h2 id="planning-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                    Bring the brief. We’ll discuss what is available.
+                </h2>
+                <p class="mt-5 max-w-3xl text-base leading-7 text-slate-600">
+                    Availability and placement depend on the campaign, station schedule, dates, and agreed terms. Contacting the team first gives you current information without assuming a package or price.
+                </p>
+
+                <div class="mt-9 divide-y divide-slate-200 border-y border-slate-200">
+                    <article class="grid gap-3 py-6 sm:grid-cols-[44px_minmax(0,1fr)] sm:gap-5">
+                        <span class="text-2xl font-black text-[#e95516]">01</span>
+                        <div>
+                            <h3 class="text-lg font-black text-[#07182b]">Share the objective</h3>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">Explain the message, intended audience, market, and action you want people to take.</p>
                         </div>
-                        <h2 class="mt-5 text-xl font-bold text-slate-900">{{ $offer['title'] }}</h2>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ $offer['body'] }}</p>
                     </article>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    <section class="pb-16">
-        <div class="container mx-auto grid gap-8 px-4 lg:grid-cols-[1fr_22rem]">
-            <div class="rounded-2xl bg-white p-6 shadow-lg">
-                <h2 class="text-2xl font-bold text-slate-900">Who This Is For</h2>
-                <div class="mt-5 grid gap-4 md:grid-cols-2">
-                    @foreach([
-                        'Businesses targeting Akure and Ondo State audiences',
-                        'Public agencies running awareness campaigns',
-                        'Event organizers seeking coverage and publicity',
-                        'Brands launching products, services, or community activations',
-                        'Artists, creators, and entertainers promoting releases',
-                        'NGOs and institutions sharing public-interest messages',
-                    ] as $item)
-                        <div class="flex gap-3 rounded-xl bg-slate-50 p-4">
-                            <i class="fas fa-check-circle mt-1 text-emerald-600"></i>
-                            <p class="text-sm font-medium text-slate-700">{{ $item }}</p>
+                    <article class="grid gap-3 py-6 sm:grid-cols-[44px_minmax(0,1fr)] sm:gap-5">
+                        <span class="text-2xl font-black text-[#e95516]">02</span>
+                        <div>
+                            <h3 class="text-lg font-black text-[#07182b]">Discuss current options</h3>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">The Glow FM team will respond with the formats and timing currently available for consideration.</p>
                         </div>
-                    @endforeach
+                    </article>
+                    <article class="grid gap-3 py-6 sm:grid-cols-[44px_minmax(0,1fr)] sm:gap-5">
+                        <span class="text-2xl font-black text-[#e95516]">03</span>
+                        <div>
+                            <h3 class="text-lg font-black text-[#07182b]">Confirm before placement</h3>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">Dates, deliverables, approvals, and commercial terms should be agreed directly with the station.</p>
+                        </div>
+                    </article>
                 </div>
             </div>
 
-            <aside class="rounded-2xl bg-emerald-700 p-6 text-white shadow-lg">
-                <h2 class="text-2xl font-bold">Request A Media Plan</h2>
-                <p class="mt-3 text-sm leading-relaxed text-emerald-50">
-                    Share your campaign goal, preferred dates, target audience, and budget range. The Glow 99.1 FM team
-                    will respond with suitable placement options.
+            <aside class="self-start rounded-xl bg-[#07182b] p-7 text-white sm:p-8">
+                <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-orange-300">Speak with Glow FM</p>
+                <h2 class="mt-3 text-2xl font-black tracking-[-0.025em]">Ready to share your brief?</h2>
+                <p class="mt-3 text-sm leading-6 text-slate-300">
+                    Use the advertising option on the contact form so your message is clearly identified.
                 </p>
-                <div class="mt-6 space-y-3 text-sm">
-                    <a href="mailto:{{ $station['email'] }}" class="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 hover:bg-white/15">
-                        <i class="fas fa-envelope"></i>
-                        <span class="break-all">{{ $station['email'] }}</span>
-                    </a>
-                    <a href="tel:{{ $station['phone'] }}" class="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 hover:bg-white/15">
-                        <i class="fas fa-phone"></i>
-                        <span>{{ $station['phone'] }}</span>
-                    </a>
-                    <a href="{{ route('contact') }}" class="flex items-center gap-3 rounded-xl bg-white px-4 py-3 font-bold text-emerald-800 hover:bg-emerald-50">
-                        <i class="fas fa-paper-plane"></i>
-                        <span>Contact Page</span>
-                    </a>
-                </div>
+                <a
+                    href="{{ route('contact', ['inquiry_type' => 'advertising']) }}#contact-form"
+                    class="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#f36a21] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#ff7a30]"
+                >
+                    Open contact form
+                    <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                </a>
+
+                @if($stationEmail !== '' || $stationPhone !== '' || $stationAddress !== '')
+                    <div class="mt-6 divide-y divide-white/10 border-t border-white/10">
+                        @if($stationEmail !== '')
+                            <a href="mailto:{{ $stationEmail }}" class="flex min-w-0 items-center gap-3 py-4 text-sm text-slate-300 transition hover:text-white">
+                                <i class="fas fa-envelope w-4 shrink-0 text-orange-300" aria-hidden="true"></i>
+                                <span class="break-all">{{ $stationEmail }}</span>
+                            </a>
+                        @endif
+                        @if($stationPhone !== '')
+                            <a href="tel:{{ $stationPhoneHref }}" class="flex items-center gap-3 py-4 text-sm text-slate-300 transition hover:text-white">
+                                <i class="fas fa-phone w-4 text-orange-300" aria-hidden="true"></i>
+                                <span>{{ $stationPhone }}</span>
+                            </a>
+                        @endif
+                        @if($stationAddress !== '')
+                            <p class="flex gap-3 py-4 text-sm leading-6 text-slate-300">
+                                <i class="fas fa-map-marker-alt mt-1 w-4 shrink-0 text-orange-300" aria-hidden="true"></i>
+                                <span>{{ $stationAddress }}</span>
+                            </p>
+                        @endif
+                    </div>
+                @endif
             </aside>
         </div>
     </section>

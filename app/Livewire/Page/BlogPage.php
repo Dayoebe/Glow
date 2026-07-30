@@ -4,6 +4,7 @@ namespace App\Livewire\Page;
 
 use App\Models\Blog\Post;
 use App\Models\Blog\Category;
+use App\Support\Seo;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -40,7 +41,7 @@ class BlogPage extends Component
 
     public function getPostsProperty()
     {
-        $query = Post::with(['category', 'author'])
+        $query = Post::with(['category', 'author.staffMember'])
             ->published();
 
         if ($this->selectedCategory !== 'all') {
@@ -76,13 +77,13 @@ class BlogPage extends Component
 
     public function getFeaturedPostProperty()
     {
-        $post = Post::with(['category', 'author'])
+        $post = Post::with(['category', 'author.staffMember'])
             ->published()
             ->featured()
             ->latest('published_at')
             ->first();
-            
-        return $post; // Return the actual post model, not formatted array
+
+        return $post;
     }
 
     public function getTrendingPostsProperty()
@@ -119,11 +120,87 @@ class BlogPage extends Component
 
     public function render()
     {
+        $posts = $this->posts;
+        $categories = $this->categories;
+        $currentPage = $posts->currentPage();
+        $currentCategory = $this->selectedCategory !== 'all'
+            ? $categories->firstWhere('slug', $this->selectedCategory)
+            : null;
+        $hasInvalidCategory = $this->selectedCategory !== 'all' && !$currentCategory;
+        $hasNonIndexableFilters = filled($this->searchQuery)
+            || $this->sortBy !== 'latest'
+            || $this->view !== 'grid'
+            || $hasInvalidCategory;
+
+        $canonicalQuery = [];
+        if ($currentCategory) {
+            $canonicalQuery['selectedCategory'] = $currentCategory->slug;
+        }
+        if (!$hasNonIndexableFilters && $currentPage > 1) {
+            $canonicalQuery['page'] = $currentPage;
+        }
+
+        $canonical = Seo::canonicalUrl(route('blog.index', [], false), $canonicalQuery);
+        $pageLabel = $currentPage > 1 && !$hasNonIndexableFilters ? ' - Page ' . $currentPage : '';
+        $landingTitle = $currentCategory
+            ? $currentCategory->name . ' Articles - Glow 99.1 FM'
+            : 'Glow FM Stories, Culture And Community Perspectives';
+        $description = $currentCategory
+            ? Seo::text(
+                $currentCategory->description
+                    ?: "Read {$currentCategory->name} stories, perspectives, and useful guides from Glow 99.1 FM in Akure, Ondo State.",
+                165
+            )
+            : 'Read Glow 99.1 FM stories and perspectives on music, culture, broadcasting, community life, and the people shaping Akure and Ondo State.';
+        $postItems = $posts->getCollection()
+            ->take(40)
+            ->values()
+            ->map(fn (Post $post, int $index) => [
+                '@type' => 'ListItem',
+                'position' => ($posts->firstItem() ?? 1) + $index,
+                'name' => $post->title,
+                'url' => Seo::absoluteUrl(route('blog.show', $post->slug)),
+                'description' => Seo::text($post->excerpt ?: $post->content, 140),
+            ])
+            ->all();
+
         return view('livewire.page.blog-page', [
-            'posts' => $this->posts,
+            'posts' => $posts,
             'featuredPost' => $this->featuredPost,
             'trendingPosts' => $this->trendingPosts,
-            'categories' => $this->categories,
-        ])->layout('layouts.app', ['title' => 'Blog - Glow FM']);
+            'categories' => $categories,
+        ])->layout('layouts.app', [
+            'title' => $landingTitle . $pageLabel,
+            'meta_title' => $landingTitle . $pageLabel,
+            'meta_description' => $description,
+            'canonical_url' => $canonical,
+            'meta_robots' => $hasNonIndexableFilters
+                ? config('seo.filtered_robots', 'noindex, follow, noarchive')
+                : null,
+            'structured_data' => Seo::siteGraph([
+                'title' => $landingTitle . $pageLabel,
+                'description' => $description,
+                'url' => $canonical,
+                'type' => 'CollectionPage',
+                'mainEntity' => ['@id' => $canonical . '#article-list'],
+                'breadcrumbs' => [
+                    ['name' => 'Home', 'url' => route('home')],
+                    ['name' => 'Blog', 'url' => route('blog.index')],
+                    ...($currentCategory ? [[
+                        'name' => $currentCategory->name,
+                        'url' => $canonical,
+                    ]] : []),
+                ],
+                'extra' => [
+                    [
+                        '@type' => 'ItemList',
+                        '@id' => $canonical . '#article-list',
+                        'name' => $landingTitle,
+                        'numberOfItems' => count($postItems),
+                        'itemListElement' => $postItems,
+                    ],
+                ],
+            ]),
+        ]);
     }
 }

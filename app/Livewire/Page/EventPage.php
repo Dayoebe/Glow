@@ -49,6 +49,15 @@ class EventPage extends Component
             $query->search($this->searchQuery);
         }
 
+        if (
+            $this->selectedCategory === 'all'
+            && empty($this->searchQuery)
+            && $this->sortBy === 'upcoming'
+            && $this->featuredEvent
+        ) {
+            $query->whereKeyNot($this->featuredEvent['id']);
+        }
+
         switch ($this->sortBy) {
             case 'popular':
                 $query->orderBy('views', 'desc');
@@ -130,7 +139,6 @@ class EventPage extends Component
                 'icon' => 'fas fa-calendar-alt',
                 'color' => 'amber',
             ])->toArray(),
-            'popularTags' => $this->popularTags,
         ])->layout('layouts.app', ['title' => 'Events - Glow FM']);
     }
 

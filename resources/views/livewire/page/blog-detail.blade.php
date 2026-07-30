@@ -141,6 +141,11 @@
                 imgClass="h-full w-full object-cover"
                 fallbackClass="bg-glow-navy"
                 textClass="text-6xl font-black text-white"
+                loading="eager"
+                fetchpriority="high"
+                width="1600"
+                height="900"
+                sizes="(min-width: 1280px) 80rem, 100vw"
             />
         </figure>
     </div>

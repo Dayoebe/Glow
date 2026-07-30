@@ -4,6 +4,7 @@ namespace App\Livewire\Page;
 
 use App\Models\Setting;
 use App\Support\Seo;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class AboutPage extends Component
@@ -52,6 +53,37 @@ class AboutPage extends Component
 
         $settings = Setting::get('website.about', []);
         $this->aboutContent = array_replace_recursive($defaults, $settings);
+
+        $this->aboutContent['stats'] = collect((array) data_get($this->aboutContent, 'stats', []))
+            ->reject(function ($stat) {
+                if (!is_array($stat)) {
+                    return true;
+                }
+
+                return Str::contains(
+                    Str::lower((string) ($stat['label'] ?? '')),
+                    ['listener', 'audience', 'reach', 'follower']
+                );
+            })
+            ->values()
+            ->all();
+
+        $this->aboutContent['milestones'] = collect((array) data_get($this->aboutContent, 'milestones', []))
+            ->map(function ($milestone) {
+                if (!is_array($milestone)) {
+                    return $milestone;
+                }
+
+                $milestone['description'] = preg_replace(
+                    '/\breached\s+\d+(?:[.,]\d+)?\s*(?:million|thousand|m|k)?\+?\s+(?:monthly\s+)?listeners?\s+and\s+/i',
+                    '',
+                    (string) ($milestone['description'] ?? '')
+                );
+
+                return $milestone;
+            })
+            ->values()
+            ->all();
     }
 
     public function render()

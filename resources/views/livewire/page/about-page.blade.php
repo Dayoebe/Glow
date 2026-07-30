@@ -1,428 +1,485 @@
-<div>
+<div class="bg-[#f7f4ee] text-slate-950">
     @normalizeArray($aboutContent)
+
     @php
-        $allowedRichTextTags = '<p><br><strong><em><b><i><u><ul><ol><li><a><span><div><h1><h2><h3><h4><h5><h6><blockquote>';
-        $sanitizeRichText = function ($value) use ($allowedRichTextTags) {
-            $html = trim((string) $value);
-            if ($html === '') {
-                return '';
+        $richTextSanitizer = app(\App\Support\RichTextSanitizer::class);
+        $isUsableUrl = function ($value) {
+            if (!is_string($value)) {
+                return false;
             }
-            $clean = strip_tags($html, $allowedRichTextTags);
-            if ($clean === strip_tags($clean)) {
-                return nl2br(e($clean));
-            }
-            return $clean;
+
+            $url = trim($value);
+
+            return $url !== ''
+                && $url !== '#'
+                && \Illuminate\Support\Str::startsWith($url, ['/', 'https://', 'http://', 'mailto:', 'tel:']);
         };
+        $isExternalUrl = fn ($value) => is_string($value)
+            && \Illuminate\Support\Str::startsWith(trim($value), ['https://', 'http://']);
+
+        $sanitizeRichText = fn ($value) => $richTextSanitizer->sanitizeWithLineBreaks((string) $value);
+
+        $storyParagraphs = collect((array) data_get($aboutContent, 'story_paragraphs', []))->filter(fn ($item) => trim((string) $item) !== '');
+        $storyBadges = collect((array) data_get($aboutContent, 'story_badges', []))->filter(fn ($item) => trim((string) $item) !== '');
+        $values = collect((array) data_get($aboutContent, 'values', []))->filter(fn ($item) => is_array($item) && !empty($item['title']));
+        $milestones = collect((array) data_get($aboutContent, 'milestones', []))->filter(fn ($item) => is_array($item) && !empty($item['title']));
+        $team = collect((array) data_get($aboutContent, 'team', []))->filter(fn ($item) => is_array($item) && !empty($item['name']));
+        $achievements = collect((array) data_get($aboutContent, 'achievements', []))->filter(fn ($item) => is_array($item) && !empty($item['award']));
+        $partners = collect((array) data_get($aboutContent, 'partners', []))->filter(fn ($item) => is_array($item) && !empty($item['name']));
+        $displayStats = collect((array) data_get($aboutContent, 'stats', []))
+            ->filter(fn ($item) => is_array($item) && !empty($item['number']) && !empty($item['label']))
+            ->reject(fn ($item) => \Illuminate\Support\Str::contains(
+                \Illuminate\Support\Str::lower((string) $item['label']),
+                ['listener', 'audience', 'reach', 'follower']
+            ));
+
+        $primaryCtaUrl = trim((string) data_get($aboutContent, 'cta_primary_url', ''));
+        $secondaryCtaUrl = trim((string) data_get($aboutContent, 'cta_secondary_url', ''));
+        $hasPrimaryCta = $isUsableUrl($primaryCtaUrl) && trim((string) data_get($aboutContent, 'cta_primary_text', '')) !== '';
+        $hasSecondaryCta = $isUsableUrl($secondaryCtaUrl) && trim((string) data_get($aboutContent, 'cta_secondary_text', '')) !== '';
     @endphp
-    <!-- Page Header -->
-    <section
-        class="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white py-20 overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0"
-                style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+
+    <section class="relative isolate overflow-hidden bg-[#07182b] text-white">
+        <div
+            class="absolute inset-0 -z-10"
+            style="background-image: radial-gradient(circle at 85% 18%, rgba(243, 106, 33, .22), transparent 32%), radial-gradient(circle at 8% 92%, rgba(45, 87, 125, .38), transparent 34%);"
+        ></div>
+        <div class="mx-auto grid max-w-[1440px] gap-10 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:items-end lg:gap-16 lg:px-8 lg:py-20">
+            <div class="max-w-4xl">
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">About the station</p>
+                <h1 class="mt-4 text-4xl font-black leading-[1.02] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+                    {{ data_get($aboutContent, 'header_title', 'About Glow 99.1 FM') }}
+                </h1>
+                @if(trim((string) data_get($aboutContent, 'header_subtitle', '')) !== '')
+                    <p class="mt-6 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
+                        {{ data_get($aboutContent, 'header_subtitle') }}
+                    </p>
+                @endif
+            </div>
+
+            <div class="border-l border-white/15 pl-6 sm:pl-8">
+                <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-orange-300">Broadcasting from</p>
+                <p class="mt-2 text-xl font-black text-white">Ijapo Estate, Akure</p>
+                <p class="mt-1 text-sm text-slate-400">Ondo State, Nigeria · 99.1 FM</p>
             </div>
         </div>
+    </section>
 
-        <div class="container mx-auto px-4 relative z-10">
+    <section class="border-b border-slate-200 bg-white py-7">
+        <div class="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <x-ad-slot placement="about" />
-            <div class="max-w-4xl mx-auto text-center">
-                <h1 class="text-5xl md:text-6xl font-bold mb-6">{{ $aboutContent['header_title'] }}</h1>
-                <p class="text-xl md:text-2xl text-emerald-100 leading-relaxed">
-                    {{ $aboutContent['header_subtitle'] }}
-                </p>
-            </div>
         </div>
     </section>
 
-    <!-- Our Story Section -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{{ $aboutContent['story_title'] }}
-                    </h2>
-                    <div class="space-y-6 text-lg text-gray-700 leading-relaxed">
-                        @foreach((array) data_get($aboutContent, 'story_paragraphs', []) as $paragraph)
-                            <div class="prose prose-lg max-w-none text-gray-700">
-                                {!! $sanitizeRichText($paragraph) !!}
-                            </div>
-                        @endforeach
-                    </div>
-                    <div class="mt-8 flex flex-wrap gap-4">
-                        @foreach((array) data_get($aboutContent, 'story_badges', []) as $badge)
-                            <div class="flex items-center space-x-3 bg-emerald-50 px-6 py-3 rounded-full">
-                                <i class="fas fa-check-circle text-emerald-600 text-xl"></i>
-                                <span class="font-semibold text-gray-900">{{ $badge }}</span>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="relative">
-                    <div class="relative z-10">
-                        <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800&h=900&fit=crop"
-                            alt="Radio Studio" class="rounded-2xl shadow-2xl">
-                    </div>
-                    <div class="absolute -bottom-6 -right-6 w-72 h-72 bg-emerald-100 rounded-2xl -z-10"></div>
-                    <div class="absolute -top-6 -left-6 w-48 h-48 bg-emerald-600 rounded-full -z-10 opacity-20"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Mission & Vision Section -->
-    <section class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Mission -->
-                <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-emerald-600">
-                    <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="fas fa-bullseye text-3xl text-emerald-600"></i>
-                    </div>
-                    <h3 class="text-3xl font-bold text-gray-900 mb-4">{{ $aboutContent['mission_title'] }}</h3>
-                    <div class="prose prose-lg max-w-none text-gray-700">
-                        {!! $sanitizeRichText($aboutContent['mission_body'] ?? '') !!}
-                    </div>
-                </div>
-
-                <!-- Vision -->
-                <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-blue-600">
-                    <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="fas fa-eye text-3xl text-blue-600"></i>
-                    </div>
-                    <h3 class="text-3xl font-bold text-gray-900 mb-4">{{ $aboutContent['vision_title'] }}</h3>
-                    <div class="prose prose-lg max-w-none text-gray-700">
-                        {!! $sanitizeRichText($aboutContent['vision_body'] ?? '') !!}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Core Values Section -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{{ $aboutContent['values_title'] }}</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    {{ $aboutContent['values_subtitle'] }}
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                @foreach((array) data_get($aboutContent, 'values', []) as $value)
-                    @continueIfNotArray($value)
-                    <div
-                        class="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300 border-b-4 border-{{ $value['color'] }}-500">
-                        <div
-                            class="w-16 h-16 bg-{{ $value['color'] }}-100 rounded-2xl flex items-center justify-center mb-6">
-                            <i class="{{ $value['icon'] }} text-3xl text-{{ $value['color'] }}-600"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ $value['title'] }}</h3>
-                        <div class="prose max-w-none text-gray-600">
-                            {!! $sanitizeRichText($value['description'] ?? '') !!}
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    <!-- Timeline/Milestones Section -->
-    <section class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{{ $aboutContent['milestones_title'] }}
+    <section class="bg-white py-16 sm:py-20" aria-labelledby="our-story-heading">
+        <div class="mx-auto grid max-w-[1440px] gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] lg:items-start lg:gap-16 lg:px-8">
+            <div>
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Our story</p>
+                <h2 id="our-story-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                    {{ data_get($aboutContent, 'story_title', 'Glow 99.1 FM Akure') }}
                 </h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    {{ $aboutContent['milestones_subtitle'] }}
-                </p>
-            </div>
 
-            <div class="max-w-5xl mx-auto">
-                @foreach((array) data_get($aboutContent, 'milestones', []) as $index => $milestone)
-                    @continueIfNotArray($milestone)
-                    <div class="relative pl-8 pb-12 border-l-4 border-emerald-600 {{ $loop->last ? 'pb-0' : '' }}">
-                        <!-- Timeline Dot -->
-                        <div
-                            class="absolute -left-3 top-0 w-6 h-6 bg-emerald-600 rounded-full border-4 border-white shadow-lg">
-                        </div>
-
-                        <!-- Content -->
-                        <div class="bg-white rounded-2xl shadow-lg p-8 ml-8 hover:shadow-xl transition-shadow duration-300">
-                            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                                <h3 class="text-3xl font-bold text-emerald-600 mb-2 md:mb-0">{{ $milestone['year'] }}</h3>
-                                <span
-                                    class="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 font-semibold rounded-full text-sm">
-                                    Milestone {{ $index + 1 }}
-                                </span>
-                            </div>
-                            <h4 class="text-2xl font-bold text-gray-900 mb-3">{{ $milestone['title'] }}</h4>
-                            <div class="prose max-w-none text-gray-600">
-                                {!! $sanitizeRichText($milestone['description'] ?? '') !!}
-                            </div>
-                        </div>
+                @if($storyParagraphs->isNotEmpty())
+                    <div class="mt-6 space-y-5 text-base leading-7 text-slate-600 [&_a]:font-bold [&_a]:text-[#d94e12] [&_blockquote]:border-l-4 [&_blockquote]:border-orange-400 [&_blockquote]:pl-5 [&_li]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:leading-7 [&_ul]:list-disc [&_ul]:pl-6">
+                        @foreach($storyParagraphs as $paragraph)
+                            <div>{!! $sanitizeRichText($paragraph) !!}</div>
+                        @endforeach
                     </div>
-                @endforeach
+                @endif
+
+                @if($storyBadges->isNotEmpty())
+                    <div class="mt-8 flex flex-wrap gap-2">
+                        @foreach($storyBadges as $badge)
+                            <span class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-[#f7f4ee] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.11em] text-[#173b5f]">
+                                <i class="fas fa-check text-[10px] text-[#e95516]" aria-hidden="true"></i>
+                                {{ $badge }}
+                            </span>
+                        @endforeach
+                    </div>
+                @endif
             </div>
+
+            <aside class="overflow-hidden rounded-xl border border-slate-200 bg-[#f7f4ee]">
+                <div class="flex aspect-[4/3] items-center justify-center bg-[#07182b] p-10">
+                    <img src="{{ asset('glowfm logo.jpeg') }}" alt="Glow 99.1 FM" width="256" height="256"
+                        loading="lazy" decoding="async" class="max-h-52 w-auto rounded-lg object-contain">
+                </div>
+                <div class="grid grid-cols-2 divide-x divide-slate-200">
+                    <div class="p-5">
+                        <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Frequency</p>
+                        <p class="mt-1 text-xl font-black text-[#07182b]">99.1 FM</p>
+                    </div>
+                    <div class="p-5">
+                        <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Home</p>
+                        <p class="mt-1 text-xl font-black text-[#07182b]">Akure</p>
+                    </div>
+                </div>
+            </aside>
         </div>
     </section>
 
-    <!-- Leadership Team Section -->
-    <section class="py-20 bg-white" x-data="{ activeMember: null }" @keydown.escape.window="activeMember = null">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{{ $aboutContent['team_title'] }}</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    {{ $aboutContent['team_subtitle'] }}
-                </p>
+    @if(trim((string) data_get($aboutContent, 'mission_body', '')) !== '' || trim((string) data_get($aboutContent, 'vision_body', '')) !== '')
+        <section class="bg-[#f7f4ee] py-16 sm:py-20" aria-label="Mission and vision">
+            <div class="mx-auto grid max-w-[1440px] gap-5 px-4 sm:px-6 md:grid-cols-2 lg:px-8">
+                @if(trim((string) data_get($aboutContent, 'mission_body', '')) !== '')
+                    <article class="rounded-xl border border-slate-200 bg-white p-7 sm:p-9">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-lg bg-orange-50 text-[#e95516]">
+                            <i class="fas fa-bullseye" aria-hidden="true"></i>
+                        </span>
+                        <h2 class="mt-6 text-2xl font-black tracking-[-0.025em] text-[#07182b]">
+                            {{ data_get($aboutContent, 'mission_title', 'Our Mission') }}
+                        </h2>
+                        <div class="mt-4 text-sm leading-7 text-slate-600 [&_a]:font-bold [&_a]:text-[#d94e12] [&_li]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
+                            {!! $sanitizeRichText(data_get($aboutContent, 'mission_body', '')) !!}
+                        </div>
+                    </article>
+                @endif
+
+                @if(trim((string) data_get($aboutContent, 'vision_body', '')) !== '')
+                    <article class="rounded-xl bg-[#07182b] p-7 text-white sm:p-9">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-lg bg-white/10 text-orange-300">
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                        </span>
+                        <h2 class="mt-6 text-2xl font-black tracking-[-0.025em]">
+                            {{ data_get($aboutContent, 'vision_title', 'Our Vision') }}
+                        </h2>
+                        <div class="mt-4 text-sm leading-7 text-slate-300 [&_a]:font-bold [&_a]:text-orange-300 [&_li]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
+                            {!! $sanitizeRichText(data_get($aboutContent, 'vision_body', '')) !!}
+                        </div>
+                    </article>
+                @endif
             </div>
+        </section>
+    @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                @foreach((array) data_get($aboutContent, 'team', []) as $member)
-                    @continueIfNotArray($member)
-                    @php
-                        $memberBio = $member['bio'] ?? '';
-                        $memberBioPreview = \Illuminate\Support\Str::limit(trim(strip_tags($memberBio)), 240);
-                        $memberBioHtml = $sanitizeRichText($memberBio);
-                        $memberSocials = [];
-                        $rawSocials = data_get($member, 'socials', null);
+    @if($values->isNotEmpty())
+        <section class="bg-white py-16 sm:py-20" aria-labelledby="values-heading">
+            <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+                <div class="max-w-2xl">
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">What guides us</p>
+                    <h2 id="values-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                        {{ data_get($aboutContent, 'values_title', 'Our Core Values') }}
+                    </h2>
+                    @if(trim((string) data_get($aboutContent, 'values_subtitle', '')) !== '')
+                        <p class="mt-3 text-sm leading-6 text-slate-600 sm:text-base">{{ data_get($aboutContent, 'values_subtitle') }}</p>
+                    @endif
+                </div>
 
-                        if (is_array($rawSocials)) {
-                            foreach ($rawSocials as $social) {
-                                if (!is_array($social)) {
-                                    continue;
-                                }
+                <div class="mt-9 grid border-l border-t border-slate-200 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach($values as $value)
+                        <article class="border-b border-r border-slate-200 p-6 sm:p-7">
+                            <i class="{{ $value['icon'] ?? 'fas fa-circle' }} text-xl text-[#e95516]" aria-hidden="true"></i>
+                            <h3 class="mt-5 text-xl font-black text-[#07182b]">{{ $value['title'] }}</h3>
+                            @if(trim((string) ($value['description'] ?? '')) !== '')
+                                <div class="mt-3 text-sm leading-6 text-slate-600 [&_a]:font-bold [&_a]:text-[#d94e12] [&_li]:mb-1 [&_ul]:list-disc [&_ul]:pl-5">
+                                    {!! $sanitizeRichText($value['description']) !!}
+                                </div>
+                            @endif
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
 
-                                $url = trim((string) ($social['url'] ?? ''));
-                                if ($url === '') {
-                                    continue;
-                                }
+    @if($milestones->isNotEmpty())
+        <section class="border-y border-slate-200 bg-[#f7f4ee] py-16 sm:py-20" aria-labelledby="journey-heading">
+            <div class="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+                <div class="max-w-2xl">
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Timeline</p>
+                    <h2 id="journey-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                        {{ data_get($aboutContent, 'milestones_title', 'Our Journey') }}
+                    </h2>
+                    @if(trim((string) data_get($aboutContent, 'milestones_subtitle', '')) !== '')
+                        <p class="mt-3 text-sm leading-6 text-slate-600 sm:text-base">{{ data_get($aboutContent, 'milestones_subtitle') }}</p>
+                    @endif
+                </div>
 
-                                $memberSocials[] = [
-                                    'name' => $social['name'] ?? '',
-                                    'icon' => $social['icon'] ?? 'fas fa-link',
-                                    'url' => $url,
-                                ];
-                            }
-                        }
+                <div class="mt-10 divide-y divide-slate-200 border-y border-slate-200">
+                    @foreach($milestones as $milestone)
+                        <article class="grid gap-3 py-6 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-8">
+                            <p class="text-2xl font-black text-[#e95516]">{{ $milestone['year'] ?? '' }}</p>
+                            <div>
+                                <h3 class="text-xl font-black text-[#07182b]">{{ $milestone['title'] }}</h3>
+                                @if(trim((string) ($milestone['description'] ?? '')) !== '')
+                                    <div class="mt-2 text-sm leading-6 text-slate-600 [&_a]:font-bold [&_a]:text-[#d94e12]">
+                                        {!! $sanitizeRichText($milestone['description']) !!}
+                                    </div>
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
 
-                        if (!$memberSocials && !array_key_exists('socials', $member)) {
-                            $legacySocial = data_get($member, 'social', []);
-                            if (is_array($legacySocial)) {
-                                $legacyMap = [
-                                    'linkedin' => ['name' => 'LinkedIn', 'icon' => 'fab fa-linkedin-in', 'mailto' => false],
-                                    'twitter' => ['name' => 'Twitter', 'icon' => 'fab fa-twitter', 'mailto' => false],
-                                    'email' => ['name' => 'Email', 'icon' => 'fas fa-envelope', 'mailto' => true],
-                                ];
+    @if($team->isNotEmpty())
+        <section class="bg-white py-16 sm:py-20" x-data="{ activeMember: null }" @keydown.escape.window="activeMember = null" aria-labelledby="leadership-heading">
+            <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+                <div class="max-w-2xl">
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Leadership</p>
+                    <h2 id="leadership-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                        {{ data_get($aboutContent, 'team_title', 'Meet Our Leadership') }}
+                    </h2>
+                    @if(trim((string) data_get($aboutContent, 'team_subtitle', '')) !== '')
+                        <p class="mt-3 text-sm leading-6 text-slate-600 sm:text-base">{{ data_get($aboutContent, 'team_subtitle') }}</p>
+                    @endif
+                </div>
 
-                                foreach ($legacyMap as $key => $meta) {
-                                    $value = $legacySocial[$key] ?? '';
-                                    if (!is_string($value)) {
+                <div class="mt-9 grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach($team as $member)
+                        @php
+                            $memberBio = $member['bio'] ?? '';
+                            $memberBioPreview = \Illuminate\Support\Str::limit(trim(strip_tags($memberBio)), 150);
+                            $memberSocials = [];
+                            $rawSocials = data_get($member, 'socials', null);
+
+                            if (is_array($rawSocials)) {
+                                foreach ($rawSocials as $social) {
+                                    if (!is_array($social)) {
                                         continue;
                                     }
 
-                                    $value = trim($value);
-                                    if ($value === '' || $value === '#') {
-                                        continue;
+                                    $url = trim((string) ($social['url'] ?? ''));
+                                    if (\Illuminate\Support\Str::startsWith($url, 'mailto:')) {
+                                        $url = 'mailto:' . trim(\Illuminate\Support\Str::after($url, 'mailto:'));
                                     }
-
-                                    if ($meta['mailto'] && !\Illuminate\Support\Str::startsWith($value, 'mailto:')) {
-                                        $value = 'mailto:' . $value;
+                                    if (!$isUsableUrl($url)) {
+                                        continue;
                                     }
 
                                     $memberSocials[] = [
-                                        'name' => $meta['name'],
-                                        'icon' => $meta['icon'],
-                                        'url' => $value,
+                                        'name' => $social['name'] ?? 'Profile link',
+                                        'icon' => $social['icon'] ?? 'fas fa-link',
+                                        'url' => $url,
+                                        'external' => $isExternalUrl($url),
                                     ];
                                 }
                             }
-                        }
 
-                        $memberModalPayload = $member;
-                        $memberModalPayload['bio_html'] = $memberBioHtml;
-                        $memberModalPayload['bio_preview'] = $memberBioPreview;
-                        $memberModalPayload['socials'] = $memberSocials;
-                    @endphp
-                    <div
-                        class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                        <button type="button" class="relative h-80 w-full overflow-hidden text-left"
-                            @click="activeMember = @js($memberModalPayload)">
-                            <img src="{{ $member['image'] }}" alt="{{ $member['name'] }}"
-                                class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <h3 class="text-2xl font-bold text-white mb-1">{{ $member['name'] }}</h3>
-                                <p class="text-emerald-300 font-semibold">{{ $member['position'] }}</p>
-                            </div>
-                        </button>
-                        <div class="p-6">
-                            <button type="button"
-                                class="text-left text-gray-900 font-semibold hover:text-emerald-600 transition-colors"
-                                @click="activeMember = @js($memberModalPayload)">
+                            if (!$memberSocials && !array_key_exists('socials', $member)) {
+                                $legacySocial = data_get($member, 'social', []);
+                                if (is_array($legacySocial)) {
+                                    $legacyMap = [
+                                        'linkedin' => ['name' => 'LinkedIn', 'icon' => 'fab fa-linkedin-in', 'mailto' => false],
+                                        'twitter' => ['name' => 'Twitter', 'icon' => 'fab fa-twitter', 'mailto' => false],
+                                        'email' => ['name' => 'Email', 'icon' => 'fas fa-envelope', 'mailto' => true],
+                                    ];
+
+                                    foreach ($legacyMap as $key => $meta) {
+                                        $url = trim((string) ($legacySocial[$key] ?? ''));
+                                        if ($meta['mailto'] && $url !== '' && !\Illuminate\Support\Str::startsWith($url, 'mailto:')) {
+                                            $url = 'mailto:' . $url;
+                                        }
+                                        if (!$isUsableUrl($url)) {
+                                            continue;
+                                        }
+
+                                        $memberSocials[] = [
+                                            'name' => $meta['name'],
+                                            'icon' => $meta['icon'],
+                                            'url' => $url,
+                                            'external' => $isExternalUrl($url),
+                                        ];
+                                    }
+                                }
+                            }
+
+                            $memberModalPayload = $member;
+                            unset($memberModalPayload['bio']);
+                            $memberModalPayload['image'] = \App\Support\PublicImage::url($member['image'] ?? null);
+                            $memberModalPayload['bio_html'] = $sanitizeRichText($memberBio);
+                            $memberModalPayload['socials'] = $memberSocials;
+                        @endphp
+
+                        <article class="group">
+                            <button
+                                type="button"
+                                class="relative block aspect-[4/5] w-full overflow-hidden rounded-xl bg-slate-100 text-left"
+                                @click="activeMember = @js($memberModalPayload)"
+                                aria-label="Read profile for {{ $member['name'] }}"
+                            >
+                                <x-initials-image
+                                    :src="$member['image'] ?? null"
+                                    :title="$member['name']"
+                                    imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                    fallbackClass="bg-[#173b5f]"
+                                    textClass="text-4xl font-black text-white"
+                                />
+                                <span class="absolute inset-0 bg-gradient-to-t from-[#07182b]/85 via-transparent to-transparent"></span>
+                                <span class="absolute bottom-4 left-4 right-4 text-xs font-bold uppercase tracking-[0.12em] text-orange-300">
+                                    View profile
+                                </span>
+                            </button>
+                            <button type="button" class="mt-4 text-left text-xl font-black text-[#07182b] transition hover:text-[#d94e12]" @click="activeMember = @js($memberModalPayload)">
                                 {{ $member['name'] }}
                             </button>
-                            <p class="text-sm text-emerald-600 font-medium mb-3">{{ $member['position'] }}</p>
-                            <p class="text-gray-600 mb-4 leading-relaxed">
-                                {{ $memberBioPreview ?: 'Profile details coming soon.' }}
-                            </p>
-                            @if(!empty($memberSocials))
-                                <div class="flex items-center space-x-3">
-                                    @foreach($memberSocials as $social)
-                                        <a href="{{ $social['url'] }}"
-                                            class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 text-gray-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
-                                            <i class="{{ $social['icon'] ?? 'fas fa-link' }}"></i>
-                                        </a>
-                                    @endforeach
-                                </div>
+                            @if(!empty($member['position']))
+                                <p class="mt-1 text-sm font-bold text-[#e95516]">{{ $member['position'] }}</p>
                             @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-
-        <div x-cloak x-show="activeMember" class="fixed inset-0 z-50 flex items-center justify-center p-6">
-            <div class="absolute inset-0 bg-black/60" @click="activeMember = null"></div>
-            <div
-                class="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
-                <button type="button"
-                    class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/80 text-gray-700 hover:bg-gray-100 flex items-center justify-center"
-                    @click="activeMember = null">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-0 flex-1 min-h-0">
-                    <div class="relative h-64 md:h-auto bg-gray-900">
-                        <img :src="activeMember && activeMember.image ? activeMember.image : '{{ asset('glowfm logo.jpeg') }}'"
-                            :alt="activeMember ? activeMember.name : 'Team member'" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
-                    </div>
-                    <div class="p-8 overflow-y-auto min-h-0">
-                        <p class="text-sm uppercase tracking-[0.3em] text-emerald-600 font-semibold">Leadership</p>
-                        <h3 class="text-3xl font-bold text-gray-900 mt-2"
-                            x-text="activeMember ? activeMember.name : ''"></h3>
-                        <p class="text-emerald-600 font-semibold mt-1"
-                            x-text="activeMember ? activeMember.position : ''"></p>
-                        <div class="prose prose-emerald max-w-none mt-6">
-                            <div x-html="activeMember ? activeMember.bio_html : ''"></div>
-                        </div>
-                        <div class="mt-6 flex items-center gap-3 text-gray-500"
-                            x-show="activeMember && activeMember.socials && activeMember.socials.length">
-                            <template x-for="(social, index) in (activeMember && activeMember.socials ? activeMember.socials : [])" :key="index">
-                                <a :href="social.url"
-                                    class="w-10 h-10 bg-gray-100 hover:bg-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors duration-300">
-                                    <i :class="social.icon || 'fas fa-link'"></i>
-                                </a>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Achievements Section -->
-    <section class="py-20 bg-emerald-600 text-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold mb-4">{{ $aboutContent['achievements_title'] }}</h2>
-                <div class="prose prose-lg max-w-none text-emerald-100 mx-auto">
-                    {!! $sanitizeRichText($aboutContent['achievements_subtitle'] ?? '') !!}
+                            @if($memberBioPreview !== '')
+                                <p class="mt-2 text-sm leading-6 text-slate-600">{{ $memberBioPreview }}</p>
+                            @endif
+                        </article>
+                    @endforeach
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                @foreach((array) data_get($aboutContent, 'achievements', []) as $achievement)
-                    @continueIfNotArray($achievement)
-                    <div
-                        class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-                        <div class="flex items-start space-x-4">
-                            <div class="flex-shrink-0">
-                                <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
-                                    <i class="{{ $achievement['icon'] }} text-3xl text-yellow-300"></i>
+            <template x-teleport="body">
+                <div x-cloak x-show="activeMember" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true">
+                    <div class="absolute inset-0 bg-[#07182b]/85 backdrop-blur-sm" @click="activeMember = null"></div>
+                    <div class="relative flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+                        <button
+                            type="button"
+                            class="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-lg bg-white text-[#07182b] shadow-lg transition hover:bg-slate-100"
+                            @click="activeMember = null"
+                            aria-label="Close profile"
+                        >
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
+                        <div class="grid min-h-0 flex-1 md:grid-cols-[0.85fr_1.15fr]">
+                            <div class="relative min-h-64 bg-[#07182b]">
+                                <img
+                                    :src="activeMember && activeMember.image ? activeMember.image : '{{ asset('glowfm logo.jpeg') }}'"
+                                    :alt="activeMember ? activeMember.name : 'Team member'"
+                                    class="absolute inset-0 h-full w-full object-cover"
+                                >
+                                <div class="absolute inset-0 bg-gradient-to-t from-[#07182b]/70 to-transparent"></div>
+                            </div>
+                            <div class="min-h-0 overflow-y-auto p-7 sm:p-9">
+                                <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#e95516]">Leadership</p>
+                                <h3 class="mt-2 pr-10 text-3xl font-black tracking-[-0.03em] text-[#07182b]" x-text="activeMember ? activeMember.name : ''"></h3>
+                                <p class="mt-1 font-bold text-[#e95516]" x-text="activeMember ? activeMember.position : ''"></p>
+                                <div class="mt-6 text-sm leading-7 text-slate-600 [&_a]:font-bold [&_a]:text-[#d94e12] [&_li]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5" x-html="activeMember ? activeMember.bio_html : ''"></div>
+                                <div class="mt-7 flex items-center gap-2" x-show="activeMember && activeMember.socials && activeMember.socials.length">
+                                    <template x-for="(social, index) in (activeMember && activeMember.socials ? activeMember.socials : [])" :key="index">
+                                        <a
+                                            :href="social.url"
+                                            :target="social.external ? '_blank' : null"
+                                            :rel="social.external ? 'noopener noreferrer' : null"
+                                            :aria-label="social.name"
+                                            class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-[#173b5f] transition hover:border-[#e95516] hover:text-[#e95516]"
+                                        >
+                                            <i :class="social.icon || 'fas fa-link'" aria-hidden="true"></i>
+                                        </a>
+                                    </template>
                                 </div>
                             </div>
-                            <div class="flex-1">
-                                <div class="text-sm font-semibold text-emerald-200 mb-1">{{ $achievement['year'] }}</div>
-                                <h3 class="text-xl font-bold mb-2">{{ $achievement['award'] }}</h3>
-                                <p class="text-emerald-100 text-sm">{{ $achievement['organization'] }}</p>
-                            </div>
                         </div>
                     </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
+                </div>
+            </template>
+        </section>
+    @endif
 
-    <!-- Partners Section -->
-    <section class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{{ $aboutContent['partners_title'] }}</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    {{ $aboutContent['partners_subtitle'] }}
-                </p>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-                @foreach((array) data_get($aboutContent, 'partners', []) as $partner)
-                    @continueIfNotArray($partner)
-                    <div
-                        class="bg-white rounded-xl shadow-md p-6 flex items-center justify-center hover:shadow-xl transition-shadow duration-300 group">
-                        <img src="{{ $partner['logo'] }}" alt="{{ $partner['name'] }}"
-                            class="w-full h-auto opacity-60 group-hover:opacity-100 transition-opacity duration-300">
+    @if($achievements->isNotEmpty() || $partners->isNotEmpty() || $displayStats->isNotEmpty())
+        <section class="border-y border-slate-200 bg-[#f7f4ee] py-16 sm:py-20" aria-labelledby="recognition-heading">
+            <div class="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e95516]">Station record</p>
+                <h2 id="recognition-heading" class="mt-2 text-3xl font-black tracking-[-0.035em] text-[#07182b] sm:text-4xl">
+                    {{ data_get($aboutContent, 'achievements_title') ?: 'Recognition and growth' }}
+                </h2>
+                @if(trim((string) data_get($aboutContent, 'achievements_subtitle', '')) !== '')
+                    <div class="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                        {!! $sanitizeRichText(data_get($aboutContent, 'achievements_subtitle', '')) !!}
                     </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
+                @endif
 
-    <!-- Stats Section -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="max-w-5xl mx-auto">
-                <div
-                    class="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 rounded-3xl shadow-2xl p-12 text-white">
-                    <div class="text-center mb-12">
-                        <h2 class="text-4xl font-bold mb-4">{{ $aboutContent['stats_title'] }}</h2>
-                        <p class="text-xl text-emerald-100">{{ $aboutContent['stats_subtitle'] }}</p>
+                @if($achievements->isNotEmpty())
+                    <div class="mt-8 divide-y divide-slate-200 border-y border-slate-200 bg-white">
+                        @foreach($achievements as $achievement)
+                            <article class="grid gap-3 p-5 sm:grid-cols-[100px_minmax(0,1fr)] sm:items-center sm:gap-6 sm:p-6">
+                                <p class="text-xl font-black text-[#e95516]">{{ $achievement['year'] ?? '' }}</p>
+                                <div>
+                                    <h3 class="text-lg font-black text-[#07182b]">{{ $achievement['award'] }}</h3>
+                                    @if(!empty($achievement['organization']))
+                                        <p class="mt-1 text-sm text-slate-600">{{ $achievement['organization'] }}</p>
+                                    @endif
+                                </div>
+                            </article>
+                        @endforeach
                     </div>
+                @endif
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                        @foreach((array) data_get($aboutContent, 'stats', []) as $stat)
-                            @continueIfNotArray($stat)
-                            <div class="text-center">
-                                <div class="text-5xl font-bold mb-2">{{ $stat['number'] }}</div>
-                                <div class="text-emerald-100">{{ $stat['label'] }}</div>
+                @if($displayStats->isNotEmpty())
+                    <div class="mt-6 grid divide-y divide-slate-200 border-y border-slate-200 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                        @foreach($displayStats as $stat)
+                            <div class="py-5 sm:px-6 sm:first:pl-0">
+                                <p class="text-3xl font-black text-[#07182b]">{{ $stat['number'] }}</p>
+                                <p class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{{ $stat['label'] }}</p>
                             </div>
                         @endforeach
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                @endif
 
-    <!-- CTA Section -->
-    <section class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{{ $aboutContent['cta_title'] }}</h2>
-                <div class="prose prose-lg max-w-none text-gray-600 mb-8 leading-relaxed">
-                    {!! $sanitizeRichText($aboutContent['cta_body'] ?? '') !!}
-                </div>
-                <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                    <a href="{{ $aboutContent['cta_primary_url'] }}"
-                        class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                        <i class="fas fa-envelope"></i>
-                        <span>{{ $aboutContent['cta_primary_text'] }}</span>
-                    </a>
-                    <a href="{{ $aboutContent['cta_secondary_url'] }}"
-                        class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-8 py-4 bg-white hover:bg-gray-50 text-emerald-600 font-semibold rounded-full shadow-lg hover:shadow-xl border-2 border-emerald-600 transform hover:scale-105 transition-all duration-300">
-                        <i class="fas fa-play-circle"></i>
-                        <span>{{ $aboutContent['cta_secondary_text'] }}</span>
-                    </a>
-                </div>
+                @if($partners->isNotEmpty())
+                    <div class="mt-10">
+                        @if(trim((string) data_get($aboutContent, 'partners_title', '')) !== '')
+                            <h3 class="text-lg font-black text-[#07182b]">{{ data_get($aboutContent, 'partners_title') }}</h3>
+                        @endif
+                        @if(trim((string) data_get($aboutContent, 'partners_subtitle', '')) !== '')
+                            <p class="mt-1 text-sm text-slate-600">{{ data_get($aboutContent, 'partners_subtitle') }}</p>
+                        @endif
+                        <div class="mt-5 flex flex-wrap gap-3">
+                            @foreach($partners as $partner)
+                                <div class="flex min-h-20 min-w-40 items-center justify-center rounded-lg border border-slate-200 bg-white p-4">
+                                    @if(!empty($partner['logo']))
+                                        <img src="{{ $partner['logo'] }}" alt="{{ $partner['name'] }}" class="max-h-10 max-w-36 object-contain">
+                                    @else
+                                        <span class="text-sm font-black text-[#173b5f]">{{ $partner['name'] }}</span>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
+
+    @if(
+        trim((string) data_get($aboutContent, 'cta_title', '')) !== ''
+        || trim((string) data_get($aboutContent, 'cta_body', '')) !== ''
+        || $hasPrimaryCta
+        || $hasSecondaryCta
+    )
+        <section class="bg-[#e95516] py-12 text-white sm:py-14">
+            <div class="mx-auto grid max-w-[1200px] gap-7 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-12 lg:px-8">
+                <div>
+                    @if(trim((string) data_get($aboutContent, 'cta_title', '')) !== '')
+                        <h2 class="text-3xl font-black tracking-[-0.035em] sm:text-4xl">{{ data_get($aboutContent, 'cta_title') }}</h2>
+                    @endif
+                    @if(trim((string) data_get($aboutContent, 'cta_body', '')) !== '')
+                        <div class="mt-3 max-w-2xl text-sm leading-6 text-orange-50 [&_a]:font-bold [&_a]:text-white">
+                            {!! $sanitizeRichText(data_get($aboutContent, 'cta_body', '')) !!}
+                        </div>
+                    @endif
+                </div>
+                @if($hasPrimaryCta || $hasSecondaryCta)
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                        @if($hasPrimaryCta)
+                            <a
+                                href="{{ $primaryCtaUrl }}"
+                                @if($isExternalUrl($primaryCtaUrl)) target="_blank" rel="noopener noreferrer" @endif
+                                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#07182b] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#102b48]"
+                            >
+                                {{ data_get($aboutContent, 'cta_primary_text') }}
+                                <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                            </a>
+                        @endif
+                        @if($hasSecondaryCta)
+                            <a
+                                href="{{ $secondaryCtaUrl }}"
+                                @if($isExternalUrl($secondaryCtaUrl)) target="_blank" rel="noopener noreferrer" @endif
+                                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/35 bg-white/10 px-6 py-3 text-sm font-extrabold text-white transition hover:bg-white/15"
+                            >
+                                {{ data_get($aboutContent, 'cta_secondary_text') }}
+                            </a>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </section>
+    @endif
 </div>
