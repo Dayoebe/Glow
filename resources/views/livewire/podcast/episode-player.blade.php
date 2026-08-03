@@ -173,39 +173,23 @@
             <div class="overflow-hidden bg-slate-950">
                 @if($episode->video_type === 'youtube' && $episode->youtube_video_id)
                     <div class="relative aspect-video">
-                        <button type="button"
-                                class="absolute inset-0 z-10 flex items-center justify-center bg-glow-ink/75 text-white transition hover:bg-glow-ink/65"
-                                data-video-overlay>
-                            <span class="inline-flex h-14 items-center gap-3 bg-glow-orange px-6 font-black text-white">
-                                <i class="fas fa-play" aria-hidden="true"></i>Start video
-                            </span>
-                        </button>
-                        <iframe class="absolute inset-0 hidden h-full w-full"
-                                src="about:blank"
-                                data-src="https://www.youtube.com/embed/{{ $episode->youtube_video_id }}"
+                        <iframe class="absolute inset-0 h-full w-full"
+                                src="https://www.youtube.com/embed/{{ $episode->youtube_video_id }}"
                                 title="Video for {{ $episode->title }}"
                                 frameborder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowfullscreen
-                                data-video-iframe></iframe>
+                                data-video-embed></iframe>
                     </div>
                 @elseif($episode->video_type === 'vimeo')
                     <div class="relative aspect-video">
-                        <button type="button"
-                                class="absolute inset-0 z-10 flex items-center justify-center bg-glow-ink/75 text-white transition hover:bg-glow-ink/65"
-                                data-video-overlay>
-                            <span class="inline-flex h-14 items-center gap-3 bg-glow-orange px-6 font-black text-white">
-                                <i class="fas fa-play" aria-hidden="true"></i>Start video
-                            </span>
-                        </button>
-                        <iframe class="absolute inset-0 hidden h-full w-full"
-                                src="about:blank"
-                                data-src="{{ str_replace('vimeo.com/', 'player.vimeo.com/video/', $episode->video_url) }}"
+                        <iframe class="absolute inset-0 h-full w-full"
+                                src="{{ str_replace('vimeo.com/', 'player.vimeo.com/video/', $episode->video_url) }}"
                                 title="Video for {{ $episode->title }}"
                                 frameborder="0"
                                 allow="autoplay; fullscreen; picture-in-picture"
                                 allowfullscreen
-                                data-video-iframe></iframe>
+                                data-video-embed></iframe>
                     </div>
                 @elseif($episode->video_type === 'upload')
                     <video id="podcastVideoPlayer" class="aspect-video w-full" controls preload="metadata">
@@ -611,21 +595,6 @@
                             lastTracked = currentTime;
                         }
                     }, listenerOptions);
-                }
-
-                const overlay = document.querySelector('[data-video-overlay]');
-                const iframe = document.querySelector('[data-video-iframe]');
-                if (overlay && iframe) {
-                    overlay.addEventListener('click', function () {
-                        const src = iframe.getAttribute('data-src');
-                        if (src) {
-                            iframe.setAttribute('src', src);
-                        }
-                        overlay.classList.add('hidden');
-                        iframe.classList.remove('hidden');
-                        recordRawPlay();
-                        recordQualifiedPlay();
-                    }, { once: true, signal: lifecycle.signal });
                 }
 
                 const externalVideo = document.querySelector('[data-video-external]');
