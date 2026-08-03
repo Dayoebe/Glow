@@ -6,6 +6,7 @@ use App\Models\Show\Category;
 use App\Models\Show\OAP;
 use App\Models\Show\Show;
 use App\Support\CloudinaryUploader;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -93,6 +94,18 @@ class ShowForm extends Component
     {
         $this->validate();
 
+        $slug = Str::slug($this->title);
+        $duplicateShow = Show::query()
+            ->where('slug', $slug)
+            ->when($this->isEditing, fn ($query) => $query->whereKeyNot($this->showId))
+            ->exists();
+
+        if ($duplicateShow) {
+            $this->addError('title', 'A show with this or a similar title already exists. Please edit the existing show or choose another title.');
+
+            return;
+        }
+
         $coverPath = $this->cover_url;
         if ($this->cover_image) {
             $coverPath = CloudinaryUploader::uploadImage($this->cover_image, 'shows/covers');
@@ -100,7 +113,7 @@ class ShowForm extends Component
 
         $data = [
             'title' => $this->title,
-            'slug' => Str::slug($this->title),
+            'slug' => $slug,
             'description' => $this->description,
             'cover_image' => $coverPath,
             'category_id' => $this->category_id,
@@ -112,12 +125,22 @@ class ShowForm extends Component
             'tags' => !empty($this->tags) ? array_map('trim', explode(',', $this->tags)) : null,
         ];
 
-        if ($this->isEditing) {
-            Show::findOrFail($this->showId)->update($data);
-            $message = 'Show updated successfully.';
-        } else {
-            Show::create($data);
-            $message = 'Show created successfully.';
+        try {
+            if ($this->isEditing) {
+                Show::findOrFail($this->showId)->update($data);
+                $message = 'Show updated successfully.';
+            } else {
+                Show::create($data);
+                $message = 'Show created successfully.';
+            }
+        } catch (UniqueConstraintViolationException $exception) {
+            if (str_contains($exception->getMessage(), 'shows_slug_unique')) {
+                $this->addError('title', 'A show with this or a similar title already exists. Please edit the existing show or choose another title.');
+
+                return;
+            }
+
+            throw $exception;
         }
 
         return redirect()
