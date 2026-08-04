@@ -14,6 +14,7 @@ class CareerApplications extends Component
     public $search = '';
     public $filterStatus = '';
     public $filterPosition = '';
+    public $applicationType = '';
 
     public $showNotesModal = false;
     public $notesApplicationId = null;
@@ -24,6 +25,13 @@ class CareerApplications extends Component
         'filterStatus' => ['except' => ''],
         'filterPosition' => ['except' => ''],
     ];
+
+    public function mount(?string $type = null): void
+    {
+        if ($type !== null && in_array($type, ['job', 'internship', 'volunteer'], true)) {
+            $this->applicationType = $type;
+        }
+    }
 
     public function updatingSearch()
     {
@@ -122,6 +130,10 @@ class CareerApplications extends Component
             ->with(['position', 'reviewedBy'])
             ->latest('created_at');
 
+        if ($this->applicationType !== '') {
+            $query->where('application_type', $this->applicationType);
+        }
+
         if (!empty($this->search)) {
             $query->where(function ($inner) {
                 $inner->where('full_name', 'like', "%{$this->search}%")
@@ -154,12 +166,20 @@ class CareerApplications extends Component
     public function getStatsProperty(): array
     {
         return [
-            'total' => CareerApplication::count(),
-            'new' => CareerApplication::where('status', 'new')->count(),
-            'reviewing' => CareerApplication::where('status', 'reviewing')->count(),
-            'shortlisted' => CareerApplication::where('status', 'shortlisted')->count(),
-            'hired' => CareerApplication::where('status', 'hired')->count(),
+            'total' => $this->statsQuery()->count(),
+            'new' => $this->statsQuery()->where('status', 'new')->count(),
+            'reviewing' => $this->statsQuery()->where('status', 'reviewing')->count(),
+            'shortlisted' => $this->statsQuery()->where('status', 'shortlisted')->count(),
+            'hired' => $this->statsQuery()->where('status', 'hired')->count(),
         ];
+    }
+
+    private function statsQuery()
+    {
+        return CareerApplication::query()->when(
+            $this->applicationType !== '',
+            fn ($query) => $query->where('application_type', $this->applicationType)
+        );
     }
 
     public function render()
@@ -169,7 +189,7 @@ class CareerApplications extends Component
             'positions' => $this->positions,
             'stats' => $this->stats,
         ])->layout('layouts.admin', [
-            'header' => 'Career Applications',
+            'header' => $this->applicationType === '' ? 'Career Applications' : ucfirst($this->applicationType) . ' Applications',
         ]);
     }
 }

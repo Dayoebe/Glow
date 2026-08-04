@@ -57,13 +57,16 @@ class NotificationDropdown extends Component
             $actionableCount += CareerApplication::where('status', 'new')->count();
             $notifications = $notifications->merge($newApplications->map(
                 fn (CareerApplication $application) => [
-                    'title' => 'New job application',
-                    'detail' => $application->full_name . ' — ' . ($application->position?->title ?? 'Position'),
+                    'title' => 'New ' . ($application->application_type === 'job' ? 'job' : $application->application_type) . ' application',
+                    'detail' => $application->full_name . ' — ' . ($application->position?->title ?? $application->department ?? 'Career application'),
                     'received' => $application->created_at?->diffForHumans() ?? '',
                     'time_raw' => $application->created_at?->timestamp ?? 0,
                     'icon' => 'fas fa-briefcase',
                     'color' => 'blue',
-                    'url' => route('admin.careers.applications', ['search' => $application->application_code]),
+                    'url' => route('admin.careers.applications.type', [
+                        'type' => $application->application_type,
+                        'search' => $application->application_code,
+                    ]),
                 ]
             ));
 

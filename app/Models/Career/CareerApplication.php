@@ -13,10 +13,18 @@ class CareerApplication extends Model
     protected $fillable = [
         'career_position_id',
         'application_code',
+        'application_type',
         'full_name',
         'email',
         'phone',
         'location',
+        'department',
+        'education_level',
+        'institution',
+        'course_of_study',
+        'skills',
+        'motivation',
+        'contribution',
         'linkedin_url',
         'portfolio_url',
         'years_experience',
@@ -24,6 +32,8 @@ class CareerApplication extends Model
         'current_role',
         'expected_salary',
         'available_from',
+        'availability',
+        'commitment_length',
         'cover_letter',
         'resume_path',
         'resume_original_name',
@@ -33,6 +43,7 @@ class CareerApplication extends Model
         'reviewed_at',
         'ip_address',
         'user_agent',
+        'consent',
     ];
 
     protected $casts = [
@@ -40,6 +51,7 @@ class CareerApplication extends Model
         'expected_salary' => 'decimal:2',
         'available_from' => 'date',
         'reviewed_at' => 'datetime',
+        'consent' => 'boolean',
     ];
 
     protected static function booted(): void

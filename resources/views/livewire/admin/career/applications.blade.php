@@ -1,4 +1,10 @@
 <div>
+    <div class="mb-6 flex flex-wrap gap-2">
+        @foreach(['' => 'All', 'job' => 'Jobs', 'internship' => 'Interns', 'volunteer' => 'Volunteers'] as $type => $label)
+            <a href="{{ $type === '' ? route('admin.careers.applications') : route('admin.careers.applications.type', $type) }}"
+                class="rounded-lg px-4 py-2 text-sm font-semibold {{ $applicationType === $type ? 'bg-emerald-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50' }}">{{ $label }}</a>
+        @endforeach
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <p class="text-sm text-gray-600">Total</p>
@@ -77,9 +83,26 @@
                                 <p class="text-xs text-gray-400 mt-1">{{ $application->application_code }}</p>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-700">
-                                <p class="font-medium">{{ $application->position?->title ?: 'Position removed' }}</p>
+                                <p class="font-medium">{{ $application->position?->title ?: ucfirst($application->application_type) . ' application' }}</p>
+                                @if($application->department)<p class="text-xs text-emerald-700">{{ $application->department }}</p>@endif
                                 @if($application->years_experience !== null)
                                     <p class="text-xs text-gray-500">{{ $application->years_experience }} year(s) experience</p>
+                                @endif
+                                @if($application->skills)<p class="mt-1 max-w-xs text-xs text-gray-500" title="{{ $application->skills }}">{{ \Illuminate\Support\Str::limit($application->skills, 80) }}</p>@endif
+                                @if($application->application_type !== 'job')
+                                    <details class="mt-2 text-xs text-gray-600">
+                                        <summary class="cursor-pointer font-semibold text-blue-600 hover:text-blue-800">View full profile</summary>
+                                        <dl class="mt-2 w-72 space-y-2 rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm">
+                                            <div><dt class="font-semibold text-gray-900">Education</dt><dd>{{ collect([$application->education_level, $application->course_of_study, $application->institution])->filter()->join(' · ') ?: 'Not provided' }}</dd></div>
+                                            <div><dt class="font-semibold text-gray-900">Availability</dt><dd>{{ collect([$application->available_from?->format('M d, Y'), $application->availability, $application->commitment_length])->filter()->join(' · ') }}</dd></div>
+                                            <div><dt class="font-semibold text-gray-900">Skills</dt><dd class="whitespace-normal">{{ $application->skills }}</dd></div>
+                                            <div><dt class="font-semibold text-gray-900">Motivation</dt><dd class="whitespace-normal">{{ $application->motivation }}</dd></div>
+                                            <div><dt class="font-semibold text-gray-900">What they offer</dt><dd class="whitespace-normal">{{ $application->contribution }}</dd></div>
+                                            @if($application->linkedin_url || $application->portfolio_url)
+                                                <div class="flex gap-3">@if($application->linkedin_url)<a class="font-semibold text-blue-600" href="{{ $application->linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a>@endif @if($application->portfolio_url)<a class="font-semibold text-blue-600" href="{{ $application->portfolio_url }}" target="_blank" rel="noopener">Portfolio</a>@endif</div>
+                                            @endif
+                                        </dl>
+                                    </details>
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm">

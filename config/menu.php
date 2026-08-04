@@ -156,9 +156,24 @@ return [
                         'active' => 'admin.careers.create'
                     ],
                     [
-                        'title' => 'Applications',
+                        'title' => 'All Applications',
                         'route' => 'admin.careers.applications',
                         'active' => 'admin.careers.applications'
+                    ],
+                    [
+                        'title' => 'Job Applicants',
+                        'route' => 'admin.careers.applications.jobs',
+                        'active' => 'admin.careers.applications.jobs'
+                    ],
+                    [
+                        'title' => 'Intern Applicants',
+                        'route' => 'admin.careers.applications.interns',
+                        'active' => 'admin.careers.applications.interns'
+                    ],
+                    [
+                        'title' => 'Volunteer Applicants',
+                        'route' => 'admin.careers.applications.volunteers',
+                        'active' => 'admin.careers.applications.volunteers'
                     ],
                 ]
             ],

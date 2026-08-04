@@ -44,6 +44,7 @@ use App\Livewire\Page\EventPage;
 use App\Livewire\Page\EventDetail;
 use App\Livewire\Page\CareerPage;
 use App\Livewire\Page\CareerDetail;
+use App\Livewire\Page\ProgrammeApplication;
 use App\Livewire\Page\VettasPage;
 use App\Livewire\Admin\Event\EventIndex as AdminEventIndex;
 use App\Livewire\Admin\Event\EventForm as AdminEventForm;
@@ -195,6 +196,8 @@ Route::get('/events/{slug}', EventDetail::class)->name('events.show');
 
 // Public Career Routes
 Route::get('/careers', CareerPage::class)->name('careers.index');
+Route::get('/careers/apply/{type}', ProgrammeApplication::class)
+    ->whereIn('type', ['internship', 'volunteer'])->name('careers.programmes.apply');
 Route::get('/careers/{slug}', CareerDetail::class)->name('careers.show');
 Route::get('/vettas', VettasPage::class)->name('vettas.index');
 
@@ -383,6 +386,11 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::get('/', AdminCareerIndex::class)->name('index');
             Route::get('/create', AdminCareerForm::class)->name('create');
             Route::get('/applications', AdminCareerApplications::class)->name('applications');
+            Route::get('/applications/type/{type}', AdminCareerApplications::class)
+                ->whereIn('type', ['job', 'internship', 'volunteer'])->name('applications.type');
+            Route::redirect('/applications/interns', '/admin/careers/applications/type/internship')->name('applications.interns');
+            Route::redirect('/applications/volunteers', '/admin/careers/applications/type/volunteer')->name('applications.volunteers');
+            Route::redirect('/applications/jobs', '/admin/careers/applications/type/job')->name('applications.jobs');
             Route::get('/applications/{applicationId}/resume', function ($applicationId) {
                 $application = CareerApplication::findOrFail($applicationId);
 

@@ -72,6 +72,7 @@ class CareerDetail extends Component
         CareerApplication::create([
             'career_position_id' => $this->position->id,
             'application_code' => $applicationCode,
+            'application_type' => 'job',
             'full_name' => $this->full_name,
             'email' => $this->email,
             'phone' => $this->phone ?: null,
