@@ -364,44 +364,9 @@
                                 @error('show_host_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
 
-                            <div
-                                x-data="{
-                                    selected: @js($show_category_choice ?: $show_category ?: 'music'),
-                                    custom: @js($show_category_custom ?: ''),
-                                    options: ['music', 'talk', 'interview', 'tech', 'lifestyle', 'education'],
-                                    showNew: false,
-                                    init() {
-                                        if (this.selected && !this.options.includes(this.selected)) {
-                                            this.custom = this.selected;
-                                            this.selected = '__new__';
-                                        }
-                                        this.sync(this.selected);
-                                    },
-                                    sync(value) {
-                                        this.selected = value;
-                                        this.showNew = value === '__new__';
-                                        if (this.showNew) {
-                                            $wire.set('show_category_choice', value);
-                                            $wire.set('show_category', this.custom || '');
-                                            $wire.set('show_category_custom', this.custom || '');
-                                            return;
-                                        }
-                                        $wire.set('show_category_choice', value);
-                                        $wire.set('show_category', value);
-                                        $wire.set('show_category_custom', '');
-                                    },
-                                    syncCustom(value) {
-                                        this.custom = value;
-                                        if (this.showNew) {
-                                            $wire.set('show_category_custom', value);
-                                            $wire.set('show_category', value);
-                                        }
-                                    }
-                                }"
-                                x-init="init()"
-                            >
+                            <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
-                                <select x-model="selected" @change="sync($event.target.value)"
+                                <select wire:model.live="show_category_choice"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                                     <option value="music">Music</option>
                                     <option value="talk">Talk Show</option>
@@ -411,13 +376,16 @@
                                     <option value="education">Educational</option>
                                     <option value="__new__">+ Add new category</option>
                                 </select>
-                                @error('show_category') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                                <div class="mt-3 space-y-2" x-cloak x-show="showNew">
+                                @error('show_category_choice') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                @if($show_category_choice === '__new__')
+                                <div class="mt-3 space-y-2">
                                     <label class="block text-xs font-medium text-gray-600">New category name</label>
-                                    <input type="text" x-model="custom" @input="syncCustom($event.target.value)"
+                                    <input type="text" wire:model="show_category_custom"
                                            placeholder="Category name"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    @error('show_category_custom') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
+                                @endif
                             </div>
 
                             <div>

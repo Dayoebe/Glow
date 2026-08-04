@@ -70,7 +70,7 @@
                             </div>
                             <div class="flex flex-1 flex-col p-6">
                                 <p class="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-[#d95318]">
-                                    {{ ucfirst($show->category) }}
+                                    {{ $show->category_label }}
                                 </p>
                                 <h3 class="font-display mt-2 text-2xl font-semibold leading-tight transition group-hover:text-[#d95318]">
                                     {{ $show->title }}
@@ -196,7 +196,7 @@
                                 @endif
                             </div>
                             <p class="mt-5 text-[0.68rem] font-bold uppercase tracking-[0.17em] text-[#d95318]">
-                                {{ ucfirst($show->category) }}
+                                {{ $show->category_label }}
                             </p>
                             <h3 class="font-display mt-1 text-xl font-semibold leading-tight transition group-hover:text-[#d95318]">
                                 {{ $show->title }}

@@ -93,6 +93,17 @@ class Show extends Model
         return $this->publishedEpisodes()->latest('published_at')->first();
     }
 
+    public function getCategoryLabelAttribute(): string
+    {
+        $category = trim((string) $this->category);
+
+        if ($category === '' || $category === '__new__') {
+            return 'Podcast';
+        }
+
+        return Str::of($category)->replace(['_', '-'], ' ')->title()->toString();
+    }
+
     public function incrementSubscribers()
     {
         $this->increment('subscribers');

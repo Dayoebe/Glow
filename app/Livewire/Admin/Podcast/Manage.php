@@ -13,6 +13,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class Manage extends Component
 {
@@ -147,13 +148,18 @@ class Manage extends Component
         $this->show_title = $show->title;
         $this->show_description = $show->description;
         $this->show_host_name = $show->host_name;
-        $this->show_category = $show->category;
-        if ($this->isDefaultPodcastCategory($show->category)) {
-            $this->show_category_choice = $show->category;
+        $savedCategory = trim((string) $show->category);
+        if ($savedCategory === '' || $savedCategory === '__new__') {
+            $savedCategory = 'music';
+        }
+
+        $this->show_category = $savedCategory;
+        if ($this->isDefaultPodcastCategory($savedCategory)) {
+            $this->show_category_choice = $savedCategory;
             $this->show_category_custom = '';
         } else {
             $this->show_category_choice = '__new__';
-            $this->show_category_custom = $show->category;
+            $this->show_category_custom = $savedCategory;
         }
         $this->show_frequency = $show->frequency;
         $this->show_explicit = $show->explicit;
@@ -300,10 +306,17 @@ class Manage extends Component
             'show_title' => 'nullable|min:3|max:255',
             'show_description' => 'nullable|string',
             'show_host_name' => 'nullable',
-            'show_category' => 'nullable',
+            'show_category_choice' => ['required', Rule::in([...$this->podcastCategoryOptions, '__new__'])],
+            'show_category_custom' => 'required_if:show_category_choice,__new__|nullable|string|min:2|max:80|not_in:__new__',
             'show_cover' => $this->editMode ? 'nullable|image|max:5120' : 'nullable|image|max:5120',
             'show_cover_url' => 'nullable|url',
         ]);
+
+        $category = $this->show_category_choice === '__new__'
+            ? trim((string) $this->show_category_custom)
+            : $this->show_category_choice;
+
+        $this->show_category = $category;
 
         // Handle cover image
         $coverPath = $this->existing_show_cover;
@@ -320,7 +333,7 @@ class Manage extends Component
             'cover_image' => $coverPath,
             'host_name' => $this->show_host_name,
             'host_id' => \Illuminate\Support\Facades\Auth::id(),
-            'category' => $this->show_category,
+            'category' => $category,
             'frequency' => $this->show_frequency,
             'explicit' => $this->show_explicit,
             'is_active' => true,

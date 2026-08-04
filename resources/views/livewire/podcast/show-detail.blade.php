@@ -29,7 +29,7 @@
             </div>
 
             <div class="self-center">
-                <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#ff8a2a]">{{ ucfirst($show->category) }} podcast</p>
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#ff8a2a]">{{ $show->category_label }}</p>
                 <h1 class="font-display mt-3 max-w-4xl text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
                     {{ $show->title }}
                 </h1>
