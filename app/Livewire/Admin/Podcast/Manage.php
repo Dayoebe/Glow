@@ -341,9 +341,9 @@ class Manage extends Component
     private function saveEpisode()
     {
         $rules = [
-            'episode_show_id' => 'nullable|exists:podcast_shows,id',
-            'episode_title' => 'nullable|min:3|max:255',
-            'episode_description' => 'nullable|min:10',
+            'episode_show_id' => 'required|exists:podcast_shows,id',
+            'episode_title' => 'required|min:3|max:255',
+            'episode_description' => 'required|min:10',
             'episode_duration' => 'nullable|numeric|min:0',
             'episode_spotify_url' => 'nullable|url',
             'episode_apple_url' => 'nullable|url',
@@ -361,6 +361,24 @@ class Manage extends Component
         $rules['episode_video_url'] = 'nullable|url';
 
         $this->validate($rules);
+
+        $episodeSlug = Str::slug($this->episode_title);
+        if ($episodeSlug === '') {
+            $this->addError('episode_title', 'The episode title must contain letters or numbers that can be used in its public link.');
+
+            return;
+        }
+
+        $duplicateEpisode = Episode::query()
+            ->where('slug', $episodeSlug)
+            ->when($this->editMode, fn ($query) => $query->whereKeyNot($this->itemId))
+            ->exists();
+
+        if ($duplicateEpisode) {
+            $this->addError('episode_title', 'An episode with this or a similar title already exists. Please choose another title.');
+
+            return;
+        }
 
         // Handle audio file
         $audioPath = $this->existing_episode_audio;
@@ -413,7 +431,7 @@ class Manage extends Component
         $data = [
             'show_id' => $this->episode_show_id,
             'title' => $this->episode_title,
-            'slug' => Str::slug($this->episode_title),
+            'slug' => $episodeSlug,
             'description' => $this->episode_description,
             'show_notes' => $this->episode_show_notes,
             'audio_file' => $audioPath,

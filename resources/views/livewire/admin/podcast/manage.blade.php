@@ -232,11 +232,21 @@
                             <div class="flex items-center justify-end">
                                 <div class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50">
                                     <div class="flex items-center gap-2 px-2 py-1">
-                                        <a href="{{ route('podcasts.episode', [$episode->show->slug, $episode->slug]) }}"
-                                           target="_blank"
-                                           class="text-blue-600 hover:text-blue-900" title="View">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
+                                        @if(filled($episode->slug) && filled($episode->show?->slug))
+                                            <a href="{{ route('podcasts.episode', [
+                                                    'showSlug' => $episode->show->slug,
+                                                    'episodeSlug' => $episode->slug,
+                                                ]) }}"
+                                               target="_blank"
+                                               class="text-blue-600 hover:text-blue-900" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        @else
+                                            <span class="cursor-not-allowed text-gray-300"
+                                                  title="Edit this episode and provide its show and title before viewing it publicly">
+                                                <i class="fas fa-eye-slash"></i>
+                                            </span>
+                                        @endif
                                     </div>
                                     @if($canReview)
                                         <span class="mx-1 h-4 w-px bg-gray-200"></span>
