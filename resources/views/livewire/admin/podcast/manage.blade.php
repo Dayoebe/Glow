@@ -364,9 +364,9 @@
                                 @error('show_host_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
 
-                            <div>
+                            <div x-data="{ selectedCategory: $wire.entangle('show_category_choice').live }">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
-                                <select wire:model.live="show_category_choice"
+                                <select x-model="selectedCategory"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                                     <option value="music">Music</option>
                                     <option value="talk">Talk Show</option>
@@ -377,15 +377,13 @@
                                     <option value="__new__">+ Add new category</option>
                                 </select>
                                 @error('show_category_choice') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                                @if($show_category_choice === '__new__')
-                                <div class="mt-3 space-y-2">
+                                <div x-cloak x-show="selectedCategory === '__new__'" class="mt-3 space-y-2">
                                     <label class="block text-xs font-medium text-gray-600">New category name</label>
                                     <input type="text" wire:model="show_category_custom"
                                            placeholder="Category name"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                     @error('show_category_custom') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
-                                @endif
                             </div>
 
                             <div>
