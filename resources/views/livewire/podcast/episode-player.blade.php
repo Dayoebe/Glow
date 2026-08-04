@@ -21,6 +21,10 @@
                             imgClass="h-full w-full object-cover"
                             fallbackClass="bg-glow-navy"
                             textClass="text-5xl font-black text-white"
+                            :branded="true"
+                            placeholderType="Podcast episode"
+                            :placeholderSubtitle="'From ' . $episode->show->title"
+                            :placeholderMeta="$episode->published_at?->format('M j, Y')"
                         />
                     </div>
                 </div>
@@ -468,6 +472,10 @@
                             imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
                             fallbackClass="bg-glow-navy"
                             textClass="text-4xl font-black text-white"
+                            :branded="true"
+                            placeholderType="Podcast"
+                            :placeholderSubtitle="'Hosted by ' . ($episode->show->host_name ?: $episode->show->host?->name ?: 'Glow FM')"
+                            :placeholderMeta="ucfirst($episode->show->frequency ?: 'Weekly')"
                         />
                     </div>
                 </a>
@@ -512,6 +520,11 @@
                                         imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                                         fallbackClass="bg-glow-navy"
                                         textClass="text-lg font-black text-white"
+                                        :branded="true"
+                                        placeholderType="Episode"
+                                        :placeholderSubtitle="'From ' . $episode->show->title"
+                                        :placeholderMeta="$related->published_at?->format('M j, Y')"
+                                        :placeholderCompact="true"
                                     />
                                 </div>
                                 <div class="min-w-0">

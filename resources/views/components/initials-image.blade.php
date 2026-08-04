@@ -12,6 +12,11 @@
     'height' => null,
     'sizes' => null,
     'srcset' => null,
+    'branded' => false,
+    'placeholderType' => 'Glow FM',
+    'placeholderSubtitle' => null,
+    'placeholderMeta' => null,
+    'placeholderCompact' => false,
 ])
 
 @php
@@ -36,12 +41,22 @@
              @if($sizes) sizes="{{ $sizes }}" @endif
              @if($srcset) srcset="{{ $srcset }}" @endif
              onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-        <span class="hidden absolute inset-0 flex items-center justify-center {{ $fallbackClass }}">
-            <span class="{{ $textClass }}">{{ $initials }}</span>
-        </span>
+        @if($branded)
+            <x-content-placeholder class="hidden" :title="$title" :type="$placeholderType"
+                :subtitle="$placeholderSubtitle" :meta="$placeholderMeta" :compact="$placeholderCompact" />
+        @else
+            <span class="hidden absolute inset-0 flex items-center justify-center {{ $fallbackClass }}">
+                <span class="{{ $textClass }}">{{ $initials }}</span>
+            </span>
+        @endif
     @else
-        <span class="absolute inset-0 flex items-center justify-center {{ $fallbackClass }}">
-            <span class="{{ $textClass }}">{{ $initials }}</span>
-        </span>
+        @if($branded)
+            <x-content-placeholder :title="$title" :type="$placeholderType"
+                :subtitle="$placeholderSubtitle" :meta="$placeholderMeta" :compact="$placeholderCompact" />
+        @else
+            <span class="absolute inset-0 flex items-center justify-center {{ $fallbackClass }}">
+                <span class="{{ $textClass }}">{{ $initials }}</span>
+            </span>
+        @endif
     @endif
 </span>

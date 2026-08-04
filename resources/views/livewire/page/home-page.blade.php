@@ -136,6 +136,10 @@
                                 imgClass="absolute inset-0 h-full w-full object-cover"
                                 fallbackClass="bg-[#102b48]"
                                 textClass="text-5xl font-black text-white"
+                                :branded="true"
+                                placeholderType="On air"
+                                :placeholderSubtitle="'With ' . ($currentShow['host'] ?? 'Glow FM')"
+                                :placeholderMeta="$currentShow['time'] ?? 'Live on 99.1 FM'"
                                 loading="eager"
                                 fetchpriority="high"
                                 width="640"
@@ -241,6 +245,10 @@
                                 imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
                                 fallbackClass="bg-[#173b5f]"
                                 textClass="text-5xl font-black text-white"
+                                :branded="true"
+                                placeholderType="Glow news"
+                                :placeholderSubtitle="$leadStory['category'] ?? 'Top story'"
+                                :placeholderMeta="$leadStory['date'] ?? ''"
                             />
                         </a>
                         <div class="mt-5">
@@ -281,6 +289,11 @@
                                         imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                                         fallbackClass="bg-[#173b5f]"
                                         textClass="text-2xl font-black text-white"
+                                        :branded="true"
+                                        placeholderType="Glow news"
+                                        :placeholderSubtitle="$story['category'] ?? 'News'"
+                                        :placeholderMeta="$story['date'] ?? ''"
+                                        :placeholderCompact="true"
                                     />
                                 </a>
                                 <div class="min-w-0 self-center">
@@ -329,6 +342,11 @@
                                         imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                                         fallbackClass="bg-[#173b5f]"
                                         textClass="text-xl font-black text-white"
+                                        :branded="true"
+                                        placeholderType="Glow news"
+                                        :placeholderSubtitle="$story['category'] ?? 'News'"
+                                        :placeholderMeta="$story['date'] ?? ''"
+                                        :placeholderCompact="true"
                                     />
                                 </a>
                                 <div class="min-w-0 self-center">
@@ -476,6 +494,11 @@
                                     imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                                     fallbackClass="bg-[#173b5f]"
                                     textClass="text-3xl font-black text-white"
+                                    :branded="true"
+                                    placeholderType="Podcast"
+                                    :placeholderSubtitle="'With ' . ($episode['host'] ?? 'Glow FM')"
+                                    :placeholderMeta="trim(($episode['show_title'] ?? 'Glow podcast') . ' · ' . ($episode['published_at'] ?? ''), ' ·')"
+                                    :placeholderCompact="true"
                                 />
                                 <span class="absolute bottom-3 left-3 flex h-9 w-9 items-center justify-center rounded-lg bg-[#f36a21] text-white shadow-lg">
                                     <i class="fas fa-play ml-0.5 text-[10px]" aria-hidden="true"></i>
@@ -551,6 +574,10 @@
                                     imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
                                     fallbackClass="bg-[#173b5f]"
                                     textClass="text-4xl font-black text-white"
+                                    :branded="true"
+                                    placeholderType="Radio show"
+                                    :placeholderSubtitle="'With ' . ($show['host'] ?? 'Host TBA')"
+                                    :placeholderMeta="($show['days'] ?? 'Weekly') . ' · ' . ($show['time'] ?? 'Schedule TBA')"
                                 />
                                 <div class="absolute inset-0 bg-gradient-to-t from-[#07182b]/85 via-transparent to-transparent"></div>
                                 <span class="absolute bottom-4 left-4 text-[11px] font-extrabold uppercase tracking-[0.15em] text-orange-300">

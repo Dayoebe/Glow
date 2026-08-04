@@ -141,6 +141,10 @@
                 imgClass="h-full w-full object-cover"
                 fallbackClass="bg-glow-navy"
                 textClass="text-6xl font-black text-white"
+                :branded="true"
+                placeholderType="Glow blog"
+                :placeholderSubtitle="$post->category?->name ?? 'Article'"
+                :placeholderMeta="$post->published_at?->format('M j, Y')"
                 loading="eager"
                 fetchpriority="high"
                 width="1600"
@@ -213,6 +217,10 @@
                                     imgClass="h-full w-full object-cover"
                                     fallbackClass="bg-glow-navy"
                                     textClass="text-3xl font-black text-white"
+                                    :branded="true"
+                                    placeholderType="Glow blog"
+                                    :placeholderSubtitle="$related->category?->name ?? 'Article'"
+                                    :placeholderMeta="$related->published_at?->format('M j, Y')"
                                 />
                             </div>
                         @endforeach

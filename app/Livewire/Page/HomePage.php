@@ -272,14 +272,14 @@ class HomePage extends Component
                 'host_slug' => $show->primaryHost?->slug,
                 'time' => $slot?->time_range ?? 'Schedule TBA',
                 'description' => $show->description,
-                'image' => $show->cover_image ?? 'https://ui-avatars.com/api/?name=' . urlencode($show->title) . '&background=10b981&color=fff&size=400',
+                'image' => $show->cover_image,
                 'category' => $show->category?->name ?? 'Show',
                 'days' => $slot ? ucfirst($slot->day_of_week) : 'Weekly',
             ];
         })->toArray();
 
         // Get Latest Podcast Episodes (6 most recent)
-        $this->latestPodcastEpisodes = Episode::with(['show'])
+        $this->latestPodcastEpisodes = Episode::with(['show.host'])
             ->published()
             ->latest('published_at')
             ->take(6)
@@ -291,8 +291,9 @@ class HomePage extends Component
                     'show_slug' => $episode->show?->slug ?? '',
                     'title' => $episode->title,
                     'description' => $episode->description,
-                    'image' => $episode->cover_image ?? $episode->show?->cover_image ?? 'https://ui-avatars.com/api/?name=' . urlencode($episode->title) . '&background=6366f1&color=fff&size=400',
+                    'image' => $episode->cover_image ?? $episode->show?->cover_image,
                     'show_title' => $episode->show?->title ?? 'Podcast',
+                    'host' => $episode->show?->host_name ?? $episode->show?->host?->name ?? 'Glow FM',
                     'duration' => $episode->formatted_duration,
                     'published_at' => $episode->published_at->format('M d, Y'),
                     'plays' => number_format($episode->plays),

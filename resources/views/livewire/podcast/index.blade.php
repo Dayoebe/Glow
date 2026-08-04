@@ -62,6 +62,10 @@
                                     imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                                     fallbackClass="bg-[#17375f]"
                                     textClass="font-display text-5xl font-semibold text-white"
+                                    :branded="true"
+                                    placeholderType="Podcast"
+                                    :placeholderSubtitle="'Hosted by ' . ($show->host_name ?: $show->host?->name ?: 'Glow FM')"
+                                    :placeholderMeta="ucfirst($show->frequency ?: 'Weekly')"
                                 />
                             </div>
                             <div class="flex flex-1 flex-col p-6">
@@ -111,6 +115,11 @@
                                         imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                                         fallbackClass="bg-[#17375f]"
                                         textClass="font-display text-3xl font-semibold text-white"
+                                        :branded="true"
+                                        placeholderType="Episode"
+                                        :placeholderSubtitle="'From ' . $episode->show->title"
+                                        :placeholderMeta="$episode->published_at?->format('M j, Y')"
+                                        :placeholderCompact="true"
                                     />
                                 </div>
                                 <div>
@@ -177,6 +186,10 @@
                                     imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                                     fallbackClass="bg-[#17375f]"
                                     textClass="font-display text-4xl font-semibold text-white"
+                                    :branded="true"
+                                    placeholderType="Podcast"
+                                    :placeholderSubtitle="'Hosted by ' . ($show->host_name ?: $show->host?->name ?: 'Glow FM')"
+                                    :placeholderMeta="ucfirst($show->frequency ?: 'Weekly')"
                                 />
                                 @if($show->explicit)
                                     <span class="absolute right-3 top-3 bg-[#0b1830] px-2 py-1 text-[0.65rem] font-bold text-white">E</span>

@@ -117,6 +117,10 @@
                                 imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
                                 fallbackClass="bg-[#102b4e]"
                                 textClass="text-5xl font-black text-white"
+                                :branded="true"
+                                placeholderType="Glow news"
+                                :placeholderSubtitle="data_get($featuredHero, 'category.name', 'Top story')"
+                                :placeholderMeta="data_get($featuredHero, 'published_at', data_get($featuredHero, 'date', ''))"
                                 loading="eager"
                                 fetchpriority="high"
                                 width="1600"
@@ -162,6 +166,11 @@
                                         imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                                         fallbackClass="bg-[#102b4e]"
                                         textClass="text-3xl font-black text-white"
+                                        :branded="true"
+                                        placeholderType="Glow news"
+                                        :placeholderSubtitle="data_get($secondary, 'category.name', 'News')"
+                                        :placeholderMeta="data_get($secondary, 'published_at', data_get($secondary, 'date', ''))"
+                                        :placeholderCompact="true"
                                     />
                                 </a>
                                 <p class="mb-2 text-xs font-black uppercase tracking-[0.14em] text-orange-600">
@@ -222,6 +231,11 @@
                                         imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
                                         fallbackClass="bg-[#102b4e]"
                                         textClass="text-3xl font-black text-white"
+                                        :branded="true"
+                                        placeholderType="Glow news"
+                                        :placeholderSubtitle="data_get($article, 'category.name', 'News')"
+                                        :placeholderMeta="data_get($article, 'published_at', data_get($article, 'date', ''))"
+                                        :placeholderCompact="true"
                                     />
                                 </a>
 

@@ -90,6 +90,10 @@
                                 imgClass="h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"
                                 fallbackClass="bg-glow-navy"
                                 textClass="text-5xl font-black text-white"
+                                :branded="true"
+                                placeholderType="Glow blog"
+                                :placeholderSubtitle="$featuredPost->category?->name ?? 'Featured read'"
+                                :placeholderMeta="$featuredPost->published_at?->format('M j, Y')"
                             />
                         </a>
                     </article>
@@ -168,6 +172,11 @@
                                         imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
                                         fallbackClass="bg-glow-navy"
                                         textClass="text-3xl font-black text-white"
+                                        :branded="true"
+                                        placeholderType="Glow blog"
+                                        :placeholderSubtitle="$post->category?->name ?? 'Article'"
+                                        :placeholderMeta="$post->published_at?->format('M j, Y')"
+                                        :placeholderCompact="true"
                                     />
                                 </a>
 

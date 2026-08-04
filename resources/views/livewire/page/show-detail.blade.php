@@ -15,6 +15,10 @@
                         imgClass="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
                         fallbackClass="bg-[#23235b]"
                         textClass="text-6xl font-black text-white"
+                        :branded="true"
+                        placeholderType="Radio show"
+                        :placeholderSubtitle="'With ' . ($show->primaryHost?->name ?? 'Host TBA')"
+                        :placeholderMeta="$show->scheduleSlots->first() ? ucfirst($show->scheduleSlots->first()->day_of_week) . ' · ' . $show->scheduleSlots->first()->time_range : 'Schedule TBA'"
                     />
                 </div>
 

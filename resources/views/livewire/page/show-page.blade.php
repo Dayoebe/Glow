@@ -70,6 +70,10 @@
                         imgClass="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                         fallbackClass="bg-[#23235b]"
                         textClass="text-5xl font-black text-white"
+                        :branded="true"
+                        placeholderType="Featured show"
+                        :placeholderSubtitle="'With ' . ($featuredShow->primaryHost?->name ?? 'Host TBA')"
+                        :placeholderMeta="$featuredShow->scheduleSlots->first() ? ucfirst($featuredShow->scheduleSlots->first()->day_of_week) . ' · ' . $featuredShow->scheduleSlots->first()->time_range : 'Schedule TBA'"
                     />
                     <span class="absolute left-4 top-4 rounded-lg bg-orange-500 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white">
                         Featured
@@ -166,6 +170,10 @@
                                 imgClass="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                                 fallbackClass="bg-[#23235b]"
                                 textClass="text-4xl font-black text-white"
+                                :branded="true"
+                                placeholderType="Radio show"
+                                :placeholderSubtitle="'With ' . ($show->primaryHost?->name ?? 'Host TBA')"
+                                :placeholderMeta="$nextAirtime ? ucfirst($nextAirtime->day_of_week) . ' · ' . $nextAirtime->time_range : 'Schedule TBA'"
                             />
                         </a>
                         <div class="p-5">

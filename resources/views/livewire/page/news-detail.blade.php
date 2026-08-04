@@ -167,6 +167,10 @@
                         imgClass="h-full w-full object-cover transition duration-700 group-hover:scale-[1.015]"
                         fallbackClass="bg-[#102b4e]"
                         textClass="text-6xl font-black text-white"
+                        :branded="true"
+                        placeholderType="Glow news"
+                        :placeholderSubtitle="$news->category?->name ?? 'Top story'"
+                        :placeholderMeta="$news->published_at?->format('M j, Y')"
                         loading="eager"
                         fetchpriority="high"
                         width="1600"
@@ -186,6 +190,10 @@
                         imgClass="h-full w-full object-cover"
                         fallbackClass="bg-[#102b4e]"
                         textClass="text-6xl font-black text-white"
+                        :branded="true"
+                        placeholderType="Glow news"
+                        :placeholderSubtitle="$news->category?->name ?? 'Top story'"
+                        :placeholderMeta="$news->published_at?->format('M j, Y')"
                         loading="eager"
                         fetchpriority="high"
                         width="1600"
@@ -259,6 +267,10 @@
                                     imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                                     fallbackClass="bg-[#102b4e]"
                                     textClass="text-3xl font-black text-white"
+                                    :branded="true"
+                                    placeholderType="Glow news"
+                                    :placeholderSubtitle="$related->category?->name ?? 'News'"
+                                    :placeholderMeta="$related->published_at?->format('M j, Y')"
                                 />
                                 <span class="absolute inset-0 flex items-center justify-center bg-[#071a33]/0 text-white opacity-0 transition group-hover:bg-[#071a33]/40 group-hover:opacity-100">
                                     <i class="fas fa-expand"></i>

@@ -17,6 +17,10 @@
                         imgClass="h-full w-full object-cover"
                         fallbackClass="bg-[#17375f]"
                         textClass="font-display text-6xl font-semibold text-white"
+                        :branded="true"
+                        placeholderType="Podcast"
+                        :placeholderSubtitle="'Hosted by ' . ($show->host_name ?: $show->host?->name ?: 'Glow FM')"
+                        :placeholderMeta="ucfirst($show->frequency ?: 'Weekly')"
                     />
                 </div>
                 @if($show->explicit)
@@ -203,6 +207,11 @@
                                             imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                                             fallbackClass="bg-[#17375f]"
                                             textClass="font-display text-3xl font-semibold text-white"
+                                            :branded="true"
+                                            placeholderType="Episode"
+                                            :placeholderSubtitle="'From ' . $show->title"
+                                            :placeholderMeta="$episode->published_at?->format('M j, Y')"
+                                            :placeholderCompact="true"
                                         />
                                         <span class="absolute inset-0 flex items-center justify-center bg-[#07172f]/15 transition group-hover:bg-[#07172f]/35" aria-hidden="true">
                                             <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#07172f]">
