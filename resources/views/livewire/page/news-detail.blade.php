@@ -422,6 +422,31 @@
             @endif
         </article>
 
+        @if($nextStory)
+            <section class="mx-auto mt-12 max-w-[760px] overflow-hidden rounded-2xl bg-[#071a33] text-white shadow-xl" aria-labelledby="next-story-heading">
+                <a href="{{ route('news.show', $nextStory->slug) }}" class="group grid sm:grid-cols-[13rem_minmax(0,1fr)]">
+                    <div class="relative min-h-48 overflow-hidden bg-[#102b4e] sm:min-h-full">
+                        <x-initials-image
+                            :src="$nextStory->featured_image"
+                            :title="$nextStory->title"
+                            imgClass="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
+                            fallbackClass="bg-[#102b4e]"
+                            textClass="text-3xl font-black text-white"
+                            :branded="true"
+                            placeholderType="Next story"
+                            :placeholderSubtitle="$nextStory->category?->name ?? 'Glow news'"
+                            :placeholderCompact="true"
+                        />
+                    </div>
+                    <div class="flex flex-col justify-center p-6 sm:p-7">
+                        <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-400">Continue reading</p>
+                        <h2 id="next-story-heading" class="font-editorial mt-3 text-2xl font-bold leading-tight transition group-hover:text-orange-300">{{ $nextStory->title }}</h2>
+                        <div class="mt-5 flex items-center justify-between text-xs font-semibold text-slate-300"><span>{{ $nextStory->category?->name ?? 'News' }} · {{ $nextStory->read_time }}</span><span class="inline-flex items-center gap-2 font-black text-white">Read next <i class="fas fa-arrow-right transition group-hover:translate-x-1"></i></span></div>
+                    </div>
+                </a>
+            </section>
+        @endif
+
         <section class="mx-auto mt-16 max-w-[760px] border-t-2 border-[#071a33] pt-7" aria-labelledby="comments-heading">
             <div class="flex items-end justify-between">
                 <div>
@@ -508,7 +533,7 @@
                     </a>
                 </div>
 
-                <div class="grid gap-6 md:grid-cols-3">
+                <div class="grid gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($relatedNews as $related)
                         <article class="group border-b border-slate-200 pb-5">
                             <a href="{{ route('news.show', $related->slug) }}"
@@ -530,10 +555,22 @@
                                     {{ $related->title }}
                                 </a>
                             </h3>
-                            <p class="mt-3 text-xs text-slate-500">{{ $related->read_time }}</p>
+                            @if($related->excerpt)<p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{{ $related->excerpt }}</p>@endif
+                            <p class="mt-3 text-xs text-slate-500">{{ $related->read_time }} · {{ number_format($related->views) }} views</p>
                         </article>
                     @endforeach
                 </div>
+            </section>
+        @endif
+
+        @if($popularStories->count() > 0)
+            <section class="mx-auto mt-14 max-w-7xl rounded-2xl bg-[#0b2f3a] px-5 py-7 text-white sm:px-7" aria-labelledby="popular-stories-heading">
+                <div class="flex items-end justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[0.2em] text-orange-400">Reader favourites</p><h2 id="popular-stories-heading" class="font-editorial mt-1 text-2xl font-bold">Most-read stories</h2></div><a href="{{ route('news', ['sortBy' => 'popular']) }}" class="hidden text-sm font-bold text-emerald-300 hover:text-white sm:inline">See all popular news</a></div>
+                <ol class="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                    @foreach($popularStories as $popular)
+                        <li><a href="{{ route('news.show', $popular->slug) }}" class="group flex h-full gap-3 rounded-xl border border-white/10 bg-white/[0.06] p-4 transition hover:bg-white/[0.11]"><span class="text-2xl font-black text-white/25">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><span><span class="line-clamp-3 font-bold leading-snug group-hover:text-orange-300">{{ $popular->title }}</span><span class="mt-3 block text-xs text-slate-400">{{ number_format($popular->views) }} views</span></span></a></li>
+                    @endforeach
+                </ol>
             </section>
         @endif
     </main>

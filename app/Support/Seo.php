@@ -334,6 +334,14 @@ class Seo
             'url' => $station['url'],
             'publisher' => ['@id' => $station['url'] . '/#organization'],
             'inLanguage' => self::LANGUAGE,
+            'potentialAction' => [
+                '@type' => 'SearchAction',
+                'target' => [
+                    '@type' => 'EntryPoint',
+                    'urlTemplate' => self::absoluteUrl('/news') . '?searchQuery={search_term_string}',
+                ],
+                'query-input' => 'required name=search_term_string',
+            ],
         ];
 
         $webPage = [

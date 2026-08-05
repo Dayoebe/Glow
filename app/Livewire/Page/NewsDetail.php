@@ -158,12 +158,51 @@ class NewsDetail extends Component
 
     public function getRelatedNewsProperty()
     {
-        return News::with('category')
+        $related = News::with('category')
             ->published()
             ->where('category_id', $this->news->category_id)
             ->where('id', '!=', $this->news->id)
             ->latest('published_at')
-            ->take(3)
+            ->take(6)
+            ->get();
+
+        if ($related->count() < 6) {
+            $fallback = News::with('category')
+                ->published()
+                ->whereNotIn('id', $related->pluck('id')->push($this->news->id))
+                ->latest('published_at')
+                ->take(6 - $related->count())
+                ->get();
+
+            $related = $related->concat($fallback);
+        }
+
+        return $related->values();
+    }
+
+    public function getNextStoryProperty(): ?News
+    {
+        return News::with('category')
+            ->published()
+            ->where('id', '!=', $this->news->id)
+            ->where('published_at', '<', $this->news->published_at)
+            ->latest('published_at')
+            ->first()
+            ?? News::with('category')
+                ->published()
+                ->where('id', '!=', $this->news->id)
+                ->latest('published_at')
+                ->first();
+    }
+
+    public function getPopularStoriesProperty()
+    {
+        return News::with('category')
+            ->published()
+            ->where('id', '!=', $this->news->id)
+            ->orderByDesc('views')
+            ->latest('published_at')
+            ->take(4)
             ->get();
     }
 
@@ -212,6 +251,9 @@ class NewsDetail extends Component
 
     public function render()
     {
+        $relatedNews = $this->relatedNews;
+        $nextStory = $this->nextStory;
+        $popularStories = $this->popularStories;
         $excerpt = trim($this->news->meta_description ?: $this->news->excerpt ?? '');
         if ($excerpt === '') {
             $excerpt = Str::limit(strip_tags($this->news->content ?? ''), 180);
@@ -221,6 +263,20 @@ class NewsDetail extends Component
         $extraSchema = [
             Seo::newsArticle($this->news, $canonical, $excerpt),
         ];
+
+        if ($relatedNews->isNotEmpty()) {
+            $extraSchema[] = [
+                '@type' => 'ItemList',
+                '@id' => $canonical . '#related-stories',
+                'name' => 'Related Glow FM news stories',
+                'itemListElement' => $relatedNews->values()->map(fn ($story, $index) => [
+                    '@type' => 'ListItem',
+                    'position' => $index + 1,
+                    'name' => $story->title,
+                    'url' => Seo::absoluteUrl(route('news.show', $story->slug)),
+                ])->all(),
+            ];
+        }
 
         $videoObject = Seo::videoObject(
             $this->news->title,
@@ -235,12 +291,14 @@ class NewsDetail extends Component
         }
 
         return view('livewire.page.news-detail', [
-            'relatedNews' => $this->relatedNews,
+            'relatedNews' => $relatedNews,
             'reactions' => $this->news->getAllReactionCounts(),
             'articleSummary' => $this->articleSummary,
             'keyTakeaways' => $this->keyTakeaways,
             'articleFaqs' => $this->articleFaqs,
             'shareLinks' => $this->shareLinks,
+            'nextStory' => $nextStory,
+            'popularStories' => $popularStories,
         ])->layout('layouts.app', [
             'title' => $this->news->title . ' - Glow 99.1 FM News',
             'meta_title' => $this->news->title,
@@ -251,6 +309,8 @@ class NewsDetail extends Component
             'meta_published_time' => $this->news->published_at?->toAtomString(),
             'meta_modified_time' => $this->news->updated_at?->toAtomString(),
             'meta_author' => $this->news->author?->name ?? 'Glow FM Newsroom',
+            'meta_section' => $this->news->category?->name,
+            'meta_tags' => collect((array) $this->news->tags)->filter()->values()->all(),
             'canonical_url' => $canonical,
             'structured_data' => Seo::siteGraph([
                 'title' => $this->news->title,

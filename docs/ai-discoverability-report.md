@@ -2,6 +2,18 @@
 
 Date: 2026-05-22
 
+## August 2026 News Discovery And SEO Upgrade
+
+- Reworked news category controls into crawlable internal links while retaining Livewire filtering.
+- Added visible topic hubs at the end of the News page so readers and crawlers can reach important category collections.
+- Expanded article recommendations from three same-category stories to six relevant/fresh stories with fallback coverage.
+- Added a prominent next-story path immediately after every article, plus a most-read collection and stronger related-story summaries.
+- Added an `ItemList` for related stories to article structured data.
+- Added article section, article tag, and author metadata to public news detail pages.
+- Added a semantic site-search action to the shared `WebSite` structured-data node.
+- Preserved canonical URLs, approval-aware publication rules, NewsArticle schema, news/image/video sitemaps, RSS discovery, and private-route `noindex` protection.
+- Search ranking cannot be guaranteed by code. Ongoing original local reporting, named authors, credible sourcing, corrections, backlinks, Search Console/Bing monitoring, and fast production hosting remain necessary.
+
 ## Stack Detected
 
 - Laravel 12 application.

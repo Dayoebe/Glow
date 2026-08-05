@@ -56,6 +56,8 @@
         $metaPublishedTime = $meta_published_time ?? null;
         $metaModifiedTime = $meta_modified_time ?? null;
         $metaAuthor = $meta_author ?? null;
+        $metaSection = $meta_section ?? null;
+        $metaTags = collect($meta_tags ?? [])->filter()->values();
         $locale = str_replace('-', '_', app()->getLocale());
         $twitterSite = $twitter_site ?? data_get($stationSettings, 'twitter_handle', '');
         $defaultBreadcrumbs = [['name' => 'Home', 'url' => route('home')]];
@@ -107,6 +109,12 @@
     @if (!empty($metaAuthor))
         <meta property="article:author" content="{{ $metaAuthor }}">
     @endif
+    @if (!empty($metaSection))
+        <meta property="article:section" content="{{ $metaSection }}">
+    @endif
+    @foreach ($metaTags as $metaTag)
+        <meta property="article:tag" content="{{ $metaTag }}">
+    @endforeach
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ $metaTitle }}">
     <meta name="twitter:description" content="{{ $metaDescription }}">

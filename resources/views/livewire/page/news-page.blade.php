@@ -45,13 +45,13 @@
                 <nav class="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:pb-0" aria-label="News categories">
                     @foreach($categories as $category)
                         @continueIfNotArray($category)
-                        <button type="button"
-                                wire:click="$set('selectedCategory', '{{ $category['slug'] }}')"
+                        <a href="{{ route('news', $category['slug'] === 'all' ? [] : ['selectedCategory' => $category['slug']]) }}"
+                                wire:click.prevent="$set('selectedCategory', '{{ $category['slug'] }}')"
                                 wire:key="news-category-{{ $category['slug'] }}"
                                 class="shrink-0 border-b-2 px-3 py-2 text-sm font-semibold transition {{ $selectedCategory === $category['slug'] ? 'border-orange-500 text-[#071a33]' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-900' }}">
                             {{ $category['name'] }}
                             <span class="ml-1 text-xs font-normal text-slate-400">{{ $category['count'] }}</span>
-                        </button>
+                        </a>
                     @endforeach
                 </nav>
 
@@ -316,5 +316,24 @@
                 </aside>
             @endif
         </div>
+
+        @if(!$hasActiveFilters && count($categories) > 1)
+            <section class="mt-16 border-t-2 border-[#071a33] pt-7" aria-labelledby="explore-news-topics">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div><p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">Choose your next read</p><h2 id="explore-news-topics" class="font-editorial mt-1 text-2xl font-bold text-[#071a33]">Explore news by topic</h2></div>
+                    <p class="max-w-xl text-sm text-slate-500">Follow the stories that matter to you across Ondo State, Nigeria and the wider community.</p>
+                </div>
+                <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach(collect($categories)->where('slug', '!=', 'all')->take(8) as $category)
+                        @continueIfNotArray($category)
+                        <a href="{{ route('news', ['selectedCategory' => $category['slug']]) }}"
+                           class="group flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md">
+                            <span><span class="block font-black text-[#071a33] group-hover:text-orange-600">{{ $category['name'] }}</span><span class="mt-1 block text-xs text-slate-500">{{ number_format($category['count']) }} {{ \Illuminate\Support\Str::plural('story', $category['count']) }}</span></span>
+                            <i class="fas fa-arrow-right text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-orange-500"></i>
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+        @endif
     </main>
 </div>
