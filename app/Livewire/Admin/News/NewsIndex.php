@@ -16,6 +16,7 @@ class NewsIndex extends Component
     public $search = '';
     public $filterCategory = '';
     public $filterStatus = '';
+    public $sortBy = 'newest';
     public $approvalAction = '';
     public $approvalReason = '';
     public $approvalFormId = null;
@@ -24,6 +25,7 @@ class NewsIndex extends Component
         'search' => ['except' => ''],
         'filterCategory' => ['except' => ''],
         'filterStatus' => ['except' => ''],
+        'sortBy' => ['except' => 'newest'],
     ];
 
     public function updatingSearch()
@@ -38,6 +40,18 @@ class NewsIndex extends Component
 
     public function updatingFilterStatus()
     {
+        $this->resetPage();
+    }
+
+    public function updatingSortBy()
+    {
+        $this->resetPage();
+    }
+
+    public function clearFilters(): void
+    {
+        $this->reset(['search', 'filterCategory', 'filterStatus', 'sortBy']);
+        $this->sortBy = 'newest';
         $this->resetPage();
     }
 
@@ -215,14 +229,13 @@ class NewsIndex extends Component
                 return;
             }
 
-            // If making this featured, unfeatured all others
-            if (!$news->is_featured) {
-                News::where('is_featured', true)->update(['is_featured' => false]);
-            }
-            
             $news->is_featured = !$news->is_featured;
             if ($news->is_featured && ($news->featured_position === 'none' || !$news->featured_position)) {
-                $news->featured_position = 'hero';
+                // The hero is intentionally unique; additional featured stories
+                // join the secondary collection instead of replacing each other.
+                $news->featured_position = News::where('featured_position', 'hero')
+                    ->where('id', '!=', $news->id)
+                    ->exists() ? 'secondary' : 'hero';
             } elseif (!$news->is_featured) {
                 $news->featured_position = 'none';
             }
@@ -272,8 +285,7 @@ class NewsIndex extends Component
                 'interactions as reactions_count' => function ($query) {
                     $query->where('type', 'reaction');
                 },
-            ])
-            ->latest('created_at');
+            ]);
 
         if (!empty($this->search)) {
             $query->search($this->search);
@@ -300,6 +312,14 @@ class NewsIndex extends Component
             $query->where('approval_status', 'rejected');
         }
 
+        match ($this->sortBy) {
+            'oldest' => $query->oldest('created_at'),
+            'title' => $query->orderBy('title'),
+            'views' => $query->orderByDesc('views')->latest('created_at'),
+            'featured' => $query->orderByDesc('is_featured')->latest('created_at'),
+            default => $query->latest('created_at'),
+        };
+
         return $query->paginate(10);
     }
 
@@ -317,7 +337,17 @@ class NewsIndex extends Component
                 ->count(),
             'draft' => News::where('is_published', false)->count(),
             'featured' => News::where('is_featured', true)->count(),
+            'pending' => News::where('approval_status', 'pending')->count(),
+            'hero' => News::where('is_featured', true)->where('featured_position', 'hero')->count(),
         ];
+    }
+
+    public function getHasFiltersProperty(): bool
+    {
+        return filled($this->search)
+            || filled($this->filterCategory)
+            || filled($this->filterStatus)
+            || $this->sortBy !== 'newest';
     }
 
     public function render()
@@ -326,6 +356,7 @@ class NewsIndex extends Component
             'newsArticles' => $this->news,
             'categories' => $this->categories,
             'stats' => $this->stats,
+            'hasFilters' => $this->hasFilters,
         ])->layout('layouts.admin', [
             'header' => 'News Management'
         ]);

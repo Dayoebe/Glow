@@ -154,12 +154,12 @@
         ];
     @endphp
 
-    <div class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8 lg:pt-10">
-        <figure class="overflow-hidden bg-[#102b4e]">
+    <div class="mx-auto max-w-4xl px-4 pt-8 sm:px-6 lg:pt-10">
+        <figure class="overflow-hidden rounded-2xl bg-[#102b4e] shadow-[0_24px_70px_-35px_rgba(7,26,51,0.65)] ring-1 ring-slate-900/5">
             @if($news->featured_image)
                 <button type="button"
                         @click='openImage(@json($featuredImageViewer))'
-                        class="group relative block aspect-[16/9] max-h-[680px] w-full cursor-zoom-in overflow-hidden text-left"
+                        class="group relative block aspect-[16/9] w-full cursor-zoom-in overflow-hidden text-left"
                         aria-label="Open full image for {{ $news->title }}">
                     <x-initials-image
                         :src="$news->featured_image"
@@ -175,7 +175,7 @@
                         fetchpriority="high"
                         width="1600"
                         height="900"
-                        sizes="(min-width: 1280px) 80rem, 100vw"
+                        sizes="(min-width: 1024px) 56rem, calc(100vw - 2rem)"
                     />
                     <span class="absolute bottom-4 right-4 inline-flex h-10 w-10 items-center justify-center bg-[#071a33]/85 text-sm text-white opacity-90 backdrop-blur-sm transition group-hover:bg-orange-500 group-hover:text-[#071a33]"
                           aria-hidden="true">
@@ -183,7 +183,7 @@
                     </span>
                 </button>
             @else
-                <div class="aspect-[16/9] max-h-[680px]">
+                <div class="aspect-[16/9]">
                     <x-initials-image
                         :src="$news->featured_image"
                         :title="$news->title"
@@ -198,7 +198,7 @@
                         fetchpriority="high"
                         width="1600"
                         height="900"
-                        sizes="(min-width: 1280px) 80rem, 100vw"
+                        sizes="(min-width: 1024px) 56rem, calc(100vw - 2rem)"
                     />
                 </div>
             @endif
@@ -269,8 +269,8 @@
                                     textClass="text-3xl font-black text-white"
                                     :branded="true"
                                     placeholderType="Glow news"
-                                    :placeholderSubtitle="$related->category?->name ?? 'News'"
-                                    :placeholderMeta="$related->published_at?->format('M j, Y')"
+                                    :placeholderSubtitle="$news->category?->name ?? 'News'"
+                                    :placeholderMeta="$news->published_at?->format('M j, Y')"
                                 />
                                 <span class="absolute inset-0 flex items-center justify-center bg-[#071a33]/0 text-white opacity-0 transition group-hover:bg-[#071a33]/40 group-hover:opacity-100">
                                     <i class="fas fa-expand"></i>
@@ -293,8 +293,8 @@
                 </div>
             @endif
 
-            <section class="mt-10 border-y border-slate-200 py-7" aria-labelledby="article-reactions-heading">
-                <div class="flex flex-col gap-6">
+            <section class="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="article-reactions-heading">
+                <div class="border-b border-slate-100 p-5 sm:p-6">
                     <div>
                         <h2 id="article-reactions-heading" class="text-sm font-black uppercase tracking-[0.16em] text-[#071a33]">
                             Your reaction
@@ -312,29 +312,30 @@
                         </div>
                     </div>
 
+                </div>
+                <div class="bg-slate-50 p-5 sm:p-6">
+                    <div class="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p class="text-xs font-black uppercase tracking-[0.16em] text-orange-600">Pass it on</p><h2 class="mt-1 font-editorial text-xl font-bold text-[#071a33]">Share this story</h2></div><p class="text-xs text-slate-500">Social links open in a new tab</p></div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="mr-1 text-sm font-bold text-slate-500">Share</span>
-                        <button type="button"
-                                wire:click="shareNews('x')"
-                                class="inline-flex h-10 w-10 items-center justify-center bg-[#071a33] text-white transition hover:bg-orange-500 hover:text-[#071a33]"
-                                aria-label="Share on X">
-                            <i class="fab fa-x-twitter"></i>
-                        </button>
-                        <button type="button"
-                                wire:click="shareNews('facebook')"
-                                class="inline-flex h-10 w-10 items-center justify-center border border-slate-300 bg-white text-[#071a33] transition hover:border-orange-500 hover:text-orange-600"
-                                aria-label="Share on Facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </button>
-                        <button type="button"
-                                wire:click="shareNews('whatsapp')"
-                                class="inline-flex h-10 w-10 items-center justify-center border border-slate-300 bg-white text-[#071a33] transition hover:border-orange-500 hover:text-orange-600"
-                                aria-label="Share on WhatsApp">
-                            <i class="fab fa-whatsapp"></i>
-                        </button>
+                        @foreach([
+                            'x' => ['X', 'fab fa-x-twitter', 'bg-[#071a33] text-white border-[#071a33]'],
+                            'facebook' => ['Facebook', 'fab fa-facebook-f', 'bg-[#1877f2] text-white border-[#1877f2]'],
+                            'whatsapp' => ['WhatsApp', 'fab fa-whatsapp', 'bg-[#25d366] text-[#071a33] border-[#25d366]'],
+                            'linkedin' => ['LinkedIn', 'fab fa-linkedin-in', 'bg-[#0a66c2] text-white border-[#0a66c2]'],
+                            'telegram' => ['Telegram', 'fab fa-telegram-plane', 'bg-[#229ed9] text-white border-[#229ed9]'],
+                            'reddit' => ['Reddit', 'fab fa-reddit-alien', 'bg-[#ff4500] text-white border-[#ff4500]'],
+                        ] as $platform => [$label, $icon, $colour])
+                            <a href="{{ $shareLinks[$platform] }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               @click="$wire.trackShare('{{ $platform }}')"
+                               class="inline-flex h-10 items-center gap-2 rounded-xl border px-3.5 text-sm font-bold shadow-sm transition hover:-translate-y-0.5 hover:shadow {{ $colour }}"
+                               aria-label="Share on {{ $label }} in a new tab">
+                                <i class="{{ $icon }}"></i><span>{{ $label }}</span>
+                            </a>
+                        @endforeach
                         <button type="button"
                                 data-copy-link="{{ url()->current() }}"
-                                class="inline-flex h-10 items-center gap-2 border border-slate-300 bg-white px-3 text-sm font-bold text-[#071a33] transition hover:border-orange-500 hover:text-orange-600">
+                                class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-3.5 text-sm font-bold text-[#071a33] transition hover:border-orange-500 hover:text-orange-600">
                             <i class="fas fa-link"></i>
                             <span data-copy-text>Copy link</span>
                         </button>

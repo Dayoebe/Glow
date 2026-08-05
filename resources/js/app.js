@@ -10,7 +10,8 @@ if (!window.__glowShareUrlBridgeInstalled) {
 
         if (!url || typeof url !== 'string') return;
 
-        window.location.assign(url);
+        const shareWindow = window.open(url, '_blank', 'noopener,noreferrer');
+        if (shareWindow) shareWindow.opener = null;
     });
 }
 

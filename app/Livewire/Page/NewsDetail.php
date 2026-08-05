@@ -101,40 +101,49 @@ class NewsDetail extends Component
     public function shareNews($platform)
     {
         $this->news->trackShare($platform);
-        
-        $rawUrl = $this->shareUrl ?: url()->current();
-        $rawUrl = url($rawUrl);
-        $url = urlencode($rawUrl);
+
+        $shareUrl = $this->shareLinks[$platform] ?? $this->shareUrl;
+        if (method_exists($this, 'dispatchBrowserEvent')) {
+            $this->dispatchBrowserEvent('open-share-url', ['url' => $shareUrl]);
+        }
+        $this->dispatch('open-share-url', url: $shareUrl);
+    }
+
+    public function trackShare(string $platform): void
+    {
+        if (array_key_exists($platform, $this->shareLinks)) {
+            $this->news->trackShare($platform);
+        }
+    }
+
+    public function getShareLinksProperty(): array
+    {
+        $rawUrl = url($this->shareUrl ?: url()->current());
         $title = $this->news->title;
         $excerpt = trim($this->news->excerpt ?? '');
         if ($excerpt === '') {
             $excerpt = Str::limit(strip_tags($this->news->content ?? ''), 180);
         }
-        
-        // For share tracking and building share text
-        $shareText = trim($title . ' - ' . $excerpt);
-        $textWithUrl = urlencode($shareText . ' ' . $rawUrl);
-        $encodedTitle = urlencode($title);
-        $encodedShareText = urlencode($shareText);
-        $redditTitle = urlencode(Str::limit($shareText, 200));
-        
-        $shareUrls = [
-            'x' => "https://x.com/intent/post?text={$textWithUrl}",
-            'twitter' => "https://x.com/intent/post?text={$textWithUrl}",
-            'facebook' => "https://m.facebook.com/sharer.php?u={$url}&quote={$encodedShareText}",
-            'instagram' => "https://www.instagram.com/",
-            'linkedin' => "https://www.linkedin.com/sharing/share-offsite/?url={$url}",
-            'whatsapp' => "https://wa.me/?text={$textWithUrl}",
-            'telegram' => "https://t.me/share/url?url={$url}&text={$encodedShareText}",
-            'reddit' => "https://www.reddit.com/submit?url={$url}&title={$redditTitle}",
-            'email' => "mailto:?subject={$encodedTitle}&body={$textWithUrl}",
-        ];
 
-        $shareUrl = $shareUrls[$platform] ?? $rawUrl;
-        if (method_exists($this, 'dispatchBrowserEvent')) {
-            $this->dispatchBrowserEvent('open-share-url', ['url' => $shareUrl]);
-        }
-        $this->dispatch('open-share-url', url: $shareUrl);
+        $shareText = trim($title . ' - ' . $excerpt);
+        $query = fn (array $parameters) => http_build_query($parameters, '', '&', PHP_QUERY_RFC3986);
+
+        return [
+            'x' => 'https://x.com/intent/post?' . $query(['text' => $shareText, 'url' => $rawUrl]),
+            'twitter' => 'https://x.com/intent/post?' . $query(['text' => $shareText, 'url' => $rawUrl]),
+            'facebook' => 'https://www.facebook.com/sharer/sharer.php?' . $query([
+                'u' => $rawUrl,
+                'quote' => $shareText,
+            ]),
+            'linkedin' => 'https://www.linkedin.com/sharing/share-offsite/?' . $query(['url' => $rawUrl]),
+            'whatsapp' => 'https://wa.me/?' . $query(['text' => $shareText . ' ' . $rawUrl]),
+            'telegram' => 'https://t.me/share/url?' . $query(['url' => $rawUrl, 'text' => $shareText]),
+            'reddit' => 'https://www.reddit.com/submit?' . $query([
+                'url' => $rawUrl,
+                'title' => Str::limit($shareText, 200),
+            ]),
+            'email' => 'mailto:?' . $query(['subject' => $title, 'body' => $shareText . "\n\n" . $rawUrl]),
+        ];
     }
 
     public function recordQualifiedView()
@@ -231,6 +240,7 @@ class NewsDetail extends Component
             'articleSummary' => $this->articleSummary,
             'keyTakeaways' => $this->keyTakeaways,
             'articleFaqs' => $this->articleFaqs,
+            'shareLinks' => $this->shareLinks,
         ])->layout('layouts.app', [
             'title' => $this->news->title . ' - Glow 99.1 FM News',
             'meta_title' => $this->news->title,
@@ -240,6 +250,7 @@ class NewsDetail extends Component
             'meta_type' => 'article',
             'meta_published_time' => $this->news->published_at?->toAtomString(),
             'meta_modified_time' => $this->news->updated_at?->toAtomString(),
+            'meta_author' => $this->news->author?->name ?? 'Glow FM Newsroom',
             'canonical_url' => $canonical,
             'structured_data' => Seo::siteGraph([
                 'title' => $this->news->title,
