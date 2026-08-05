@@ -303,7 +303,7 @@ class Manage extends Component
     private function saveShow()
     {
         $this->validate([
-            'show_title' => 'nullable|min:3|max:255',
+            'show_title' => 'required|string|min:3|max:255',
             'show_description' => 'nullable|string',
             'show_host_name' => 'nullable',
             'show_category_choice' => ['required', Rule::in([...$this->podcastCategoryOptions, '__new__'])],
@@ -311,6 +311,24 @@ class Manage extends Component
             'show_cover' => $this->editMode ? 'nullable|image|max:5120' : 'nullable|image|max:5120',
             'show_cover_url' => 'nullable|url',
         ]);
+
+        $showSlug = Str::slug($this->show_title);
+        if ($showSlug === '') {
+            $this->addError('show_title', 'The show title must contain letters or numbers that can be used in its public link.');
+
+            return;
+        }
+
+        $duplicateShow = Show::query()
+            ->where('slug', $showSlug)
+            ->when($this->editMode, fn ($query) => $query->whereKeyNot($this->itemId))
+            ->exists();
+
+        if ($duplicateShow) {
+            $this->addError('show_title', 'A show with this or a similar title already exists. Please edit the existing show or choose another title.');
+
+            return;
+        }
 
         $category = $this->show_category_choice === '__new__'
             ? trim((string) $this->show_category_custom)
@@ -328,7 +346,7 @@ class Manage extends Component
 
         $data = [
             'title' => $this->show_title,
-            'slug' => Str::slug($this->show_title),
+            'slug' => $showSlug,
             'description' => $this->show_description,
             'cover_image' => $coverPath,
             'host_name' => $this->show_host_name,

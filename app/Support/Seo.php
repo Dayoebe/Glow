@@ -849,8 +849,13 @@ class Seo
         ];
     }
 
-    public static function videoEmbedUrl(string $url): string
+    public static function videoEmbedUrl(?string $url): ?string
     {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return null;
+        }
+
         $host = Str::lower((string) parse_url($url, PHP_URL_HOST));
         $path = (string) parse_url($url, PHP_URL_PATH);
         $videoId = null;

@@ -368,9 +368,12 @@ class SitemapController extends Controller
                 ->with('show:id,slug,cover_image')
                 ->get(['id', 'show_id', 'slug', 'title', 'description', 'cover_image', 'video_url', 'published_at', 'updated_at'])
                 ->map(function ($item) {
-                    if (!$item->show) {
+                    $videoUrl = Seo::absoluteUrl($item->video_url);
+                    if (!$item->show || !$videoUrl) {
                         return null;
                     }
+
+                    $isDirectMedia = preg_match('/\.(?:mp4|m4v|webm|mov|ogv)(?:$|[?#])/i', $videoUrl) === 1;
 
                     return [
                         'loc' => route('podcasts.episode', ['showSlug' => $item->show->slug, 'episodeSlug' => $item->slug]),
@@ -379,12 +382,8 @@ class SitemapController extends Controller
                             'title' => $item->title,
                             'description' => Seo::text($item->description, 200),
                             'thumbnail_loc' => Seo::absoluteUrl(PublicImage::url($item->cover_image ?: $item->show->cover_image)),
-                            'content_loc' => preg_match('/\.(?:mp4|m4v|webm|mov|ogv)(?:$|[?#])/i', (string) $item->video_url)
-                                ? Seo::absoluteUrl($item->video_url)
-                                : null,
-                            'player_loc' => preg_match('/\.(?:mp4|m4v|webm|mov|ogv)(?:$|[?#])/i', (string) $item->video_url)
-                                ? null
-                                : Seo::videoEmbedUrl(Seo::absoluteUrl($item->video_url)),
+                            'content_loc' => $isDirectMedia ? $videoUrl : null,
+                            'player_loc' => $isDirectMedia ? null : Seo::videoEmbedUrl($videoUrl),
                             'publication_date' => $item->published_at?->toAtomString(),
                         ]],
                     ];
