@@ -59,7 +59,6 @@ use App\Livewire\Admin\Vettas\Categories as AdminVettasCategories;
 use App\Livewire\Admin\Vettas\CategoryForm as AdminVettasCategoryForm;
 use App\Livewire\Admin\Vettas\Settings as AdminVettasSettings;
 use App\Livewire\Admin\Vettas\Reservations as AdminVettasReservations;
-use App\Models\Career\CareerApplication;
 use App\Livewire\Admin\Settings\StationSettings as AdminStationSettings;
 use App\Livewire\Admin\Settings\WebsiteSettings as AdminWebsiteSettings;
 use App\Livewire\Admin\Settings\SystemSettings as AdminSystemSettings;
@@ -391,28 +390,10 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::redirect('/applications/interns', '/admin/careers/applications/type/internship')->name('applications.interns');
             Route::redirect('/applications/volunteers', '/admin/careers/applications/type/volunteer')->name('applications.volunteers');
             Route::redirect('/applications/jobs', '/admin/careers/applications/type/job')->name('applications.jobs');
-            Route::get('/applications/{applicationId}/resume', function ($applicationId) {
-                $application = CareerApplication::findOrFail($applicationId);
-
-                $path = trim((string) $application->resume_path);
-                abort_if($path === '', 404);
-
-                if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
-                    return redirect()->away($path);
-                }
-
-                if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
-                    return \Illuminate\Support\Facades\Storage::disk('local')
-                        ->download($path, $application->resume_original_name ?: basename($path));
-                }
-
-                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-                    return \Illuminate\Support\Facades\Storage::disk('public')
-                        ->download($path, $application->resume_original_name ?: basename($path));
-                }
-
-                abort(404);
-            })->name('applications.resume');
+            Route::get('/applications/{application}/resume', [\App\Http\Controllers\Admin\CareerApplicationResumeController::class, 'download'])
+                ->name('applications.resume');
+            Route::get('/applications/{application}/resume/preview', [\App\Http\Controllers\Admin\CareerApplicationResumeController::class, 'preview'])
+                ->name('applications.resume.preview');
             Route::get('/{id}/edit', AdminCareerForm::class)->name('edit');
         });
 
