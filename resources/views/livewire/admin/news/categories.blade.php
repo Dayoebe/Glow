@@ -5,6 +5,16 @@
         $wire.closeModal();
     }
 }">
+    <section class="relative mb-6 overflow-hidden rounded-2xl bg-[#0b2f3a] px-6 py-7 text-white shadow-sm sm:px-8">
+        <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-emerald-400/10"></div>
+        <div class="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div><p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-300">Newsroom structure</p><h2 class="mt-2 text-3xl font-black">Organise every story clearly.</h2><p class="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Build useful sections for readers and keep inactive categories out of publishing forms without losing their history.</p></div>
+            <button wire:click="openCreateModal" class="inline-flex items-center justify-center rounded-xl bg-[#ed5a1f] px-5 py-3 text-sm font-extrabold text-white hover:bg-[#d94d16]"><i class="fas fa-plus mr-2"></i>New category</button>
+        </div>
+    </section>
+
+    <x-admin.news-workspace-nav />
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

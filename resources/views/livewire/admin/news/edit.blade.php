@@ -20,6 +20,10 @@
         }
     </style>
 
+    <x-admin.news-workspace-nav />
+
+    <section class="mb-6 hidden rounded-2xl bg-[#0b2f3a] px-7 py-6 text-white lg:block"><p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-300">Story editor</p><h2 class="mt-2 line-clamp-1 text-3xl font-black">{{ $title ?: 'Untitled article' }}</h2><p class="mt-2 text-sm text-slate-300">Refine the story, review its presentation and keep the publishing state intentional.</p></section>
+
     <form wire:submit.prevent="update" class="pb-32 lg:pb-0">
         <div class="mb-4 lg:hidden">
             <div class="mobile-app-surface mobile-editor-shell rounded-[1.75rem] border border-white/70 p-4 shadow-xl">

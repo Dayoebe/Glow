@@ -24,6 +24,8 @@
         };
     @endphp
 
+    <x-admin.news-workspace-nav />
+
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <a href="{{ route('admin.news.index') }}"
             class="inline-flex items-center text-sm font-semibold text-gray-600 transition hover:text-emerald-700">

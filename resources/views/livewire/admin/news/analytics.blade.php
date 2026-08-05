@@ -1,4 +1,11 @@
 <div>
+    <section class="relative mb-6 overflow-hidden rounded-2xl bg-[#0b2f3a] px-6 py-7 text-white shadow-sm sm:px-8">
+        <div class="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-blue-400/10"></div>
+        <div class="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-300">Audience intelligence</p><h2 class="mt-2 text-3xl font-black">See what moves your readers.</h2><p class="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Follow publishing output, qualified readership, reactions and sharing from one focused report.</p></div><div class="rounded-xl border border-white/10 bg-white/10 px-4 py-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-300">Current range</p><p class="mt-1 font-black">{{ $rangeLabel }}</p></div></div>
+    </section>
+
+    <x-admin.news-workspace-nav />
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>

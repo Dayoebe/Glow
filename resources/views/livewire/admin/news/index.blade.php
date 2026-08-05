@@ -38,14 +38,7 @@
         </div>
     </section>
 
-    <nav class="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm" aria-label="News management sections">
-        <div class="flex min-w-max gap-1">
-            <a href="{{ route('admin.news.index') }}" class="inline-flex items-center gap-2 rounded-xl bg-[#0b2f3a] px-4 py-2.5 text-sm font-bold text-white"><i class="fas fa-layer-group text-xs text-emerald-300"></i>Articles</a>
-            <a href="{{ route('admin.news.categories') }}" class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100"><i class="fas fa-tags text-xs text-slate-400"></i>Categories</a>
-            <a href="{{ route('admin.news.analytics') }}" class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100"><i class="fas fa-chart-column text-xs text-slate-400"></i>Analytics</a>
-            <a href="{{ route('news') }}" target="_blank" class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100"><i class="fas fa-arrow-up-right-from-square text-xs text-slate-400"></i>Public newsroom</a>
-        </div>
-    </nav>
+    <x-admin.news-workspace-nav />
 
     @if($canReview)
         <section class="rounded-2xl border border-violet-200 bg-violet-50 p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">

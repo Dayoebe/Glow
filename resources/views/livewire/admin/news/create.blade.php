@@ -20,6 +20,10 @@
         }
     </style>
 
+    <x-admin.news-workspace-nav />
+
+    <section class="mb-6 hidden rounded-2xl bg-[#0b2f3a] px-7 py-6 text-white lg:block"><p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-300">New newsroom story</p><h2 class="mt-2 text-3xl font-black">Turn the reporting into a clear story.</h2><p class="mt-2 text-sm text-slate-300">Complete the essentials, add strong media and submit it to the approval workflow.</p></section>
+
     <form wire:submit.prevent="submitForApproval" class="pb-32 lg:pb-0">
         <div class="mb-4 lg:hidden">
             <div class="mobile-app-surface mobile-editor-shell rounded-[1.75rem] border border-white/70 p-4 shadow-xl">
