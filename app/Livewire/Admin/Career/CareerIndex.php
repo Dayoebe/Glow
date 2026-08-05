@@ -14,6 +14,7 @@ class CareerIndex extends Component
     public $filterStatus = '';
     public $filterDepartment = '';
     public $filterType = '';
+    public $sortBy = 'newest';
     public $showDeleteModal = false;
     public $positionToDelete = null;
 
@@ -22,6 +23,7 @@ class CareerIndex extends Component
         'filterStatus' => ['except' => ''],
         'filterDepartment' => ['except' => ''],
         'filterType' => ['except' => ''],
+        'sortBy' => ['except' => 'newest'],
     ];
 
     public function updatingSearch()
@@ -44,8 +46,26 @@ class CareerIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingSortBy()
+    {
+        $this->resetPage();
+    }
+
+    public function clearFilters(): void
+    {
+        $this->reset(['search', 'filterStatus', 'filterDepartment', 'filterType', 'sortBy']);
+        $this->sortBy = 'newest';
+        $this->resetPage();
+    }
+
     public function confirmDelete(int $positionId): void
     {
+        $position = CareerPosition::withCount('applications')->findOrFail($positionId);
+        if ($position->applications_count > 0) {
+            session()->flash('error', 'This role has applicant records and cannot be deleted. Close or pause it to preserve the hiring history.');
+            return;
+        }
+
         $this->positionToDelete = $positionId;
         $this->showDeleteModal = true;
     }
@@ -56,11 +76,16 @@ class CareerIndex extends Component
             return;
         }
 
-        $position = CareerPosition::find($this->positionToDelete);
-        if ($position) {
-            $position->delete();
-            session()->flash('success', 'Career position deleted successfully.');
+        $position = CareerPosition::withCount('applications')->findOrFail($this->positionToDelete);
+        if ($position->applications_count > 0) {
+            $this->showDeleteModal = false;
+            $this->positionToDelete = null;
+            session()->flash('error', 'This role received an application and can no longer be deleted.');
+            return;
         }
+
+        $position->delete();
+        session()->flash('success', 'Career position deleted successfully.');
 
         $this->showDeleteModal = false;
         $this->positionToDelete = null;
@@ -68,10 +93,7 @@ class CareerIndex extends Component
 
     public function togglePublish(int $positionId): void
     {
-        $position = CareerPosition::find($positionId);
-        if (!$position) {
-            return;
-        }
+        $position = CareerPosition::findOrFail($positionId);
 
         $position->is_published = !$position->is_published;
         $position->published_at = $position->is_published ? ($position->published_at ?: now()) : null;
@@ -85,10 +107,7 @@ class CareerIndex extends Component
 
     public function toggleFeatured(int $positionId): void
     {
-        $position = CareerPosition::find($positionId);
-        if (!$position) {
-            return;
-        }
+        $position = CareerPosition::findOrFail($positionId);
 
         $position->is_featured = !$position->is_featured;
         $position->updated_by = auth()->id();
@@ -103,10 +122,7 @@ class CareerIndex extends Component
             return;
         }
 
-        $position = CareerPosition::find($positionId);
-        if (!$position) {
-            return;
-        }
+        $position = CareerPosition::findOrFail($positionId);
 
         $position->status = $status;
         $position->updated_by = auth()->id();
@@ -119,8 +135,11 @@ class CareerIndex extends Component
     {
         $query = CareerPosition::query()
             ->with(['creator'])
-            ->withCount('applications')
-            ->latest('created_at');
+            ->withCount([
+                'applications',
+                'applications as new_applications_count' => fn ($query) => $query->where('status', 'new'),
+                'applications as shortlisted_applications_count' => fn ($query) => $query->where('status', 'shortlisted'),
+            ]);
 
         if (!empty($this->search)) {
             $query->search($this->search);
@@ -144,6 +163,14 @@ class CareerIndex extends Component
             $query->where('status', $this->filterStatus);
         }
 
+        match ($this->sortBy) {
+            'oldest' => $query->oldest('created_at'),
+            'title' => $query->orderBy('title'),
+            'deadline' => $query->orderByRaw('application_deadline IS NULL')->orderBy('application_deadline'),
+            'applications' => $query->orderByDesc('applications_count')->orderBy('title'),
+            default => $query->latest('created_at'),
+        };
+
         return $query->paginate(10);
     }
 
@@ -154,6 +181,7 @@ class CareerIndex extends Component
             'published' => CareerPosition::where('is_published', true)->count(),
             'draft' => CareerPosition::where('is_published', false)->count(),
             'open' => CareerPosition::where('status', 'open')->count(),
+            'accepting' => CareerPosition::query()->published()->acceptingApplications()->count(),
             'applications' => \App\Models\Career\CareerApplication::count(),
         ];
     }
@@ -177,6 +205,15 @@ class CareerIndex extends Component
             ->pluck('employment_type');
     }
 
+    public function getHasFiltersProperty(): bool
+    {
+        return filled($this->search)
+            || filled($this->filterStatus)
+            || filled($this->filterDepartment)
+            || filled($this->filterType)
+            || $this->sortBy !== 'newest';
+    }
+
     public function render()
     {
         return view('livewire.admin.career.index', [
@@ -184,6 +221,7 @@ class CareerIndex extends Component
             'stats' => $this->stats,
             'departmentOptions' => $this->departmentOptions,
             'typeOptions' => $this->typeOptions,
+            'hasFilters' => $this->hasFilters,
         ])->layout('layouts.admin', [
             'header' => 'Career Positions',
         ]);
