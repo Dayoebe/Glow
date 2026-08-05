@@ -110,6 +110,25 @@ class Form extends Component
     {
         $this->validate();
 
+        if ($this->isEditing) {
+            $existingUser = User::findOrFail($this->userId);
+
+            if ($existingUser->id === auth()->id() && (!$this->is_active || $this->role !== 'admin')) {
+                $this->addError('is_active', 'You cannot deactivate or remove administrator access from your own account.');
+                return;
+            }
+
+            $removesLastAdmin = $existingUser->is_active
+                && $existingUser->role === 'admin'
+                && (!$this->is_active || $this->role !== 'admin')
+                && User::query()->where('is_active', true)->where('role', 'admin')->count() <= 1;
+
+            if ($removesLastAdmin) {
+                $this->addError('role', 'At least one active administrator account must remain.');
+                return;
+            }
+        }
+
         $validRole = TeamRole::query()
             ->where('id', $this->team_role_id)
             ->where('department_id', $this->department_id)

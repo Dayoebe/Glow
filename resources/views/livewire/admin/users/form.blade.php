@@ -95,9 +95,15 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                 <label class="flex items-center space-x-2 text-sm text-gray-700">
-                    <input type="checkbox" wire:model="is_active" class="rounded border-gray-300">
+                    <input type="checkbox" wire:model="is_active"
+                        @disabled($isEditing && (int) $userId === (int) auth()->id())
+                        class="rounded border-gray-300 disabled:cursor-not-allowed disabled:opacity-60">
                     <span>Active</span>
                 </label>
+                @if($isEditing && (int) $userId === (int) auth()->id())
+                    <p class="mt-1 text-xs text-amber-600">Your current account cannot deactivate itself.</p>
+                @endif
+                @error('is_active') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Password {{ $isEditing ? '(optional)' : '' }}</label>
