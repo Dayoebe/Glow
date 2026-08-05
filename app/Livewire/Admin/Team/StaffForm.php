@@ -118,7 +118,9 @@ class StaffForm extends Component
 
     private function loadUsers($staffId = null)
     {
-        $query = User::query()->orderBy('name');
+        $query = User::query()
+            ->where('is_active', true)
+            ->orderBy('name');
 
         if ($staffId) {
             $query->where(function ($query) use ($staffId) {

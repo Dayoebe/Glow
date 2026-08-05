@@ -19,14 +19,14 @@ class StaffShow extends Component
     {
         $staff = StaffMember::with(['user', 'oap'])->findOrFail($this->staffId);
 
-        if ($staff->is_active) {
-            $staff->deactivateForOffboarding();
-            session()->flash('success', 'Staff member marked inactive. Dashboard access disabled and OAP/program assignments removed.');
+        if (!$staff->is_active) {
+            session()->flash('success', 'Reactivate this staff member from User Management.');
             return;
         }
 
-        $staff->reactivateForStaff();
-        session()->flash('success', 'Staff member reactivated. Reassign OAP and program duties manually if needed.');
+        $staff->deactivateForOffboarding();
+
+        $this->redirectRoute('admin.team.staff', navigate: true);
     }
 
     public function getStaffProperty()

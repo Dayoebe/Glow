@@ -141,8 +141,17 @@ class Form extends Component
         }
 
         if ($this->isEditing) {
-            $user = User::findOrFail($this->userId);
+            $user = User::with(['staffMember.user', 'staffMember.oap'])->findOrFail($this->userId);
             $user->update($data);
+
+            if ($user->staffMember && $user->staffMember->is_active !== (bool) $this->is_active) {
+                if ($this->is_active) {
+                    $user->staffMember->reactivateForStaff();
+                } else {
+                    $user->staffMember->deactivateForOffboarding();
+                }
+            }
+
             $message = 'User updated successfully.';
         } else {
             $user = User::create($data);

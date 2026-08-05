@@ -337,7 +337,7 @@ class Dashboard extends Component
         ));
 
         $activities = $activities->merge($this->mapActivity(
-            StaffMember::latest()->take(3)->get(),
+            StaffMember::activeDirectory()->latest()->take(3)->get(),
             'Staff added',
             'name',
             'fas fa-user-plus',
@@ -465,7 +465,7 @@ class Dashboard extends Component
 
         $staffMembers = StaffMember::query()
             ->with(['departmentRelation', 'teamRole'])
-            ->where('is_active', true)
+            ->activeDirectory()
             ->whereNotNull('birth_month')
             ->whereNotNull('birth_day')
             ->get();

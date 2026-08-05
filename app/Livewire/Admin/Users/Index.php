@@ -21,16 +21,27 @@ class Index extends Component
 
     public function toggleStatus($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with(['staffMember.user', 'staffMember.oap'])->findOrFail($id);
         if ($user->id === auth()->id()) {
             session()->flash('error', 'You cannot deactivate your own account.');
             return;
         }
 
-        $user->is_active = !$user->is_active;
-        $user->save();
+        $activate = !$user->is_active;
 
-        session()->flash('success', 'User status updated.');
+        if ($user->staffMember) {
+            if ($activate) {
+                $user->staffMember->reactivateForStaff();
+            } else {
+                $user->staffMember->deactivateForOffboarding();
+            }
+        } else {
+            $user->forceFill(['is_active' => $activate])->save();
+        }
+
+        session()->flash('success', $activate
+            ? 'User activated. Their linked staff profile is visible again.'
+            : 'User deactivated. Their linked staff profile was removed from the active directory.');
     }
 
     public function deleteUser($id)

@@ -68,6 +68,16 @@ class StaffMember extends Model
         return $this->hasOne(OAP::class, 'staff_member_id');
     }
 
+    public function scopeActiveDirectory($query)
+    {
+        return $query
+            ->where($this->qualifyColumn('is_active'), true)
+            ->where(function ($query) {
+                $query->whereNull($this->qualifyColumn('user_id'))
+                    ->orWhereHas('user', fn ($user) => $user->where('is_active', true));
+            });
+    }
+
     public function deactivateForOffboarding(): void
     {
         DB::transaction(function () {

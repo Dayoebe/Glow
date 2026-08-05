@@ -16,7 +16,6 @@ class StaffIndex extends Component
     public $sortBy = 'latest';
     public $departmentId = '';
     public $roleId = '';
-    public $status = 'all';
     public $employmentStatus = '';
     public $oapStatus = 'all';
 
@@ -25,7 +24,6 @@ class StaffIndex extends Component
         'sortBy' => ['except' => 'latest'],
         'departmentId' => ['except' => ''],
         'roleId' => ['except' => ''],
-        'status' => ['except' => 'all'],
         'employmentStatus' => ['except' => ''],
         'oapStatus' => ['except' => 'all'],
     ];
@@ -41,11 +39,6 @@ class StaffIndex extends Component
     }
 
     public function updatingRoleId()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingStatus()
     {
         $this->resetPage();
     }
@@ -73,29 +66,27 @@ class StaffIndex extends Component
             'sortBy',
             'departmentId',
             'roleId',
-            'status',
             'employmentStatus',
             'oapStatus',
         ]);
 
         $this->sortBy = 'latest';
-        $this->status = 'all';
         $this->oapStatus = 'all';
         $this->resetPage();
     }
 
-    public function toggleStatus($id)
+    public function deactivateStaff($id)
     {
         $staff = StaffMember::with(['user', 'oap'])->findOrFail($id);
 
-        if ($staff->is_active) {
-            $staff->deactivateForOffboarding();
-            session()->flash('success', 'Staff member marked inactive. Dashboard access disabled and OAP/program assignments removed.');
+        if (!$staff->is_active) {
             return;
         }
 
-        $staff->reactivateForStaff();
-        session()->flash('success', 'Staff member reactivated. Reassign OAP and program duties manually if needed.');
+        $staff->deactivateForOffboarding();
+        session()->flash('success', 'Staff member deactivated and removed from the active staff directory. Reactivate their account from Users to add them back.');
+
+        $this->resetPage();
     }
 
     public function deleteStaff($id)
@@ -111,6 +102,7 @@ class StaffIndex extends Component
     {
         $query = StaffMember::query()
             ->with(['departmentRelation', 'teamRole', 'user', 'oap'])
+            ->activeDirectory()
             ->when($this->search, function ($query) {
                 $search = trim($this->search);
 
@@ -136,12 +128,6 @@ class StaffIndex extends Component
             })
             ->when($this->roleId, function ($query) {
                 $query->where('team_role_id', $this->roleId);
-            })
-            ->when($this->status === 'active', function ($query) {
-                $query->where('is_active', true);
-            })
-            ->when($this->status === 'inactive', function ($query) {
-                $query->where('is_active', false);
             })
             ->when($this->employmentStatus, function ($query) {
                 $query->where('employment_status', $this->employmentStatus);
@@ -191,7 +177,6 @@ class StaffIndex extends Component
             || $this->sortBy !== 'latest'
             || filled($this->departmentId)
             || filled($this->roleId)
-            || $this->status !== 'all'
             || filled($this->employmentStatus)
             || $this->oapStatus !== 'all';
     }
@@ -204,10 +189,20 @@ class StaffIndex extends Component
             'name_desc' => $query->orderByDesc('name'),
             'department' => $query->orderBy('department')->orderBy('name'),
             'role' => $query->orderBy('role')->orderBy('name'),
-            'active_first' => $query->orderByDesc('is_active')->orderBy('name'),
-            'inactive_first' => $query->orderBy('is_active')->orderBy('name'),
             default => $query->latest(),
         };
+    }
+
+    public function getStatsProperty(): array
+    {
+        $activeStaff = StaffMember::query()->activeDirectory();
+
+        return [
+            'total' => (clone $activeStaff)->count(),
+            'departments' => (clone $activeStaff)->whereNotNull('department_id')->distinct()->count('department_id'),
+            'oaps' => (clone $activeStaff)->whereHas('oap', fn ($query) => $query->where('is_active', true))->count(),
+            'with_login' => (clone $activeStaff)->whereHas('user', fn ($query) => $query->where('is_active', true))->count(),
+        ];
     }
 
     public function getEmploymentStatusesProperty(): array
@@ -228,6 +223,7 @@ class StaffIndex extends Component
             'teamRoles' => $this->teamRoles,
             'employmentStatuses' => $this->employmentStatuses,
             'hasFilters' => $this->hasFilters,
+            'stats' => $this->stats,
         ])->layout('layouts.admin', ['header' => 'Staff']);
     }
 }

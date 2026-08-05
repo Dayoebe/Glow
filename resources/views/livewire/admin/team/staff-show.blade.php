@@ -39,16 +39,22 @@
                     class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
                     <i class="fas fa-arrow-left mr-2"></i>Back
                 </a>
-                <a href="{{ route('admin.team.staff.edit', $staff->id) }}"
-                    class="inline-flex items-center justify-center px-4 py-2 border border-emerald-200 rounded-lg text-emerald-700 hover:bg-emerald-50">
-                    <i class="fas fa-pen mr-2"></i>Edit
-                </a>
-                <button wire:click="toggleStatus"
-                    @if($staff->is_active) onclick="return confirm('Mark this staff member inactive? Their dashboard access will be disabled and OAP/program assignments will be removed.')" @endif
-                    class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-white {{ $staff->is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700' }}">
-                    <i class="fas {{ $staff->is_active ? 'fa-user-slash' : 'fa-user-check' }} mr-2"></i>
-                    {{ $staff->is_active ? 'Deactivate' : 'Reactivate' }}
-                </button>
+                @if($staff->is_active)
+                    <a href="{{ route('admin.team.staff.edit', $staff->id) }}"
+                        class="inline-flex items-center justify-center px-4 py-2 border border-emerald-200 rounded-lg text-emerald-700 hover:bg-emerald-50">
+                        <i class="fas fa-pen mr-2"></i>Edit
+                    </a>
+                    <button wire:click="toggleStatus"
+                        wire:confirm="Deactivate {{ $staff->name }}? Their dashboard access will be disabled and OAP/program assignments removed."
+                        class="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">
+                        <i class="fas fa-user-slash mr-2"></i>Deactivate
+                    </button>
+                @elseif($staff->user)
+                    <a href="{{ route('admin.users.edit', $staff->user->id) }}"
+                        class="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">
+                        <i class="fas fa-user-check mr-2"></i>Manage in Users
+                    </a>
+                @endif
             </div>
         </div>
     </div>
