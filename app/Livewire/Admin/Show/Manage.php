@@ -7,6 +7,7 @@ use App\Models\Show\Category;
 use App\Models\Show\OAP;
 use App\Models\Show\ScheduleSlot;
 use App\Models\Show\Segment;
+use App\Models\Show\Review;
 use App\Support\CloudinaryUploader;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -16,6 +17,8 @@ use Illuminate\Support\Str;
 class Manage extends Component
 {
     use WithPagination, WithFileUploads;
+
+    private const VIEWS = ['shows', 'oaps', 'schedule', 'segments', 'categories'];
 
     public $view = 'shows'; // shows, oaps, schedule, categories
     public $search = '';
@@ -90,7 +93,12 @@ class Manage extends Component
 
     public function mount($view = 'shows')
     {
-        $this->view = $view;
+        $this->view = in_array($view, self::VIEWS, true) ? $view : 'shows';
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
     }
 
     public function updatedShowSort()
@@ -416,19 +424,37 @@ class Manage extends Component
 
     public function delete($type, $id)
     {
-        if ($type === 'show') {
-            Show::find($id)->delete();
-        } elseif ($type === 'oap') {
-            OAP::find($id)->delete();
-        } elseif ($type === 'schedule') {
-            ScheduleSlot::find($id)->delete();
-        } elseif ($type === 'segment') {
-            Segment::find($id)->delete();
-        } else {
-            Category::find($id)->delete();
+        if (!in_array($type, ['show', 'oap', 'schedule', 'segment', 'category'], true)) {
+            session()->flash('error', 'Unsupported item type.');
+            return;
         }
-        
+
+        if ($type === 'oap') {
+            $oap = OAP::withCount(['shows', 'scheduleSlots'])->findOrFail($id);
+            if ($oap->shows_count > 0 || $oap->schedule_slots_count > 0) {
+                session()->flash('error', 'Reassign this OAP’s shows and schedule slots before deleting the profile.');
+                return;
+            }
+
+            $oap->delete();
+        } elseif ($type === 'category') {
+            $category = Category::withCount('shows')->findOrFail($id);
+            if ($category->shows_count > 0) {
+                session()->flash('error', 'Move the shows in this category before deleting it.');
+                return;
+            }
+
+            $category->delete();
+        } else {
+            match ($type) {
+                'show' => Show::findOrFail($id)->delete(),
+                'schedule' => ScheduleSlot::findOrFail($id)->delete(),
+                'segment' => Segment::findOrFail($id)->delete(),
+            };
+        }
+
         session()->flash('success', ucfirst($type) . ' deleted successfully!');
+        $this->resetPage();
     }
 
     public function closeModal()
@@ -470,8 +496,15 @@ class Manage extends Component
     public function getShowsProperty()
     {
         $query = Show::with(['category', 'primaryHost'])
+            ->withCount(['scheduleSlots', 'segments'])
             ->when($this->search, function($q) {
-                $q->where('title', 'like', "%{$this->search}%");
+                $search = trim($this->search);
+                $q->where(function ($query) use ($search) {
+                    $query->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhereHas('category', fn ($category) => $category->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('primaryHost', fn ($host) => $host->where('name', 'like', "%{$search}%"));
+                });
             });
 
         $direction = $this->showSortDirection === 'asc' ? 'asc' : 'desc';
@@ -492,12 +525,12 @@ class Manage extends Component
                 break;
             case 'host':
                 $query->leftJoin('oaps', 'oaps.id', '=', 'shows.primary_host_id')
-                    ->select('shows.*')
+                    ->addSelect('shows.*')
                     ->orderBy('oaps.name', $direction);
                 break;
             case 'category':
                 $query->leftJoin('show_categories', 'show_categories.id', '=', 'shows.category_id')
-                    ->select('shows.*')
+                    ->addSelect('shows.*')
                     ->orderBy('show_categories.name', $direction);
                 break;
             case 'featured':
@@ -525,8 +558,16 @@ class Manage extends Component
 
     public function getOapsProperty()
     {
-        return OAP::when($this->search, function($q) {
-                $q->where('name', 'like', "%{$this->search}%");
+        return OAP::with(['department', 'teamRole', 'staffMember'])
+            ->withCount(['shows', 'scheduleSlots'])
+            ->when($this->search, function($q) {
+                $search = trim($this->search);
+                $q->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('bio', 'like', "%{$search}%")
+                        ->orWhereHas('department', fn ($department) => $department->where('name', 'like', "%{$search}%"));
+                });
             })
             ->latest()
             ->paginate(12);
@@ -536,7 +577,11 @@ class Manage extends Component
     {
         return Category::withCount('shows')
             ->when($this->search, function($q) {
-                $q->where('name', 'like', "%{$this->search}%");
+                $search = trim($this->search);
+                $q->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
             })
             ->latest()
             ->paginate(12);
@@ -559,10 +604,14 @@ class Manage extends Component
 
     public function getScheduleSlotsProperty()
     {
-        $query = ScheduleSlot::with(['show', 'oap'])
+        $query = ScheduleSlot::with(['show.category', 'oap'])
             ->when($this->search, function ($q) {
-                $q->whereHas('show', function ($show) {
-                    $show->where('title', 'like', "%{$this->search}%");
+                $search = trim($this->search);
+                $q->where(function ($query) use ($search) {
+                    $query->where('day_of_week', 'like', "%{$search}%")
+                        ->orWhere('status', 'like', "%{$search}%")
+                        ->orWhereHas('show', fn ($show) => $show->where('title', 'like', "%{$search}%"))
+                        ->orWhereHas('oap', fn ($oap) => $oap->where('name', 'like', "%{$search}%"));
                 });
             });
 
@@ -609,7 +658,13 @@ class Manage extends Component
     {
         return Segment::with(['show'])
             ->when($this->search, function ($q) {
-                $q->where('title', 'like', "%{$this->search}%");
+                $search = trim($this->search);
+                $q->where(function ($query) use ($search) {
+                    $query->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhere('type', 'like', "%{$search}%")
+                        ->orWhereHas('show', fn ($show) => $show->where('title', 'like', "%{$search}%"));
+                });
             })
             ->orderBy('show_id')
             ->orderBy('order')
@@ -622,7 +677,11 @@ class Manage extends Component
             'total_shows' => Show::count(),
             'active_shows' => Show::where('is_active', true)->count(),
             'total_oaps' => OAP::count(),
+            'active_oaps' => OAP::active()->count(),
             'total_categories' => Category::count(),
+            'active_slots' => ScheduleSlot::active()->count(),
+            'total_segments' => Segment::count(),
+            'total_reviews' => Review::count(),
         ];
     }
 

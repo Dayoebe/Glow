@@ -40,9 +40,25 @@ class CategoryForm extends Component
     {
         $this->validate();
 
+        $slug = Str::slug($this->name);
+        if ($slug === '') {
+            $this->addError('name', 'The category name must contain letters or numbers.');
+            return;
+        }
+
+        $duplicateCategory = Category::query()
+            ->where('slug', $slug)
+            ->when($this->isEditing, fn ($query) => $query->whereKeyNot($this->categoryId))
+            ->exists();
+
+        if ($duplicateCategory) {
+            $this->addError('name', 'A category with this or a similar name already exists.');
+            return;
+        }
+
         $data = [
             'name' => $this->name,
-            'slug' => Str::slug($this->name),
+            'slug' => $slug,
             'description' => $this->description,
             'icon' => $this->icon,
             'color' => $this->color,

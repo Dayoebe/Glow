@@ -95,6 +95,11 @@ class ShowForm extends Component
         $this->validate();
 
         $slug = Str::slug($this->title);
+        if ($slug === '') {
+            $this->addError('title', 'The show title must contain letters or numbers that can be used in its public link.');
+            return;
+        }
+
         $duplicateShow = Show::query()
             ->where('slug', $slug)
             ->when($this->isEditing, fn ($query) => $query->whereKeyNot($this->showId))

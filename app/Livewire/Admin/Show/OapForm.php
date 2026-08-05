@@ -121,6 +121,11 @@ class OapForm extends Component
         $this->staff_member_id = $this->staff_member_id ?: null;
         $this->validate();
 
+        if (Str::slug($this->name) === '') {
+            $this->addError('name', 'The OAP name must contain letters or numbers that can be used in the public profile link.');
+            return;
+        }
+
         $photoPath = $this->profile_photo;
         if ($this->profile_photo_upload) {
             $photoPath = CloudinaryUploader::uploadImage($this->profile_photo_upload, 'oaps/photos');
