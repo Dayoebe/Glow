@@ -1,5 +1,7 @@
 <div class="space-y-6">
-    @php($canReview = $this->canReview())
+    @php
+        $canReview = $this->canReview();
+    @endphp
 
     <section class="relative overflow-hidden rounded-2xl bg-[#0b2f3a] px-6 py-7 text-white shadow-sm sm:px-8">
         <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-emerald-400/10"></div>
@@ -17,13 +19,21 @@
         </div>
         <div class="relative mt-7 grid grid-cols-2 gap-3 lg:grid-cols-5">
             @foreach([
-                ['All articles', $stats['total'], 'fa-newspaper'],
-                ['Published', $stats['published'], 'fa-circle-check'],
-                ['Featured', $stats['featured'], 'fa-star'],
-                ['Awaiting review', $stats['pending'], 'fa-hourglass-half'],
-                ['Drafts', $stats['draft'], 'fa-file-pen'],
-            ] as [$label, $value, $icon])
-                <div class="rounded-xl border border-white/10 bg-white/[0.07] p-4"><div class="flex items-center justify-between gap-3"><div><p class="text-2xl font-black">{{ number_format($value) }}</p><p class="mt-1 text-xs font-semibold text-slate-300">{{ $label }}</p></div><i class="fas {{ $icon }} text-emerald-300"></i></div></div>
+                ['label' => 'All articles', 'value' => $stats['total'], 'icon' => 'fa-newspaper'],
+                ['label' => 'Published', 'value' => $stats['published'], 'icon' => 'fa-circle-check'],
+                ['label' => 'Featured', 'value' => $stats['featured'], 'icon' => 'fa-star'],
+                ['label' => 'Awaiting review', 'value' => $stats['pending'], 'icon' => 'fa-hourglass-half'],
+                ['label' => 'Drafts', 'value' => $stats['draft'], 'icon' => 'fa-file-pen'],
+            ] as $stat)
+                <div class="rounded-xl border border-white/10 bg-white/[0.07] p-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-2xl font-black">{{ number_format($stat['value']) }}</p>
+                            <p class="mt-1 text-xs font-semibold text-slate-300">{{ $stat['label'] }}</p>
+                        </div>
+                        <i class="fas {{ $stat['icon'] }} text-emerald-300"></i>
+                    </div>
+                </div>
             @endforeach
         </div>
     </section>
@@ -47,7 +57,12 @@
     <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_190px_160px]">
             <div class="relative"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i><input type="search" wire:model.live.debounce.300ms="search" placeholder="Search title, excerpt or story content…" class="w-full rounded-xl border-slate-300 py-2.5 pl-10 pr-4 text-sm focus:border-emerald-500 focus:ring-emerald-500"></div>
-            <select wire:model.live="filterCategory" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"><option value="">All categories</option>@foreach($categories as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach</select>
+            <select wire:model.live="filterCategory" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+                <option value="">All categories</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
+            </select>
             <select wire:model.live="filterStatus" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"><option value="">All workflows</option><option value="published">Published</option><option value="draft">Draft</option><option value="featured">Featured</option><option value="pending">Pending approval</option><option value="approved">Approved</option><option value="flagged">Flagged</option><option value="rejected">Rejected</option></select>
             <select wire:model.live="sortBy" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="title">Title A–Z</option><option value="views">Most viewed</option><option value="featured">Featured first</option></select>
         </div>
@@ -55,7 +70,10 @@
     </section>
 
     <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        @forelse($newsArticles as $article)
+        @if($newsArticles->isEmpty())
+            <div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"><span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-xl text-slate-400"><i class="fas fa-newspaper"></i></span><h3 class="mt-4 text-lg font-black text-slate-900">No articles found</h3><p class="mt-2 text-sm text-slate-500">Start a new story or reset the current filters.</p><a href="{{ route('admin.news.create') }}" class="mt-5 inline-flex rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white">Write an article</a></div>
+        @else
+          @foreach($newsArticles as $article)
             @php
                 $canManage = $this->canManageNews($article);
                 $isPublic = $article->is_published && $article->approval_status === 'approved' && $article->published_at?->lte(now());
@@ -82,9 +100,8 @@
                 </div>
                 @if($approvalFormId === $article->id)<div class="border-t border-amber-200 bg-amber-50 p-5"><label class="text-sm font-black text-slate-900">Why is this article being {{ $approvalAction }}?</label><textarea wire:model="approvalReason" rows="3" class="mt-2 w-full rounded-xl border-amber-200 text-sm focus:border-amber-500 focus:ring-amber-500" placeholder="Add a useful note for the writer…"></textarea>@error('approvalReason')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror<div class="mt-3 flex gap-2"><button wire:click="submitApprovalForm" class="rounded-lg bg-[#0b2f3a] px-4 py-2 text-xs font-bold text-white">Submit review</button><button wire:click="cancelApprovalForm" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700">Cancel</button></div></div>@endif
             </article>
-        @empty
-            <div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"><span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-xl text-slate-400"><i class="fas fa-newspaper"></i></span><h3 class="mt-4 text-lg font-black text-slate-900">No articles found</h3><p class="mt-2 text-sm text-slate-500">Start a new story or reset the current filters.</p><a href="{{ route('admin.news.create') }}" class="mt-5 inline-flex rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white">Write an article</a></div>
-        @endforelse
+          @endforeach
+        @endif
     </section>
 
     @if($newsArticles->hasPages())<div class="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">{{ $newsArticles->links() }}</div>@endif
