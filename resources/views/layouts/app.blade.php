@@ -48,7 +48,9 @@
             $meta_description ?? ($stationTagline . ' - Glow 99.1 FM is a radio station and digital news platform in Akure, Ondo State, Nigeria.'),
             165
         );
-        $metaImage = \App\Support\Seo::absoluteUrl($meta_image ?? $stationLogoUrl, $stationProfile['logo']);
+        $metaImage = \App\Support\Seo::socialImageUrl($meta_image ?? null, $stationLogoUrl)
+            ?? $stationProfile['logo'];
+        $metaImageIsSocialCrop = str_contains($metaImage, '/image/upload/f_jpg,q_auto:good,c_fill,g_auto,w_1200,h_630/');
         $metaImageAlt = $meta_image_alt ?? $metaTitle;
         $canonicalUrl = \App\Support\Seo::absoluteUrl($canonical_url ?? request()->url()) ?: request()->url();
         $metaRobots = $meta_robots ?? \App\Support\Seo::robotsDirectives();
@@ -94,6 +96,11 @@
     <meta property="og:description" content="{{ $metaDescription }}">
     <meta property="og:image" content="{{ $metaImage }}">
     <meta property="og:image:secure_url" content="{{ $metaImage }}">
+    @if ($metaImageIsSocialCrop)
+        <meta property="og:image:type" content="image/jpeg">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+    @endif
     <meta property="og:image:alt" content="{{ $metaImageAlt }}">
     <meta property="og:url" content="{{ $canonicalUrl }}">
     <meta property="og:type" content="{{ $metaType }}">

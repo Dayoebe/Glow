@@ -3,11 +3,30 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\ViewErrorBag;
 use Tests\TestCase;
 
 class PublicLayoutTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_every_public_page_layout_emits_a_share_ready_image(): void
+    {
+        $html = view('layouts.app', [
+            'slot' => new HtmlString(''),
+            'errors' => new ViewErrorBag(),
+            'meta_title' => 'Heart to Heart',
+            'meta_image' => 'https://res.cloudinary.com/demo/image/upload/v123/podcasts/heart-to-heart.png',
+        ])->render();
+
+        $socialImage = 'https://res.cloudinary.com/demo/image/upload/f_jpg,q_auto:good,c_fill,g_auto,w_1200,h_630/v123/podcasts/heart-to-heart.png';
+
+        $this->assertStringContainsString('<meta property="og:image" content="' . $socialImage . '">', $html);
+        $this->assertStringContainsString('<meta property="og:image:width" content="1200">', $html);
+        $this->assertStringContainsString('<meta property="og:image:height" content="630">', $html);
+        $this->assertStringContainsString('<meta name="twitter:image" content="' . $socialImage . '">', $html);
+    }
 
     public function test_google_site_tags_are_not_loaded_on_localhost(): void
     {

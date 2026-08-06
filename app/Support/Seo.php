@@ -111,6 +111,30 @@ class Seo
         return self::siteUrl() . '/' . ltrim($value, '/');
     }
 
+    public static function socialImageUrl(mixed $value, ?string $fallback = null): ?string
+    {
+        $image = PublicImage::url($value) ?? PublicImage::url($fallback);
+
+        if (!$image || Str::startsWith($image, ['data:', 'blob:'])) {
+            return null;
+        }
+
+        $image = self::absoluteUrl($image);
+
+        if (!$image || !preg_match('#^https://res\.cloudinary\.com/[^/]+/image/upload/#i', $image)) {
+            return $image;
+        }
+
+        // Social crawlers are more reliable with a reasonably sized, fixed-format
+        // image than with the original multi-megabyte upload.
+        return preg_replace(
+            '#/image/upload/#i',
+            '/image/upload/f_jpg,q_auto:good,c_fill,g_auto,w_1200,h_630/',
+            $image,
+            1
+        );
+    }
+
     public static function canonicalUrl(string $path, array $query = []): string
     {
         $url = self::absoluteUrl($path) ?: self::siteUrl() . '/';
