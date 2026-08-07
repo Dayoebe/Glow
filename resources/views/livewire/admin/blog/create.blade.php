@@ -14,6 +14,10 @@
         }
     </style>
 
+    <div class="mb-6">
+        <x-admin.blog-workspace-nav />
+    </div>
+
     <form wire:submit.prevent="saveAsDraft">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             

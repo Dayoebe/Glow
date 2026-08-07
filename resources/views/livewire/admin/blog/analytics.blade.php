@@ -1,4 +1,6 @@
-<div>
+<div class="space-y-6">
+    <x-admin.blog-workspace-nav />
+
     <div>
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

@@ -1,342 +1,88 @@
-<div>
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 mb-1">Total Posts</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['total'] }}</p>
-                </div>
-                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-blog text-purple-600 text-xl"></i>
-                </div>
+<div class="space-y-6">
+    @php $canReview = $this->canReview(); @endphp
+
+    <section class="relative overflow-hidden rounded-2xl bg-[#0b2f3a] px-6 py-7 text-white shadow-sm sm:px-8">
+        <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-violet-400/10"></div>
+        <div class="pointer-events-none absolute -bottom-28 right-1/3 h-60 w-60 rounded-full bg-[#ed5a1f]/10"></div>
+        <div class="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div class="max-w-2xl">
+                <p class="text-xs font-extrabold uppercase tracking-[0.22em] text-violet-300">Glow Blog Studio</p>
+                <h2 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Turn ideas into stories worth sharing.</h2>
+                <p class="mt-3 max-w-xl text-sm leading-6 text-slate-300">Draft, review, publish and measure long-form stories from one focused editorial workspace.</p>
+            </div>
+            <div class="flex flex-col gap-2 sm:flex-row">
+                <a href="{{ route('admin.blog.analytics') }}" class="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-extrabold text-white hover:bg-white/15"><i class="fas fa-chart-line mr-2"></i>Analytics</a>
+                <a href="{{ route('admin.blog.create') }}" class="inline-flex items-center justify-center rounded-xl bg-[#ed5a1f] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-black/10 hover:bg-[#d94d16]"><i class="fas fa-pen-nib mr-2"></i>Write a post</a>
             </div>
         </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 mb-1">Published</p>
-                    <p class="text-2xl font-bold text-emerald-600">{{ $stats['published'] }}</p>
+        <div class="relative mt-7 grid grid-cols-2 gap-3 lg:grid-cols-5">
+            @foreach([
+                ['label' => 'All posts', 'value' => $stats['total'], 'icon' => 'fa-blog'],
+                ['label' => 'Published', 'value' => $stats['published'], 'icon' => 'fa-circle-check'],
+                ['label' => 'Featured', 'value' => $stats['featured'], 'icon' => 'fa-star'],
+                ['label' => 'Awaiting review', 'value' => $stats['pending'], 'icon' => 'fa-hourglass-half'],
+                ['label' => 'Drafts', 'value' => $stats['draft'], 'icon' => 'fa-file-pen'],
+            ] as $stat)
+                <div class="rounded-xl border border-white/10 bg-white/[0.07] p-4">
+                    <div class="flex items-center justify-between gap-3"><div><p class="text-2xl font-black">{{ number_format($stat['value']) }}</p><p class="mt-1 text-xs font-semibold text-slate-300">{{ $stat['label'] }}</p></div><i class="fas {{ $stat['icon'] }} text-violet-300"></i></div>
                 </div>
-                <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-check-circle text-emerald-600 text-xl"></i>
-                </div>
-            </div>
+            @endforeach
         </div>
+    </section>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 mb-1">Drafts</p>
-                    <p class="text-2xl font-bold text-amber-600">{{ $stats['draft'] }}</p>
-                </div>
-                <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-file-alt text-amber-600 text-xl"></i>
-                </div>
-            </div>
+    <x-admin.blog-workspace-nav />
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_190px_160px]">
+            <div class="relative"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i><input type="search" wire:model.live.debounce.300ms="search" placeholder="Search title, excerpt or post content…" class="w-full rounded-xl border-slate-300 py-2.5 pl-10 pr-4 text-sm focus:border-violet-500 focus:ring-violet-500"></div>
+            <select wire:model.live="filterCategory" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-violet-500 focus:ring-violet-500"><option value="">All categories</option>@foreach($categories as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach</select>
+            <select wire:model.live="filterStatus" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-violet-500 focus:ring-violet-500"><option value="">All workflows</option><option value="published">Published</option><option value="draft">Draft</option><option value="featured">Featured</option><option value="pending">Pending approval</option><option value="approved">Approved</option><option value="flagged">Flagged</option><option value="rejected">Rejected</option></select>
+            <select wire:model.live="sortBy" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-violet-500 focus:ring-violet-500"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="title">Title A–Z</option><option value="views">Most viewed</option><option value="featured">Featured first</option></select>
         </div>
+        <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-500"><span><strong class="text-slate-800">{{ $posts->total() }}</strong> {{ \Illuminate\Support\Str::plural('post', $posts->total()) }}</span>@if($hasFilters)<button wire:click="clearFilters" class="font-bold text-[#d94d16] hover:text-[#b83c0f]"><i class="fas fa-rotate-left mr-1"></i>Reset filters</button>@endif</div>
+    </section>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 mb-1">Featured</p>
-                    <p class="text-2xl font-bold text-pink-600">{{ $stats['featured'] }}</p>
-                </div>
-                <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-star text-pink-600 text-xl"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters and Actions -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-            <!-- Search and Filters -->
-            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 flex-1">
-                <div class="relative flex-1 max-w-md">
-                    <input type="text" wire:model.live.debounce.300ms="search" 
-                        placeholder="Search posts..."
-                        class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                </div>
-
-                <select wire:model.live="filterCategory" 
-                    class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option value="">All Categories</option>
-                    @foreach($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
-
-                <select wire:model.live="filterStatus" 
-                    class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option value="">All Status</option>
-                    <option value="published">Published</option>
-                    <option value="draft">Draft</option>
-                    <option value="featured">Featured</option>
-                    <option value="pending">Pending Approval</option>
-                    <option value="approved">Approved</option>
-                    <option value="flagged">Flagged</option>
-                    <option value="rejected">Rejected</option>
-                </select>
-            </div>
-
-            <!-- Add New Button -->
-            <a href="{{ route('admin.blog.create') }}" 
-                class="inline-flex items-center justify-center px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors duration-150">
-                <i class="fas fa-plus mr-2"></i>
-                Add Blog Post
-            </a>
-        </div>
-    </div>
-
-    <!-- Posts Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Post
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Category
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Author
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Stats
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @php
-                        $canReview = $this->canReview();
-                    @endphp
-                    @forelse($posts as $post)
-                        @php
-                            $canManage = $this->canManagePost($post);
-                            $showView = $post->approval_status === 'approved';
-                        @endphp
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center space-x-3">
-                                    @if($post->featured_image)
-                                        <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" 
-                                            class="w-16 h-16 rounded-lg object-cover">
-                                    @else
-                                        <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-image text-gray-400"></i>
-                                        </div>
-                                    @endif
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate">{{ $post->title }}</p>
-                                        <p class="text-xs text-gray-500">{{ $post->created_at->format('M d, Y') }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-{{ $post->category->color }}-100 text-{{ $post->category->color }}-700">
-                                    {{ $post->category->name }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <img src="{{ $post->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->author->name) }}" 
-                                        alt="{{ $post->author->name }}" 
-                                        class="w-8 h-8 rounded-full mr-2">
-                                    <span class="text-sm text-gray-900">{{ $post->author->name }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-500">
-                                    <div><i class="fas fa-eye mr-1"></i> {{ number_format($post->views) }}</div>
-                                    <div><i class="fas fa-comment mr-1"></i> {{ $post->comments_count }}</div>
-                                    <div><i class="fas fa-share mr-1"></i> {{ number_format($post->shares) }}</div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex flex-col space-y-1">
-                                    @if($canReview)
-                                        <button wire:click="togglePublish({{ $post->id }})" 
-                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded {{ $post->is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700' }}">
-                                            <i class="fas {{ $post->is_published ? 'fa-check-circle' : 'fa-clock' }} mr-1"></i>
-                                            {{ $post->is_published ? 'Published' : 'Draft' }}
-                                        </button>
-                                    @else
-                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded {{ $post->is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700' }}">
-                                            <i class="fas {{ $post->is_published ? 'fa-check-circle' : 'fa-clock' }} mr-1"></i>
-                                            {{ $post->is_published ? 'Published' : 'Draft' }}
-                                        </span>
-                                    @endif
-                                    @php
-                                        $approvalClass = match ($post->approval_status) {
-                                            'approved' => 'bg-emerald-100 text-emerald-700',
-                                            'flagged' => 'bg-amber-100 text-amber-700',
-                                            'rejected' => 'bg-red-100 text-red-700',
-                                            default => 'bg-gray-100 text-gray-700',
-                                        };
-                                    @endphp
-                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded {{ $approvalClass }}">
-                                        <i class="fas fa-shield-check mr-1"></i>
-                                        {{ ucfirst($post->approval_status ?? 'pending') }}
-                                    </span>
-                                    @if($post->approval_reason)
-                                        <span class="text-xs text-gray-500 line-clamp-2">Reason: {{ $post->approval_reason }}</span>
-                                    @endif
-                                    @if($canReview && $post->is_featured)
-                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-pink-100 text-pink-700">
-                                            <i class="fas fa-star mr-1"></i> Featured
-                                        </span>
-                                    @endif
-                                    @if($post->series)
-                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-700">
-                                            <i class="fas fa-layer-group mr-1"></i> Series
-                                        </span>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex items-center justify-end">
-                                    <div class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50">
-                                        @if($showView)
-                                            <div class="flex items-center gap-2 px-2 py-1">
-                                                <a href="{{ route('admin.blog.preview', $post->slug) }}" target="_blank"
-                                                    class="text-blue-600 hover:text-blue-900" title="View">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                            </div>
-                                        @endif
-                                        @if($canReview)
-                                            <span class="mx-1 h-4 w-px bg-gray-200"></span>
-                                            <div class="flex items-center gap-2 px-2 py-1">
-                                                <button wire:click="startApproval({{ $post->id }}, 'approved')"
-                                                    class="text-emerald-600 hover:text-emerald-900" title="Approve">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                                <button wire:click="startApproval({{ $post->id }}, 'flagged')"
-                                                    class="text-amber-600 hover:text-amber-900" title="Flag">
-                                                    <i class="fas fa-flag"></i>
-                                                </button>
-                                                <button wire:click="startApproval({{ $post->id }}, 'rejected')"
-                                                    class="text-red-600 hover:text-red-900" title="Reject">
-                                                    <i class="fas fa-times-circle"></i>
-                                                </button>
-                                            </div>
-                                        @endif
-                                        @if($canManage)
-                                            <span class="mx-1 h-4 w-px bg-gray-200"></span>
-                                            <div class="flex items-center gap-2 px-2 py-1">
-                                                <a href="{{ route('admin.blog.edit', $post->id) }}"
-                                                    class="text-purple-600 hover:text-purple-900" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                @if($canReview)
-                                                    <button wire:click="toggleFeatured({{ $post->id }})"
-                                                        class="text-pink-600 hover:text-pink-900" title="Toggle Featured">
-                                                        <i class="fas fa-star"></i>
-                                                    </button>
-                                                @endif
-                                                <button wire:click="confirmDelete({{ $post->id }})"
-                                                    class="text-red-600 hover:text-red-900" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        @if($approvalFormId === $post->id)
-                            <tr class="bg-emerald-50">
-                                <td colspan="6" class="px-6 py-4">
-                                    <div class="flex flex-col gap-3">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            {{ ucfirst($approvalAction) }} reason required
-                                        </div>
-                                        <textarea wire:model="approvalReason" rows="3"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                            placeholder="Share why this post is being {{ $approvalAction }}..."></textarea>
-                                        @error('approvalReason')
-                                            <p class="text-xs text-red-600">{{ $message }}</p>
-                                        @enderror
-                                        <div class="flex items-center gap-3">
-                                            <button wire:click="submitApprovalForm" type="button"
-                                                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg">
-                                                Submit
-                                            </button>
-                                            <button wire:click="cancelApprovalForm" type="button"
-                                                class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50">
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endif
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
-                                <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
-                                <p class="text-gray-500">No blog posts found</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="px-6 py-4 border-t border-gray-200">
-            {{ $posts->links() }}
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    @if($showDeleteModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showDeleteModal', false)"></div>
-                <div class="relative z-10 inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                <i class="fas fa-exclamation-triangle text-red-600"></i>
+    <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        @if($posts->isEmpty())
+            <div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"><span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-xl text-slate-400"><i class="fas fa-feather-pointed"></i></span><h3 class="mt-4 text-lg font-black text-slate-900">No blog posts found</h3><p class="mt-2 text-sm text-slate-500">Start a new story or reset the current filters.</p><a href="{{ route('admin.blog.create') }}" class="mt-5 inline-flex rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white">Write a post</a></div>
+        @else
+            @foreach($posts as $post)
+                @php
+                    $canManage = $this->canManagePost($post);
+                    $isPublic = $post->is_published && $post->approval_status === 'approved' && (!$post->published_at || $post->published_at->lte(now()));
+                    $approvalClass = match($post->approval_status) { 'approved' => 'bg-emerald-50 text-emerald-700', 'flagged' => 'bg-amber-50 text-amber-700', 'rejected' => 'bg-red-50 text-red-700', default => 'bg-slate-100 text-slate-600' };
+                @endphp
+                <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-violet-200 hover:shadow-md" wire:key="blog-post-{{ $post->id }}">
+                    <div class="grid sm:grid-cols-[190px_minmax(0,1fr)]">
+                        <div class="relative min-h-52 overflow-hidden bg-[#0b2f3a] sm:min-h-full">
+                            @if($post->featured_image)<img src="{{ $post->featured_image }}" alt="" class="absolute inset-0 h-full w-full object-cover">@else<div class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#0b2f3a] to-violet-900 px-5 text-center text-white"><i class="fas fa-feather-pointed mb-3 text-2xl text-violet-300"></i><span class="text-xs font-black uppercase tracking-widest">Glow Blog</span></div>@endif
+                            @if($post->is_featured)<span class="absolute left-3 top-3 rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-black uppercase text-white shadow"><i class="fas fa-star mr-1"></i>Featured</span>@endif
+                        </div>
+                        <div class="flex min-w-0 flex-col p-5">
+                            <div class="flex flex-wrap items-center gap-2"><span class="rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase {{ $post->is_published ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600' }}">{{ $post->is_published ? 'Published' : 'Draft' }}</span><span class="rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase {{ $approvalClass }}">{{ $post->approval_status ?: 'pending' }}</span><span class="text-[11px] font-semibold text-slate-400">{{ $post->category?->name ?? 'Uncategorised' }}</span>@if($post->series)<span class="text-[11px] font-bold text-violet-600"><i class="fas fa-layer-group mr-1"></i>{{ $post->series }}</span>@endif</div>
+                            <h3 class="mt-3 line-clamp-2 text-lg font-black leading-6 text-slate-900">{{ $post->title }}</h3>
+                            <p class="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->content), 140) }}</p>
+                            <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-semibold text-slate-500"><span><i class="fas fa-user mr-1 text-slate-400"></i>{{ $post->author?->name ?? 'Unknown' }}</span><span><i class="fas fa-calendar mr-1 text-slate-400"></i>{{ $post->created_at->format('M j, Y') }}</span><span><i class="fas fa-clock mr-1 text-slate-400"></i>{{ $post->read_time ?: 1 }} min</span><span><i class="fas fa-eye mr-1 text-slate-400"></i>{{ number_format($post->views) }}</span><span><i class="fas fa-comment mr-1 text-slate-400"></i>{{ number_format($post->comments_count) }}</span><span><i class="fas fa-share mr-1 text-slate-400"></i>{{ number_format($post->shares) }}</span></div>
+                            @if($post->approval_reason)<p class="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600"><strong>Review note:</strong> {{ $post->approval_reason }}</p>@endif
+                            <div class="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                                <div>@if($canReview)<button wire:click="togglePublish({{ $post->id }})" class="rounded-lg px-2.5 py-2 text-xs font-bold {{ $post->is_published ? 'text-slate-600 hover:bg-slate-100' : 'text-blue-700 hover:bg-blue-50' }}">{{ $post->is_published ? 'Unpublish' : 'Publish' }}</button><button wire:click="toggleFeatured({{ $post->id }})" class="rounded-lg px-2.5 py-2 text-xs font-bold text-violet-700 hover:bg-violet-50">{{ $post->is_featured ? 'Unfeature' : 'Feature' }}</button>@endif</div>
+                                <div class="flex items-center gap-1">@if($isPublic)<a href="{{ route('blog.show', $post->slug) }}" target="_blank" class="rounded-lg px-2.5 py-2 text-xs font-bold text-blue-700 hover:bg-blue-50">View</a>@elseif($canManage)<a href="{{ route('admin.blog.preview', $post->slug) }}" class="rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100">Preview</a>@endif @if($canManage)<a href="{{ route('admin.blog.edit', $post->id) }}" class="rounded-lg px-2.5 py-2 text-xs font-bold text-violet-700 hover:bg-violet-50">Edit</a><button wire:click="confirmDelete({{ $post->id }})" class="rounded-lg px-2.5 py-2 text-xs font-bold text-red-600 hover:bg-red-50" aria-label="Delete {{ $post->title }}"><i class="fas fa-trash"></i></button>@endif</div>
                             </div>
-                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                    Delete Blog Post
-                                </h3>
-                                <div class="mt-2">
-                                    <p class="text-sm text-gray-500">
-                                        Are you sure you want to delete this post? This action cannot be undone.
-                                    </p>
-                                </div>
-                            </div>
+                            @if($canReview)<div class="mt-2 flex justify-end gap-1"><button wire:click="startApproval({{ $post->id }}, 'approved')" class="rounded-lg px-2 py-1.5 text-[11px] font-bold text-emerald-700 hover:bg-emerald-50">Approve</button><button wire:click="startApproval({{ $post->id }}, 'flagged')" class="rounded-lg px-2 py-1.5 text-[11px] font-bold text-amber-700 hover:bg-amber-50">Flag</button><button wire:click="startApproval({{ $post->id }}, 'rejected')" class="rounded-lg px-2 py-1.5 text-[11px] font-bold text-red-700 hover:bg-red-50">Reject</button></div>@endif
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button wire:click="deletePost" type="button" 
-                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                            Delete
-                        </button>
-                        <button wire:click="$set('showDeleteModal', false)" type="button" 
-                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    @if($approvalFormId === $post->id)<div class="border-t border-amber-200 bg-amber-50 p-5"><label class="text-sm font-black text-slate-900">Why is this post being {{ $approvalAction }}?</label><textarea wire:model="approvalReason" rows="3" class="mt-2 w-full rounded-xl border-amber-200 text-sm focus:border-amber-500 focus:ring-amber-500" placeholder="Add a useful note for the writer…"></textarea>@error('approvalReason')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror<div class="mt-3 flex gap-2"><button wire:click="submitApprovalForm" class="rounded-lg bg-[#0b2f3a] px-4 py-2 text-xs font-bold text-white">Submit review</button><button wire:click="cancelApprovalForm" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700">Cancel</button></div></div>@endif
+                </article>
+            @endforeach
+        @endif
+    </section>
+
+    @if($posts->hasPages())<div class="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">{{ $posts->links() }}</div>@endif
+
+    @if($showDeleteModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true"><div class="flex min-h-screen items-center justify-center px-4 py-8"><button type="button" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm" wire:click="$set('showDeleteModal', false)" aria-label="Close dialog"></button><div class="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"><span class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-600"><i class="fas fa-trash"></i></span><h3 class="mt-4 text-xl font-black text-slate-900">Delete this blog post?</h3><p class="mt-2 text-sm leading-6 text-slate-500">The post, its comments and engagement history will be permanently removed.</p><div class="mt-6 flex justify-end gap-2"><button wire:click="$set('showDeleteModal', false)" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700">Keep post</button><button wire:click="deletePost" class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-700">Delete post</button></div></div></div></div>
     @endif
 
+    @if(session()->has('success'))<div class="flash-auto-dismiss fixed bottom-4 right-4 z-[60] max-w-sm rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-xl"><i class="fas fa-check-circle mr-2"></i>{{ session('success') }}</div>@endif
+    @if(session()->has('error'))<div class="flash-auto-dismiss fixed bottom-4 right-4 z-[60] max-w-sm rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow-xl"><i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}</div>@endif
 </div>

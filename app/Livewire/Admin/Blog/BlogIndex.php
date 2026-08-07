@@ -16,6 +16,7 @@ class BlogIndex extends Component
     public $search = '';
     public $filterCategory = '';
     public $filterStatus = '';
+    public $sortBy = 'newest';
     public $showDeleteModal = false;
     public $postToDelete = null;
     public $approvalAction = '';
@@ -26,6 +27,7 @@ class BlogIndex extends Component
         'search' => ['except' => ''],
         'filterCategory' => ['except' => ''],
         'filterStatus' => ['except' => ''],
+        'sortBy' => ['except' => 'newest'],
     ];
 
     public function updatingSearch()
@@ -40,6 +42,18 @@ class BlogIndex extends Component
 
     public function updatingFilterStatus()
     {
+        $this->resetPage();
+    }
+
+    public function updatingSortBy()
+    {
+        $this->resetPage();
+    }
+
+    public function clearFilters(): void
+    {
+        $this->reset(['search', 'filterCategory', 'filterStatus', 'sortBy']);
+        $this->sortBy = 'newest';
         $this->resetPage();
     }
 
@@ -248,8 +262,7 @@ class BlogIndex extends Component
 
     public function getPostsProperty()
     {
-        $query = Post::with(['category', 'author'])
-            ->latest('created_at');
+        $query = Post::with(['category', 'author'])->withCount('comments');
 
         if (!empty($this->search)) {
             $query->search($this->search);
@@ -275,6 +288,14 @@ class BlogIndex extends Component
             $query->where('approval_status', 'rejected');
         }
 
+        match ($this->sortBy) {
+            'oldest' => $query->oldest('created_at'),
+            'title' => $query->orderBy('title'),
+            'views' => $query->orderByDesc('views'),
+            'featured' => $query->orderByDesc('is_featured')->latest('created_at'),
+            default => $query->latest('created_at'),
+        };
+
         return $query->paginate(10);
     }
 
@@ -290,6 +311,7 @@ class BlogIndex extends Component
             'published' => Post::where('is_published', true)->count(),
             'draft' => Post::where('is_published', false)->count(),
             'featured' => Post::where('is_featured', true)->count(),
+            'pending' => Post::where('approval_status', 'pending')->count(),
         ];
     }
 
@@ -299,6 +321,7 @@ class BlogIndex extends Component
             'posts' => $this->posts,
             'categories' => $this->categories,
             'stats' => $this->stats,
+            'hasFilters' => filled($this->search) || filled($this->filterCategory) || filled($this->filterStatus) || $this->sortBy !== 'newest',
         ])->layout('layouts.admin', [
             'header' => 'Blog Management'
         ]);
