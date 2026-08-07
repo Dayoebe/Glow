@@ -12,6 +12,12 @@ return [
                 'active' => 'dashboard'
             ],
             [
+                'title' => 'Staff Chat',
+                'icon' => 'fas fa-comments',
+                'route' => 'admin.chat',
+                'active' => 'admin.chat'
+            ],
+            [
                 'title' => 'My Profile',
                 'icon' => 'fas fa-user-circle',
                 'route' => 'admin.profile',

@@ -362,6 +362,7 @@ Route::get('/podcasts/{showSlug}/{episodeSlug}', EpisodePlayer::class)->name('po
 // Admin dashboard routes (role restricted inside)
 Route::middleware(['auth', 'admin_or_staff'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/dashboard/chat', \App\Livewire\Admin\Chat\ChatHub::class)->name('admin.chat');
     Route::get('/admin/profile', AdminProfileForm::class)->name('admin.profile');
 
     // Admin News Routes

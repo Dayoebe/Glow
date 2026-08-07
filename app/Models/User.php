@@ -119,20 +119,20 @@ class User extends Authenticatable
             return false;
         }
 
-        if (is_string($role) && $role === 'staff') {
-            return $this->isStaff();
-        }
+        $roles = collect(is_array($role) ? $role : [$role])->flatten()->filter()->map(fn ($name) => (string) $name);
 
-        if (is_string($role) && $this->role === $role) {
-            return true;
-        }
+        if ($roles->contains($this->role)) return true;
+        if ($roles->contains('staff') && in_array($this->role, self::STAFF_LIKE_ROLES, true)) return true;
 
-        return $this->spatieHasRole($role, $guard);
+        return $this->roles()
+            ->when($guard, fn ($query) => $query->where('guard_name', $guard))
+            ->whereIn('name', $roles)
+            ->exists();
     }
 
     public function hasAnyRole(...$roles): bool
     {
-        return $this->hasRole($roles);
+        return $this->hasRole(collect($roles)->flatten()->all());
     }
 
     public function getRoleLabelAttribute(): string
@@ -155,6 +155,18 @@ class User extends Authenticatable
     public function staffMember()
     {
         return $this->hasOne(\App\Models\Staff\StaffMember::class, 'user_id');
+    }
+
+    public function chatConversations()
+    {
+        return $this->belongsToMany(\App\Models\Chat\Conversation::class, 'chat_participants')
+            ->withPivot(['joined_at', 'last_read_at', 'is_muted'])
+            ->withTimestamps();
+    }
+
+    public function chatMessages()
+    {
+        return $this->hasMany(\App\Models\Chat\Message::class, 'sender_id');
     }
 
     public function getDefaultGuardName(): string

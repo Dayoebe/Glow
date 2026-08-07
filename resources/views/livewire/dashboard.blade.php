@@ -1,4 +1,11 @@
 <div wire:poll.15s="loadMessages">
+    <a href="{{ route('admin.chat') }}" class="group mb-6 flex flex-col gap-4 overflow-hidden rounded-2xl bg-[#082f36] p-5 text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl sm:flex-row sm:items-center sm:justify-between">
+        <span class="flex items-center gap-4">
+            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/15 text-xl text-emerald-300"><i class="fas fa-comments"></i></span>
+            <span><strong class="block text-lg font-black">Staff Chat</strong><span class="mt-1 block text-sm text-slate-300">Message a colleague privately or send a targeted team broadcast.</span></span>
+        </span>
+        <span class="inline-flex items-center gap-2 self-start rounded-xl bg-[#ed5a1f] px-4 py-2.5 text-sm font-extrabold sm:self-auto">Open chat <i class="fas fa-arrow-right transition group-hover:translate-x-1"></i></span>
+    </a>
     @if($unreadMessageCount > 0)
         <section class="mb-6 overflow-hidden rounded-xl border border-amber-200 bg-amber-50 shadow-sm" aria-label="New contact messages">
             <div class="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
