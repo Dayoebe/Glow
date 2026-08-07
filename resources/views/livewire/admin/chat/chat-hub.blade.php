@@ -3,7 +3,7 @@
         <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('success') }}</div>
     @endif
 
-    <section class="relative overflow-hidden rounded-2xl bg-[#082f36] p-4 text-white shadow-xl sm:rounded-3xl sm:p-7">
+    <section class="relative hidden overflow-hidden rounded-3xl bg-[#082f36] p-7 text-white shadow-xl sm:block">
         <div class="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-emerald-400/10"></div>
         <div class="absolute -bottom-20 left-1/3 h-44 w-44 rounded-full bg-orange-400/10"></div>
         <div class="relative flex items-center justify-between gap-3 sm:gap-5 lg:items-end">
@@ -25,9 +25,13 @@
         </div>
     </section>
 
-    <section class="h-[calc(100dvh-12rem)] min-h-[560px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/40 sm:h-[720px] sm:rounded-3xl lg:grid lg:grid-cols-[350px_minmax(0,1fr)]">
-        <aside :class="mobileConversation ? 'hidden lg:flex' : 'flex'" class="h-full min-h-0 flex-col bg-slate-50/80 lg:border-r">
-            <div class="border-b border-slate-200 p-3 sm:p-4">
+    <section class="h-[calc(100dvh-7.5rem)] min-h-[560px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/40 sm:h-[720px] sm:rounded-3xl lg:grid lg:grid-cols-[350px_minmax(0,1fr)]">
+        <aside :class="mobileConversation ? 'hidden lg:flex' : 'flex'" class="h-full min-h-0 flex-col bg-white lg:border-r">
+            <div class="flex shrink-0 items-center justify-between bg-[#008069] px-4 py-3 text-white sm:hidden">
+                <div><div class="flex items-center gap-2"><h1 class="text-xl font-black">Staff Chat</h1>@if($totalUnread)<span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-black text-[#008069]">{{ $totalUnread }}</span>@endif</div><p class="mt-0.5 text-[11px] text-emerald-100">Private messages and team broadcasts</p></div>
+                <button type="button" wire:click="$set('showBroadcastComposer', true)" aria-label="New broadcast" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 transition active:bg-white/25"><i class="fas fa-bullhorn"></i></button>
+            </div>
+            <div class="border-b border-slate-200 bg-[#f0f2f5] p-3 sm:p-4">
                 <label class="text-xs font-extrabold uppercase tracking-wider text-slate-500">Start a private chat</label>
                 <div class="mt-2 flex gap-2">
                     <select wire:model="directRecipientId" aria-label="Select a staff member" class="h-11 min-w-0 flex-1 rounded-xl border-slate-300 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
@@ -39,9 +43,9 @@
                 @error('directRecipientId')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
             </div>
 
-            <div class="space-y-3 p-3 sm:p-4">
-                <div class="relative"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i><input type="search" wire:model.live.debounce.250ms="search" placeholder="Search conversations" class="w-full rounded-xl border-slate-300 py-2.5 pl-9 text-sm focus:border-emerald-500 focus:ring-emerald-500"></div>
-                <div class="flex gap-1 rounded-xl bg-slate-200/70 p-1">
+            <div class="space-y-3 border-b border-slate-100 p-3 sm:p-4">
+                <div class="relative"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i><input type="search" wire:model.live.debounce.250ms="search" placeholder="Search or start a new chat" class="w-full rounded-xl border-0 bg-[#f0f2f5] py-2.5 pl-9 text-sm focus:ring-2 focus:ring-[#00a884]/30"></div>
+                <div class="flex gap-1 rounded-xl bg-[#f0f2f5] p-1">
                     @foreach (['all' => 'All', 'unread' => 'Unread', 'broadcasts' => 'Broadcasts'] as $value => $label)
                         <button wire:click="$set('filter', '{{ $value }}')" class="flex-1 rounded-lg px-2 py-2 text-xs font-bold transition {{ $filter === $value ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-800' }}">{{ $label }}</button>
                     @endforeach
@@ -51,14 +55,14 @@
             <div class="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
                 @forelse ($conversations as $conversation)
                     @php $other = $conversation->participants->firstWhere('id', '!=', auth()->id()); @endphp
-                    <button wire:key="conversation-{{ $conversation->id }}" wire:click="selectConversation({{ $conversation->id }})" @click="mobileConversation = true" class="group flex w-full gap-3 rounded-2xl p-3 text-left transition {{ $selectedConversationId === $conversation->id ? 'bg-white shadow-md ring-1 ring-slate-200' : 'hover:bg-white/70' }}">
-                        <span class="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl {{ $conversation->type === 'broadcast' ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-700' }} font-black">
+                    <button wire:key="conversation-{{ $conversation->id }}" wire:click="selectConversation({{ $conversation->id }})" @click="mobileConversation = true" class="group flex w-full gap-3 rounded-xl p-3 text-left transition {{ $selectedConversationId === $conversation->id ? 'bg-[#f0f2f5]' : 'hover:bg-[#f5f6f6]' }}">
+                        <span class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full {{ $conversation->type === 'broadcast' ? 'bg-[#00a884] text-white' : 'bg-slate-200 text-slate-600' }} font-black">
                             @if($conversation->type === 'broadcast')<i class="fas fa-bullhorn"></i>@else{{ strtoupper(substr($other?->name ?? '?', 0, 1)) }}@endif
                         </span>
                         <span class="min-w-0 flex-1">
                             <span class="flex items-center justify-between gap-2"><span class="truncate text-sm font-extrabold text-slate-900">{{ $this->conversationName($conversation) }}</span><span class="shrink-0 text-[10px] text-slate-400">{{ $conversation->last_message_at?->diffForHumans(null, true, true) }}</span></span>
                             <span class="mt-1 flex items-center gap-2"><span class="min-w-0 flex-1 truncate text-xs text-slate-500">{{ $conversation->latestMessage?->sender_id === auth()->id() ? 'You: ' : '' }}{{ $conversation->latestMessage?->body ?? 'Conversation started' }}</span>
-                                @if($conversation->unread_count)<span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ed5a1f] px-1 text-[10px] font-black text-white">{{ $conversation->unread_count }}</span>@endif
+                                @if($conversation->unread_count)<span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#25d366] px-1 text-[10px] font-black text-white">{{ $conversation->unread_count }}</span>@endif
                             </span>
                             @if($conversation->is_pinned || $conversation->priority !== 'normal')<span class="mt-1.5 flex gap-2 text-[10px] font-bold uppercase tracking-wide {{ $conversation->priority === 'urgent' ? 'text-red-600' : 'text-amber-600' }}">@if($conversation->is_pinned)<span><i class="fas fa-thumbtack"></i> Pinned</span>@endif @if($conversation->priority !== 'normal')<span>{{ $conversation->priority }}</span>@endif</span>@endif
                         </span>
@@ -72,27 +76,30 @@
         <main :class="mobileConversation ? 'flex' : 'hidden lg:flex'" class="h-full min-h-0 min-w-0 flex-col bg-white">
             @if ($selected)
                 @php $other = $selected->participants->firstWhere('id', '!=', auth()->id()); $muted = (bool) $selected->participants->firstWhere('id', auth()->id())?->pivot?->is_muted; @endphp
-                <header class="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 px-3 py-3 sm:gap-3 sm:px-6 sm:py-4">
-                    <div class="flex min-w-0 items-center gap-2 sm:gap-3"><button type="button" @click="mobileConversation = false" aria-label="Back to conversations" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 lg:hidden"><i class="fas fa-arrow-left"></i></button><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl {{ $selected->type === 'broadcast' ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-700' }} font-black sm:h-11 sm:w-11 sm:rounded-2xl">@if($selected->type === 'broadcast')<i class="fas fa-bullhorn"></i>@else{{ strtoupper(substr($other?->name ?? '?', 0, 1)) }}@endif</span><div class="min-w-0"><h2 class="truncate text-sm font-black text-slate-900 sm:text-base">{{ $this->conversationName($selected) }}</h2><p class="truncate text-[11px] text-slate-500 sm:text-xs">{{ $selected->type === 'broadcast' ? $selected->participants->count().' recipients · '.$selected->priority.' priority' : ($other?->role_label ?? 'Staff member') }}</p></div></div>
-                    <button wire:click="toggleMute" title="{{ $muted ? 'Unmute' : 'Mute' }} conversation" class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:bg-slate-50"><i class="fas {{ $muted ? 'fa-bell-slash' : 'fa-bell' }}"></i></button>
+                <header class="flex shrink-0 items-center justify-between gap-2 border-b border-black/10 bg-[#008069] px-2 py-2.5 text-white sm:gap-3 sm:bg-[#f0f2f5] sm:px-5 sm:py-3 sm:text-slate-900">
+                    <div class="flex min-w-0 items-center gap-2 sm:gap-3"><button type="button" @click="mobileConversation = false" aria-label="Back to conversations" class="flex h-10 w-9 shrink-0 items-center justify-center text-white lg:hidden"><i class="fas fa-arrow-left"></i></button><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {{ $selected->type === 'broadcast' ? 'bg-[#00a884] text-white' : 'bg-white/20 text-white sm:bg-slate-300 sm:text-slate-700' }} font-black sm:h-11 sm:w-11">@if($selected->type === 'broadcast')<i class="fas fa-bullhorn"></i>@else{{ strtoupper(substr($other?->name ?? '?', 0, 1)) }}@endif</span><div class="min-w-0"><h2 class="truncate text-sm font-bold sm:text-base">{{ $this->conversationName($selected) }}</h2><p class="truncate text-[11px] text-emerald-100 sm:text-xs sm:text-slate-500">{{ $selected->type === 'broadcast' ? $selected->participants->count().' recipients · '.$selected->priority.' priority' : ($other?->role_label ?? 'Staff member') }}</p></div></div>
+                    <button wire:click="toggleMute" title="{{ $muted ? 'Unmute' : 'Mute' }} conversation" class="flex h-10 w-10 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 sm:text-slate-500 sm:hover:bg-slate-200"><i class="fas {{ $muted ? 'fa-bell-slash' : 'fa-bell' }}"></i></button>
                 </header>
 
-                <div id="chat-messages" class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,.06),_transparent_30%)] p-3 sm:space-y-5 sm:p-6">
-                    <div class="mx-auto flex max-w-sm items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-slate-400"><span class="h-px flex-1 bg-slate-200"></span>Conversation history<span class="h-px flex-1 bg-slate-200"></span></div>
+                <div id="chat-messages" class="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain bg-[#efeae2] bg-[radial-gradient(rgba(11,47,58,.055)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:space-y-3 sm:p-6">
+                    @php $lastMessageDate = null; @endphp
                     @foreach ($selected->messages as $message)
+                        @if($lastMessageDate !== $message->created_at->toDateString())
+                            <div class="sticky top-1 z-10 flex justify-center py-1"><span class="rounded-lg bg-white/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-500 shadow-sm">{{ $message->created_at->isToday() ? 'Today' : ($message->created_at->isYesterday() ? 'Yesterday' : $message->created_at->format('F j, Y')) }}</span></div>
+                            @php $lastMessageDate = $message->created_at->toDateString(); @endphp
+                        @endif
                         @php $mine = $message->sender_id === auth()->id(); @endphp
                         <div wire:key="message-{{ $message->id }}" class="flex {{ $mine ? 'justify-end' : 'justify-start' }}">
                             <div class="max-w-[88%] sm:max-w-[72%]">
                                 @unless($mine)<p class="mb-1 ml-1 text-[11px] font-extrabold text-slate-500">{{ $message->sender->name }}</p>@endunless
-                                <div class="rounded-2xl px-3.5 py-2.5 text-[13px] leading-5 shadow-sm sm:px-4 sm:py-3 sm:text-sm sm:leading-6 {{ $mine ? 'rounded-br-md bg-emerald-600 text-white' : 'rounded-bl-md border border-slate-200 bg-white text-slate-800' }}"><p class="whitespace-pre-wrap break-words">{{ $message->body }}</p></div>
-                                <p class="mt-1 px-1 text-[10px] {{ $mine ? 'text-right' : '' }} text-slate-400" title="{{ $message->created_at->format('l, F j, Y \a\t g:i A') }}">{{ $message->created_at->format('M j, Y · g:i A') }} @if($message->edited_at)· edited @endif</p>
+                                <div class="rounded-lg px-2.5 py-1.5 text-[13.5px] leading-5 text-slate-900 shadow-sm sm:px-3 sm:py-2 sm:text-sm {{ $mine ? 'rounded-tr-none bg-[#d9fdd3]' : 'rounded-tl-none bg-white' }}"><p class="whitespace-pre-wrap break-words">{{ $message->body }}</p><p class="mt-0.5 text-right text-[9.5px] leading-none text-slate-500" title="{{ $message->created_at->format('l, F j, Y \a\t g:i A') }}">{{ $message->created_at->format('g:i A') }} @if($message->edited_at)· edited @endif @if($mine)<i class="fas fa-check-double ml-1 text-[#53bdeb]"></i>@endif</p></div>
                             </div>
                         </div>
                     @endforeach
                 </div>
 
-                <form wire:submit="sendMessage" class="shrink-0 border-t border-slate-200 bg-white p-2.5 pb-[max(.625rem,env(safe-area-inset-bottom))] sm:p-5">
-                    <div class="flex items-end gap-2 sm:gap-3"><div class="min-w-0 flex-1"><textarea wire:model="messageBody" rows="1" maxlength="5000" placeholder="Write a message…" class="max-h-28 min-h-11 w-full resize-none rounded-2xl border-slate-300 px-3.5 py-3 text-sm focus:border-emerald-500 focus:ring-emerald-500 sm:min-h-12 sm:px-4"></textarea>@error('messageBody')<p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror</div><button class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200 transition hover:-translate-y-0.5 hover:bg-emerald-700 sm:h-12 sm:w-12" title="Send message"><i class="fas fa-paper-plane"></i></button></div>
+                <form wire:submit="sendMessage" class="shrink-0 bg-[#f0f2f5] p-2 pb-[max(.5rem,env(safe-area-inset-bottom))] sm:p-3">
+                    <div class="flex items-end gap-2"><div class="min-w-0 flex-1"><textarea wire:model="messageBody" rows="1" maxlength="5000" placeholder="Message" aria-label="Message" x-data="{ resize() { $el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px' } }" x-init="resize()" @input="resize()" @keydown.enter="if (!$event.shiftKey && !$event.isComposing) { $event.preventDefault(); $wire.sendMessage().then(() => { $el.style.height = 'auto' }) }" class="block max-h-[120px] min-h-11 w-full resize-none overflow-y-auto rounded-[1.4rem] border-0 bg-white px-4 py-3 text-[15px] leading-5 text-slate-900 shadow-sm placeholder:text-slate-500 focus:ring-1 focus:ring-[#00a884]/30 sm:min-h-12"></textarea>@error('messageBody')<p class="mt-1 px-2 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror</div><button type="submit" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#00a884] text-white shadow-sm transition hover:bg-[#008f72] disabled:opacity-60 sm:h-12 sm:w-12" title="Send message" wire:loading.attr="disabled" wire:target="sendMessage"><i wire:loading.remove wire:target="sendMessage" class="fas fa-paper-plane"></i><i wire:loading wire:target="sendMessage" class="fas fa-circle-notch fa-spin"></i></button></div>
                     <p class="mt-2 hidden text-[10px] text-slate-400 sm:block"><i class="fas fa-lock mr-1"></i>Visible only to people in this conversation. Messages are retained with timestamps.</p>
                 </form>
             @else
