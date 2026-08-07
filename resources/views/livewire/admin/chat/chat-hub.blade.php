@@ -1,4 +1,58 @@
-<div class="space-y-3 sm:space-y-5" wire:poll.12s x-data="{ mobileConversation: false }" x-on:chat-selected.window="mobileConversation = true">
+<div class="space-y-3 sm:space-y-5" wire:poll.12s="refreshChat"
+    x-data="{
+        mobileConversation: false,
+        isMobile: window.matchMedia('(max-width: 767px)').matches,
+        notificationVisible: false,
+        audioReady: false,
+        audioContext: null,
+        unlockAudio() {
+            if (this.audioReady) return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            this.audioContext = this.audioContext || new AudioContext();
+            if (this.audioContext.state === 'suspended') this.audioContext.resume();
+            this.audioReady = true;
+        },
+        playNotification() {
+            this.unlockAudio();
+            if (!this.audioContext || this.audioContext.state !== 'running') return;
+            [0, 0.16].forEach((delay, index) => {
+                const oscillator = this.audioContext.createOscillator();
+                const gain = this.audioContext.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.value = index ? 880 : 660;
+                gain.gain.setValueAtTime(0.0001, this.audioContext.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.12, this.audioContext.currentTime + delay + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.0001, this.audioContext.currentTime + delay + 0.13);
+                oscillator.connect(gain).connect(this.audioContext.destination);
+                oscillator.start(this.audioContext.currentTime + delay);
+                oscillator.stop(this.audioContext.currentTime + delay + 0.14);
+            });
+        },
+        notifyIncoming() {
+            this.notificationVisible = true;
+            this.playNotification();
+            window.clearTimeout(this.notificationTimer);
+            this.notificationTimer = window.setTimeout(() => this.notificationVisible = false, 4500);
+        }
+    }"
+    x-init="
+        const media = window.matchMedia('(max-width: 767px)');
+        const updateDevice = event => isMobile = event.matches;
+        media.addEventListener?.('change', updateDevice);
+        const unlock = () => unlockAudio();
+        window.addEventListener('pointerdown', unlock, { once: true });
+        window.addEventListener('keydown', unlock, { once: true });
+    "
+    x-on:chat-selected.window="mobileConversation = true"
+    x-on:chat-notification.window="notifyIncoming()">
+    <div x-cloak x-show="notificationVisible" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="-translate-y-3 opacity-0" x-transition:enter-end="translate-y-0 opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed left-3 right-3 top-[calc(env(safe-area-inset-top)+5.5rem)] z-[60] mx-auto max-w-sm sm:left-auto sm:right-6 sm:top-20">
+        <button type="button" @click="notificationVisible = false; mobileConversation = false" class="flex w-full items-center gap-3 rounded-2xl border border-white/20 bg-[#082f36] p-3 text-left text-white shadow-2xl ring-1 ring-black/10">
+            <span class="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#25d366] text-lg"><i class="fas fa-comment-dots"></i><span class="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-[#082f36] bg-orange-400"></span></span>
+            <span class="min-w-0 flex-1"><strong class="block text-sm font-black">New staff message</strong><span class="mt-0.5 block truncate text-xs text-slate-300">You have an unread message waiting for a reply.</span></span>
+            <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+        </button>
+    </div>
     @if (session('success'))
         <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('success') }}</div>
     @endif
@@ -99,7 +153,7 @@
                 </div>
 
                 <form wire:submit="sendMessage" class="shrink-0 bg-[#f0f2f5] p-2 pb-[max(.5rem,env(safe-area-inset-bottom))] sm:p-3">
-                    <div class="flex items-end gap-2"><div class="min-w-0 flex-1"><textarea wire:model="messageBody" rows="1" maxlength="5000" placeholder="Message" aria-label="Message" x-data="{ resize() { $el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px' } }" x-init="resize()" @input="resize()" @keydown.enter="if (!$event.shiftKey && !$event.isComposing) { $event.preventDefault(); $wire.sendMessage().then(() => { $el.style.height = 'auto' }) }" class="block max-h-[120px] min-h-11 w-full resize-none overflow-y-auto rounded-[1.4rem] border-0 bg-white px-4 py-3 text-[15px] leading-5 text-slate-900 shadow-sm placeholder:text-slate-500 focus:ring-1 focus:ring-[#00a884]/30 sm:min-h-12"></textarea>@error('messageBody')<p class="mt-1 px-2 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror</div><button type="submit" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#00a884] text-white shadow-sm transition hover:bg-[#008f72] disabled:opacity-60 sm:h-12 sm:w-12" title="Send message" wire:loading.attr="disabled" wire:target="sendMessage"><i wire:loading.remove wire:target="sendMessage" class="fas fa-paper-plane"></i><i wire:loading wire:target="sendMessage" class="fas fa-circle-notch fa-spin"></i></button></div>
+                    <div class="flex items-end gap-2"><div class="min-w-0 flex-1"><textarea wire:model="messageBody" rows="1" maxlength="5000" placeholder="Message" aria-label="Message" x-data="{ resize() { $el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px' } }" x-init="resize()" @input="resize()" @keydown.enter="if (!isMobile && !$event.shiftKey && !$event.isComposing) { $event.preventDefault(); $wire.sendMessage().then(() => { $el.style.height = 'auto' }) }" class="block max-h-[120px] min-h-11 w-full resize-none overflow-y-auto rounded-[1.4rem] border-0 bg-white px-4 py-3 text-[15px] leading-5 text-slate-900 shadow-sm placeholder:text-slate-500 focus:ring-1 focus:ring-[#00a884]/30 sm:min-h-12"></textarea>@error('messageBody')<p class="mt-1 px-2 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror</div><button type="submit" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#00a884] text-white shadow-sm transition hover:bg-[#008f72] disabled:opacity-60 sm:h-12 sm:w-12" title="Send message" wire:loading.attr="disabled" wire:target="sendMessage"><i wire:loading.remove wire:target="sendMessage" class="fas fa-paper-plane"></i><i wire:loading wire:target="sendMessage" class="fas fa-circle-notch fa-spin"></i></button></div>
                     <p class="mt-2 hidden text-[10px] text-slate-400 sm:block"><i class="fas fa-lock mr-1"></i>Visible only to people in this conversation. Messages are retained with timestamps.</p>
                 </form>
             @else

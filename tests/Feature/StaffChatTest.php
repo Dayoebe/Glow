@@ -81,4 +81,24 @@ class StaffChatTest extends TestCase
 
         $this->assertDatabaseCount('chat_conversations', 0);
     }
+
+    public function test_new_unread_message_dispatches_an_in_app_notification(): void
+    {
+        $recipient = $this->staff();
+        $sender = $this->staff();
+        $component = Livewire::actingAs($recipient)->test(ChatHub::class);
+        $conversation = Conversation::create([
+            'type' => 'direct',
+            'created_by' => $sender->id,
+            'direct_key' => implode(':', collect([$recipient->id, $sender->id])->sort()->all()),
+            'last_message_at' => now(),
+        ]);
+        $conversation->participants()->attach([
+            $recipient->id => ['joined_at' => now()],
+            $sender->id => ['joined_at' => now()],
+        ]);
+        $conversation->messages()->create(['sender_id' => $sender->id, 'body' => 'Please check the running order.']);
+
+        $component->call('refreshChat')->assertDispatched('chat-notification');
+    }
 }

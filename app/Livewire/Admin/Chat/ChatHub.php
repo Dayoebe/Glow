@@ -23,6 +23,7 @@ class ChatHub extends Component
     public bool $broadcastPinned = false;
     public bool $broadcastEveryone = true;
     public array $broadcastRecipientIds = [];
+    public int $knownUnreadCount = 0;
 
     protected $queryString = ['selectedConversationId' => ['as' => 'conversation', 'except' => null]];
 
@@ -33,6 +34,18 @@ class ChatHub extends Component
                 ? $this->selectedConversationId
                 : $this->conversations()->first()?->id;
         $this->markSelectedRead();
+        $this->knownUnreadCount = (int) $this->conversations()->sum('unread_count');
+    }
+
+    public function refreshChat(): void
+    {
+        $unreadCount = (int) $this->conversations()->sum('unread_count');
+
+        if ($unreadCount > $this->knownUnreadCount) {
+            $this->dispatch('chat-notification', count: $unreadCount);
+        }
+
+        $this->knownUnreadCount = $unreadCount;
     }
 
     public function selectConversation(int $conversationId): void
@@ -171,7 +184,10 @@ class ChatHub extends Component
 
     private function markSelectedRead(): void
     {
-        if ($this->selectedConversationId) $this->markRead($this->selectedConversationId);
+        if ($this->selectedConversationId) {
+            $this->markRead($this->selectedConversationId);
+            $this->knownUnreadCount = (int) $this->conversations()->sum('unread_count');
+        }
     }
 
     private function markRead(int $conversationId): void
