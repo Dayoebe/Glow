@@ -102,18 +102,73 @@
     </section>
 
     @if ($showBroadcastComposer)
-        <div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-5" wire:click.self="resetBroadcastForm">
-            <div class="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
-                <div class="flex items-center justify-between border-b border-slate-200 px-5 py-5 sm:px-7"><div><p class="text-xs font-black uppercase tracking-[.16em] text-orange-600">Broadcast centre</p><h2 class="mt-1 text-2xl font-black text-slate-900">Send an announcement</h2></div><button wire:click="resetBroadcastForm" class="h-10 w-10 rounded-xl bg-slate-100 text-slate-500"><i class="fas fa-times"></i></button></div>
-                <form wire:submit="createBroadcast" class="space-y-5 p-5 sm:p-7">
-                    <div><label class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Subject</label><input wire:model="broadcastTitle" maxlength="120" placeholder="e.g. Production meeting moved to 3 PM" class="mt-2 w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500">@error('broadcastTitle')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                    <div><label class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Message</label><textarea wire:model="broadcastBody" rows="5" maxlength="5000" placeholder="Share the details your team needs…" class="mt-2 w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500"></textarea>@error('broadcastBody')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                    <div class="grid gap-4 sm:grid-cols-2"><div><label class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Priority</label><select wire:model="broadcastPriority" class="mt-2 w-full rounded-xl border-slate-300"><option value="normal">Normal</option><option value="important">Important</option><option value="urgent">Urgent</option></select></div><label class="mt-6 flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-3"><input type="checkbox" wire:model="broadcastPinned" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"><span><strong class="block text-sm text-slate-800">Pin announcement</strong><span class="text-xs text-slate-500">Keep it above recent chats</span></span></label></div>
-                    <div class="rounded-2xl border border-slate-200 p-4"><p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Recipients</p><div class="mt-3 grid grid-cols-2 gap-2"><label class="rounded-xl border p-3 text-sm font-bold {{ $broadcastEveryone ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200' }}"><input type="radio" wire:model.live="broadcastEveryone" value="1" class="mr-2 text-emerald-600">Everyone</label><label class="rounded-xl border p-3 text-sm font-bold {{ !$broadcastEveryone ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200' }}"><input type="radio" wire:model.live="broadcastEveryone" value="0" class="mr-2 text-emerald-600">Selected staff</label></div>
-                        @if(!$broadcastEveryone)<div class="mt-3 max-h-44 space-y-1 overflow-y-auto rounded-xl bg-slate-50 p-2">@foreach($staff as $person)<label class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-white"><input type="checkbox" wire:model="broadcastRecipientIds" value="{{ $person->id }}" class="rounded text-emerald-600"><span class="text-sm font-semibold text-slate-700">{{ $person->name }}</span><span class="ml-auto text-xs text-slate-400">{{ $person->role_label }}</span></label>@endforeach</div>@endif
-                        @error('broadcastRecipientIds')<p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
+        <div class="fixed inset-0 z-50 flex items-end justify-center bg-[#041d23]/80 p-0 backdrop-blur-md sm:items-center sm:p-6" wire:click.self="resetBroadcastForm">
+            <div role="dialog" aria-modal="true" aria-labelledby="broadcast-heading" class="max-h-[96vh] w-full max-w-3xl overflow-hidden rounded-t-[2rem] bg-slate-50 shadow-[0_30px_100px_rgba(0,0,0,.4)] sm:max-h-[92vh] sm:rounded-[2rem]">
+                <div class="relative overflow-hidden bg-[#082f36] px-5 py-6 text-white sm:px-8 sm:py-7">
+                    <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-emerald-400/10"></div>
+                    <div class="relative flex items-start justify-between gap-5">
+                        <div class="flex min-w-0 items-start gap-4">
+                            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-500 text-xl shadow-lg shadow-black/20"><i class="fas fa-bullhorn"></i></span>
+                            <div><p class="text-[11px] font-black uppercase tracking-[.2em] text-emerald-300">Broadcast centre</p><h2 id="broadcast-heading" class="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Create an announcement</h2><p class="mt-1.5 max-w-xl text-sm leading-5 text-slate-300">Share a clear update with the whole team or only the people who need it.</p></div>
+                        </div>
+                        <button type="button" wire:click="resetBroadcastForm" aria-label="Close broadcast composer" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-slate-200 transition hover:bg-white/20 hover:text-white"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" wire:click="resetBroadcastForm" class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-slate-600">Cancel</button><button class="rounded-xl bg-[#ed5a1f] px-6 py-3 text-sm font-extrabold text-white shadow-lg hover:bg-[#d94d16]"><i class="fas fa-paper-plane mr-2"></i>Send broadcast</button></div>
+                </div>
+
+                <form wire:submit="createBroadcast" class="max-h-[calc(96vh-136px)] overflow-y-auto sm:max-h-[calc(92vh-144px)]">
+                    <div class="space-y-5 p-4 sm:p-7">
+                        <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                            <div class="mb-4 flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-sm text-emerald-700"><i class="fas fa-pen"></i></span><div><h3 class="text-sm font-black text-slate-900">Announcement details</h3><p class="text-xs text-slate-500">Keep the subject brief and the message easy to scan.</p></div></div>
+
+                            <div>
+                                <div class="flex items-center justify-between gap-3"><label for="broadcast-title" class="text-xs font-extrabold uppercase tracking-wider text-slate-600">Subject</label><span class="text-[10px] font-semibold text-slate-400">Maximum 120 characters</span></div>
+                                <div class="relative mt-2">
+                                    <i class="fas fa-heading pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                                    <input id="broadcast-title" type="text" wire:model="broadcastTitle" maxlength="120" autocomplete="off" placeholder="What does your team need to know?" class="h-[52px] w-full rounded-2xl border-2 {{ $errors->has('broadcastTitle') ? 'border-red-300 bg-red-50/40' : 'border-slate-200 bg-slate-50/70' }} py-3.5 pl-11 pr-4 text-[15px] font-semibold text-slate-900 placeholder:font-normal placeholder:text-slate-400 transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10">
+                                </div>
+                                @error('broadcastTitle')<p class="mt-2 flex items-center gap-1.5 text-xs font-bold text-red-600"><i class="fas fa-exclamation-circle"></i>{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="mt-5">
+                                <div class="flex items-center justify-between gap-3"><label for="broadcast-message" class="text-xs font-extrabold uppercase tracking-wider text-slate-600">Message</label><span class="text-[10px] font-semibold text-slate-400">Required</span></div>
+                                <div class="relative mt-2">
+                                    <textarea id="broadcast-message" wire:model="broadcastBody" rows="6" maxlength="5000" placeholder="Write the announcement here. Include dates, times, locations and any action required…" class="min-h-36 w-full resize-y rounded-2xl border-2 {{ $errors->has('broadcastBody') ? 'border-red-300 bg-red-50/40' : 'border-slate-200 bg-slate-50/70' }} px-4 py-3.5 text-[15px] leading-6 text-slate-900 placeholder:text-slate-400 transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"></textarea>
+                                </div>
+                                @error('broadcastBody')<p class="mt-2 flex items-center gap-1.5 text-xs font-bold text-red-600"><i class="fas fa-exclamation-circle"></i>{{ $message }}</p>@enderror
+                            </div>
+                        </section>
+
+                        <div class="grid gap-5 md:grid-cols-2">
+                            <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                                <label for="broadcast-priority" class="text-xs font-extrabold uppercase tracking-wider text-slate-600">Priority level</label>
+                                <div class="relative mt-2"><i class="fas fa-signal pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i><select id="broadcast-priority" wire:model="broadcastPriority" class="h-[52px] w-full appearance-none rounded-2xl border-2 border-slate-200 bg-slate-50/70 py-3.5 pl-11 pr-10 text-sm font-bold text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"><option value="normal">Normal update</option><option value="important">Important notice</option><option value="urgent">Urgent action</option></select><i class="fas fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i></div>
+                                <p class="mt-2 text-xs leading-5 text-slate-500">Priority helps recipients understand how quickly they should respond.</p>
+                            </section>
+
+                            <label class="group flex cursor-pointer items-center gap-4 rounded-2xl border-2 p-4 shadow-sm transition sm:p-5 {{ $broadcastPinned ? 'border-orange-400 bg-orange-50' : 'border-slate-200 bg-white hover:border-slate-300' }}">
+                                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $broadcastPinned ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-500' }}"><i class="fas fa-thumbtack"></i></span>
+                                <span class="min-w-0 flex-1"><strong class="block text-sm font-black text-slate-900">Pin announcement</strong><span class="mt-0.5 block text-xs leading-5 text-slate-500">Keep it above recent conversations.</span></span>
+                                <span class="relative h-6 w-11 shrink-0 rounded-full transition {{ $broadcastPinned ? 'bg-orange-500' : 'bg-slate-300' }}"><input type="checkbox" wire:model.live="broadcastPinned" class="sr-only"><span class="absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all {{ $broadcastPinned ? 'left-6' : 'left-1' }}"></span></span>
+                            </label>
+                        </div>
+
+                        <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                            <div class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-sm text-orange-600"><i class="fas fa-users"></i></span><div><h3 class="text-sm font-black text-slate-900">Choose recipients</h3><p class="text-xs text-slate-500">Control exactly who receives this announcement.</p></div></div>
+                            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                                <label class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 transition {{ $broadcastEveryone ? 'border-emerald-500 bg-emerald-50 ring-4 ring-emerald-500/5' : 'border-slate-200 hover:border-slate-300' }}"><input type="radio" wire:model.live="broadcastEveryone" value="1" class="h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"><span><strong class="block text-sm text-slate-900">Everyone</strong><span class="text-xs text-slate-500">All active dashboard staff</span></span></label>
+                                <label class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 transition {{ !$broadcastEveryone ? 'border-emerald-500 bg-emerald-50 ring-4 ring-emerald-500/5' : 'border-slate-200 hover:border-slate-300' }}"><input type="radio" wire:model.live="broadcastEveryone" value="0" class="h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"><span><strong class="block text-sm text-slate-900">Selected staff</strong><span class="text-xs text-slate-500">Create a targeted audience</span></span></label>
+                            </div>
+                            @if(!$broadcastEveryone)
+                                <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200"><div class="border-b border-slate-200 bg-slate-50 px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Select team members</div><div class="max-h-52 divide-y divide-slate-100 overflow-y-auto p-1">@foreach($staff as $person)<label class="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 transition hover:bg-emerald-50/70"><input type="checkbox" wire:model="broadcastRecipientIds" value="{{ $person->id }}" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-xs font-black text-slate-600">{{ strtoupper(substr($person->name, 0, 1)) }}</span><span class="min-w-0 flex-1 truncate text-sm font-bold text-slate-700">{{ $person->name }}</span><span class="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-500">{{ $person->role_label }}</span></label>@endforeach</div></div>
+                            @endif
+                            @error('broadcastRecipientIds')<p class="mt-2 flex items-center gap-1.5 text-xs font-bold text-red-600"><i class="fas fa-exclamation-circle"></i>{{ $message }}</p>@enderror
+                        </section>
+                    </div>
+
+                    <div class="sticky bottom-0 flex flex-col-reverse gap-3 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-7">
+                        <p class="hidden text-xs text-slate-500 sm:block"><i class="fas fa-lock mr-1.5 text-emerald-600"></i>Visible only to selected staff</p>
+                        <div class="flex flex-col-reverse gap-3 sm:flex-row"><button type="button" wire:click="resetBroadcastForm" class="rounded-xl border-2 border-slate-200 px-5 py-3 text-sm font-extrabold text-slate-600 transition hover:bg-slate-50">Cancel</button><button type="submit" wire:loading.attr="disabled" wire:target="createBroadcast" class="inline-flex items-center justify-center rounded-xl bg-[#ed5a1f] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-[#d94d16] disabled:cursor-wait disabled:opacity-70"><span wire:loading.remove wire:target="createBroadcast"><i class="fas fa-paper-plane mr-2"></i>Send broadcast</span><span wire:loading wire:target="createBroadcast"><i class="fas fa-circle-notch fa-spin mr-2"></i>Sending…</span></button></div>
+                    </div>
                 </form>
             </div>
         </div>
