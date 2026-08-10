@@ -29,13 +29,13 @@
                 <nav class="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:pb-0" aria-label="Event categories">
                     @foreach($categories as $category)
                         @continueIfNotArray($category)
-                        <button type="button"
-                                wire:click="$set('selectedCategory', '{{ $category['slug'] }}')"
+                        <a href="{{ route('events.index', $category['slug'] === 'all' ? [] : ['selectedCategory' => $category['slug']]) }}"
+                                wire:click.prevent="$set('selectedCategory', '{{ $category['slug'] }}')"
                                 wire:key="event-category-{{ $category['slug'] }}"
                                 class="shrink-0 border-b-2 px-3 py-2 text-sm font-bold transition {{ $selectedCategory === $category['slug'] ? 'border-glow-orange text-glow-ink' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-glow-ink' }}">
                             {{ $category['name'] }}
                             <span class="ml-1 text-xs font-normal text-slate-400">{{ $category['count'] }}</span>
-                        </button>
+                        </a>
                     @endforeach
                 </nav>
 

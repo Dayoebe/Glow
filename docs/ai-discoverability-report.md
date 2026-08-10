@@ -122,11 +122,24 @@ Date: 2026-05-22
 
 ## Manual Steps For The Owner
 
-- Submit `https://glowfmradio.com/sitemap.xml` in Google Search Console.
-- Submit `https://glowfmradio.com/sitemap.xml` in Bing Webmaster Tools.
-- Test `https://glowfmradio.com/robots.txt` with search engine robots tools.
+- Submit `https://www.glowfmradio.com/sitemap.xml` in Google Search Console.
+- Submit `https://www.glowfmradio.com/sitemap.xml` in Bing Webmaster Tools.
+- Test `https://www.glowfmradio.com/robots.txt` with search engine robots tools.
 - Test key article, homepage, show, podcast, and contact URLs in Google Rich Results Test and Schema.org Validator.
 - Check ChatGPT, Perplexity, Gemini, Claude, and Bing/Copilot discovery manually using exact brand and article queries.
 - Add real social profile URLs in the admin Station Settings for stronger entity reconciliation.
 - Keep articles fresh, factual, dated, and internally linked.
 - Build external authority through credible citations, backlinks, local directories, social profile consistency, press mentions, and partner references.
+
+## Google Search Console Coverage Remediation - 2026-08-10
+
+- Confirmed the deployed `www` homepage, `robots.txt`, sitemap index, and News page return `200` and public indexing directives.
+- Confirmed the non-`www` origin redirects permanently to the configured `www` canonical origin.
+- Redirect responses no longer receive an `X-Robots-Tag: noindex` header. Redirects remain intentionally non-indexable because Google should index their destination.
+- True error templates now explicitly emit `noindex` metadata so a branded 404 cannot be mistaken for a valid indexable page.
+- Events now use page/category-aware canonicals. Valid category landing URLs remain indexable, while search, sort, and invalid-category combinations are `noindex, follow` and point to a clean canonical.
+- Event category controls are crawlable links while retaining Livewire navigation.
+- Careers now uses pagination-aware canonicals. Search, department, job-type, workplace, and non-default-sort combinations are `noindex, follow` and point to the clean Careers canonical.
+- GSC's `Page with redirect` and `Alternative page with proper canonical tag` categories are informational when the reported source URL is an intentional legacy, host, scheme, or duplicate URL.
+- `Crawled - currently not indexed` cannot be resolved by a directive alone. Improve unique reporting, descriptive copy, internal links, and authority for the exact affected URLs, then request validation after deployment.
+- Export the example URL list from each GSC coverage category before the next pass. Exact historical 404 URLs are required to decide whether each should be restored, redirected to a genuinely equivalent page, or left as a correct 404.

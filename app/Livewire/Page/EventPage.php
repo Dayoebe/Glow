@@ -4,6 +4,7 @@ namespace App\Livewire\Page;
 
 use App\Models\Event\Event;
 use App\Models\Event\EventCategory;
+use App\Support\Seo;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -12,7 +13,9 @@ class EventPage extends Component
     use WithPagination;
 
     public $selectedCategory = 'all';
+
     public $searchQuery = '';
+
     public $sortBy = 'upcoming';
 
     protected $queryString = [
@@ -45,7 +48,7 @@ class EventPage extends Component
             $query->byCategory($this->selectedCategory);
         }
 
-        if (!empty($this->searchQuery)) {
+        if (! empty($this->searchQuery)) {
             $query->search($this->searchQuery);
         }
 
@@ -120,11 +123,43 @@ class EventPage extends Component
 
     public function render()
     {
+        $events = $this->events;
+        $categories = $this->categories;
+        $currentPage = $events->currentPage();
+        $currentCategory = $this->selectedCategory !== 'all'
+            ? $categories->firstWhere('slug', $this->selectedCategory)
+            : null;
+        $hasInvalidCategory = $this->selectedCategory !== 'all' && ! $currentCategory;
+        $hasNonIndexableFilters = filled($this->searchQuery)
+            || $this->sortBy !== 'upcoming'
+            || $hasInvalidCategory;
+
+        $canonicalQuery = [];
+        if ($currentCategory) {
+            $canonicalQuery['selectedCategory'] = $currentCategory->slug;
+        }
+        if (! $hasNonIndexableFilters && $currentPage > 1) {
+            $canonicalQuery['page'] = $currentPage;
+        }
+
+        $canonical = Seo::canonicalUrl(route('events.index', [], false), $canonicalQuery);
+        $pageLabel = $currentPage > 1 && ! $hasNonIndexableFilters ? ' - Page '.$currentPage : '';
+        $landingTitle = $currentCategory
+            ? $currentCategory->name.' Events - Glow 99.1 FM'
+            : 'Events And Community Experiences - Glow 99.1 FM';
+        $description = $currentCategory
+            ? Seo::text(
+                $currentCategory->description
+                    ?: "Explore {$currentCategory->name} events and community experiences from Glow 99.1 FM in Akure, Ondo State.",
+                165
+            )
+            : 'Explore Glow 99.1 FM events, live broadcasts, community gatherings, and experiences in Akure and across Ondo State.';
+
         return view('livewire.page.event-page', [
-            'events' => $this->events,
+            'events' => $events,
             'featuredEvent' => $this->featuredEvent,
             'upcomingEvents' => $this->upcomingEvents,
-            'categories' => $this->categories->map(function ($cat) {
+            'categories' => $categories->map(function ($cat) {
                 return [
                     'slug' => $cat->slug,
                     'name' => $cat->name,
@@ -139,7 +174,15 @@ class EventPage extends Component
                 'icon' => 'fas fa-calendar-alt',
                 'color' => 'amber',
             ])->toArray(),
-        ])->layout('layouts.app', ['title' => 'Events - Glow FM']);
+        ])->layout('layouts.app', [
+            'title' => $landingTitle.$pageLabel,
+            'meta_title' => $landingTitle.$pageLabel,
+            'meta_description' => $description,
+            'canonical_url' => $canonical,
+            'meta_robots' => $hasNonIndexableFilters
+                ? config('seo.filtered_robots', 'noindex, follow, noarchive')
+                : null,
+        ]);
     }
 
     private function formatEventItem(Event $event): array
@@ -160,7 +203,7 @@ class EventPage extends Component
             ],
             'author' => [
                 'name' => $event->author->name,
-                'avatar' => $event->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($event->author->name),
+                'avatar' => $event->author->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($event->author->name),
                 'role' => $event->author->role_label ?? 'Organizer',
             ],
             'views' => $event->views,

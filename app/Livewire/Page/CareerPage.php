@@ -3,6 +3,7 @@
 namespace App\Livewire\Page;
 
 use App\Models\Career\CareerPosition;
+use App\Support\Seo;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -11,9 +12,13 @@ class CareerPage extends Component
     use WithPagination;
 
     public $search = '';
+
     public $department = '';
+
     public $employmentType = '';
+
     public $workplaceType = '';
+
     public $sortBy = 'latest';
 
     protected $queryString = [
@@ -55,19 +60,19 @@ class CareerPage extends Component
             ->published()
             ->acceptingApplications();
 
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $query->search($this->search);
         }
 
-        if (!empty($this->department)) {
+        if (! empty($this->department)) {
             $query->where('department', $this->department);
         }
 
-        if (!empty($this->employmentType)) {
+        if (! empty($this->employmentType)) {
             $query->where('employment_type', $this->employmentType);
         }
 
-        if (!empty($this->workplaceType)) {
+        if (! empty($this->workplaceType)) {
             $query->where('workplace_type', $this->workplaceType);
         }
 
@@ -136,13 +141,32 @@ class CareerPage extends Component
 
     public function render()
     {
+        $positions = $this->positions;
+        $currentPage = $positions->currentPage();
+        $hasNonIndexableFilters = filled($this->search)
+            || filled($this->department)
+            || filled($this->employmentType)
+            || filled($this->workplaceType)
+            || $this->sortBy !== 'latest';
+        $canonical = Seo::canonicalUrl(
+            route('careers.index', [], false),
+            ! $hasNonIndexableFilters && $currentPage > 1 ? ['page' => $currentPage] : []
+        );
+        $pageLabel = $currentPage > 1 && ! $hasNonIndexableFilters ? ' - Page '.$currentPage : '';
+
         return view('livewire.page.career-page', [
-            'positions' => $this->positions,
+            'positions' => $positions,
             'departments' => $this->departments,
             'employmentTypes' => $this->employmentTypes,
             'workplaceTypes' => $this->workplaceTypes,
         ])->layout('layouts.app', [
-            'title' => 'Careers - Glow FM',
+            'title' => 'Careers And Opportunities - Glow 99.1 FM'.$pageLabel,
+            'meta_title' => 'Careers And Opportunities - Glow 99.1 FM'.$pageLabel,
+            'meta_description' => 'Explore current jobs, internships, and volunteering opportunities at Glow 99.1 FM in Akure, Ondo State.',
+            'canonical_url' => $canonical,
+            'meta_robots' => $hasNonIndexableFilters
+                ? config('seo.filtered_robots', 'noindex, follow, noarchive')
+                : null,
         ]);
     }
 }

@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     <title>{{ ($code ?? 'Error') . ' ' . ($title ?? 'Something went wrong') }} | {{ config('app.name', 'Glow FM') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

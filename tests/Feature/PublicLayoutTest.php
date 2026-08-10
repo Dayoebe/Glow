@@ -15,17 +15,17 @@ class PublicLayoutTest extends TestCase
     {
         $html = view('layouts.app', [
             'slot' => new HtmlString(''),
-            'errors' => new ViewErrorBag(),
+            'errors' => new ViewErrorBag,
             'meta_title' => 'Heart to Heart',
             'meta_image' => 'https://res.cloudinary.com/demo/image/upload/v123/podcasts/heart-to-heart.png',
         ])->render();
 
         $socialImage = 'https://res.cloudinary.com/demo/image/upload/f_jpg,q_auto:good,c_fill,g_auto,w_1200,h_630/v123/podcasts/heart-to-heart.png';
 
-        $this->assertStringContainsString('<meta property="og:image" content="' . $socialImage . '">', $html);
+        $this->assertStringContainsString('<meta property="og:image" content="'.$socialImage.'">', $html);
         $this->assertStringContainsString('<meta property="og:image:width" content="1200">', $html);
         $this->assertStringContainsString('<meta property="og:image:height" content="630">', $html);
-        $this->assertStringContainsString('<meta name="twitter:image" content="' . $socialImage . '">', $html);
+        $this->assertStringContainsString('<meta name="twitter:image" content="'.$socialImage.'">', $html);
     }
 
     public function test_google_site_tags_are_not_loaded_on_localhost(): void
@@ -73,5 +73,20 @@ class PublicLayoutTest extends TestCase
         $this->get('http://localhost/team')
             ->assertOk()
             ->assertSee('rel="preload" as="style"', false);
+    }
+
+    public function test_redirects_do_not_emit_a_noindex_header(): void
+    {
+        $this->get('/programs')
+            ->assertRedirect('/shows')
+            ->assertHeaderMissing('X-Robots-Tag');
+    }
+
+    public function test_not_found_pages_emit_noindex_metadata(): void
+    {
+        $this->get('/this-page-does-not-exist')
+            ->assertNotFound()
+            ->assertSee('<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">', false)
+            ->assertSee('<meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">', false);
     }
 }

@@ -16,6 +16,7 @@ class SearchEngineHeaders
 
         if (
             $request->isMethodSafe()
+            && ! $response->isRedirection()
             && ($contentType === '' || str_contains($contentType, 'text/html'))
         ) {
             $response->headers->set(

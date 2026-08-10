@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Career\CareerPosition;
+use App\Support\Seo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -46,6 +47,16 @@ class CareerPageTest extends TestCase
 
         $this->get(route('careers.show', 'closed-presenter-role'))
             ->assertNotFound();
+    }
+
+    public function test_career_filters_are_noindex_and_point_to_the_clean_canonical(): void
+    {
+        $this->createCareerPosition();
+
+        $this->get(route('careers.index', ['search' => 'producer']))
+            ->assertOk()
+            ->assertSee('<meta name="robots" content="noindex, follow, noarchive">', false)
+            ->assertSee('<link rel="canonical" href="'.Seo::siteUrl().'/careers">', false);
     }
 
     private function createCareerPosition(array $overrides = []): CareerPosition
