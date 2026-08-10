@@ -313,11 +313,21 @@ class NewsIndex extends Component
         }
 
         match ($this->sortBy) {
-            'oldest' => $query->oldest('created_at'),
+            'oldest' => $query->orderByRaw('published_at IS NULL')
+                ->oldest('published_at')
+                ->oldest('id'),
             'title' => $query->orderBy('title'),
-            'views' => $query->orderByDesc('views')->latest('created_at'),
-            'featured' => $query->orderByDesc('is_featured')->latest('created_at'),
-            default => $query->latest('created_at'),
+            'views' => $query->orderByDesc('views')
+                ->orderByRaw('published_at IS NULL')
+                ->latest('published_at')
+                ->latest('id'),
+            'featured' => $query->orderByDesc('is_featured')
+                ->orderByRaw('published_at IS NULL')
+                ->latest('published_at')
+                ->latest('id'),
+            default => $query->orderByRaw('published_at IS NULL')
+                ->latest('published_at')
+                ->latest('id'),
         };
 
         return $query->paginate(10);

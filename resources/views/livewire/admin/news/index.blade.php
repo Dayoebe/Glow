@@ -57,7 +57,7 @@
                 @endforeach
             </select>
             <select wire:model.live="filterStatus" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"><option value="">All workflows</option><option value="published">Published</option><option value="draft">Draft</option><option value="featured">Featured</option><option value="pending">Pending approval</option><option value="approved">Approved</option><option value="flagged">Flagged</option><option value="rejected">Rejected</option></select>
-            <select wire:model.live="sortBy" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="title">Title A–Z</option><option value="views">Most viewed</option><option value="featured">Featured first</option></select>
+            <select wire:model.live="sortBy" class="rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"><option value="newest">Newest published</option><option value="oldest">Oldest published</option><option value="title">Title A–Z</option><option value="views">Most viewed</option><option value="featured">Featured first</option></select>
         </div>
         <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-500"><span><strong class="text-slate-800">{{ $newsArticles->total() }}</strong> {{ \Illuminate\Support\Str::plural('article', $newsArticles->total()) }}</span>@if($hasFilters)<button wire:click="clearFilters" class="font-bold text-[#d94d16] hover:text-[#b83c0f]"><i class="fas fa-rotate-left mr-1"></i>Reset filters</button>@endif</div>
     </section>
