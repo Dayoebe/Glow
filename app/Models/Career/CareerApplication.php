@@ -14,6 +14,8 @@ class CareerApplication extends Model
         'career_position_id',
         'application_code',
         'application_type',
+        'engagement_type',
+        'work_mode',
         'full_name',
         'email',
         'phone',
@@ -23,6 +25,10 @@ class CareerApplication extends Model
         'institution',
         'course_of_study',
         'skills',
+        'sales_experience',
+        'client_network',
+        'services_to_promote',
+        'first_lead',
         'motivation',
         'contribution',
         'linkedin_url',
@@ -44,6 +50,7 @@ class CareerApplication extends Model
         'ip_address',
         'user_agent',
         'consent',
+        'commission_acknowledged',
     ];
 
     protected $casts = [
@@ -52,6 +59,7 @@ class CareerApplication extends Model
         'available_from' => 'date',
         'reviewed_at' => 'datetime',
         'consent' => 'boolean',
+        'commission_acknowledged' => 'boolean',
     ];
 
     protected static function booted(): void

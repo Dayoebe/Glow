@@ -196,7 +196,7 @@ Route::get('/events/{slug}', EventDetail::class)->name('events.show');
 // Public Career Routes
 Route::get('/careers', CareerPage::class)->name('careers.index');
 Route::get('/careers/apply/{type}', ProgrammeApplication::class)
-    ->whereIn('type', ['internship', 'volunteer'])->name('careers.programmes.apply');
+    ->whereIn('type', ['internship', 'volunteer', 'marketer'])->name('careers.programmes.apply');
 Route::get('/careers/{slug}', CareerDetail::class)->name('careers.show');
 Route::get('/vettas', VettasPage::class)->name('vettas.index');
 
@@ -387,9 +387,10 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::get('/create', AdminCareerForm::class)->name('create');
             Route::get('/applications', AdminCareerApplications::class)->name('applications');
             Route::get('/applications/type/{type}', AdminCareerApplications::class)
-                ->whereIn('type', ['job', 'internship', 'volunteer'])->name('applications.type');
+                ->whereIn('type', ['job', 'internship', 'volunteer', 'marketer'])->name('applications.type');
             Route::redirect('/applications/interns', '/admin/careers/applications/type/internship')->name('applications.interns');
             Route::redirect('/applications/volunteers', '/admin/careers/applications/type/volunteer')->name('applications.volunteers');
+            Route::redirect('/applications/marketers', '/admin/careers/applications/type/marketer')->name('applications.marketers');
             Route::redirect('/applications/jobs', '/admin/careers/applications/type/job')->name('applications.jobs');
             Route::get('/applications/{application}/resume', [\App\Http\Controllers\Admin\CareerApplicationResumeController::class, 'download'])
                 ->name('applications.resume');

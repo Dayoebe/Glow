@@ -31,7 +31,7 @@ class CareerApplications extends Component
 
     public function mount(?string $type = null): void
     {
-        if ($type !== null && in_array($type, ['job', 'internship', 'volunteer'], true)) {
+        if ($type !== null && in_array($type, ['job', 'internship', 'volunteer', 'marketer'], true)) {
             $this->applicationType = $type;
         }
     }

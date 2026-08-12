@@ -21,10 +21,11 @@
     </section>
 
     <section class="border-b border-[#0b1830]/10 bg-[#f6f2e9]">
-        <div class="mx-auto grid max-w-7xl gap-5 px-5 py-10 sm:px-8 lg:grid-cols-3 lg:px-10">
+        <div class="mx-auto grid max-w-7xl gap-5 px-5 py-10 sm:px-8 md:grid-cols-2 xl:grid-cols-4 lg:px-10">
             <div class="bg-[#0b1830] p-7 text-white"><i class="fas fa-briefcase text-[#ff8a2a]"></i><h2 class="font-display mt-5 text-2xl font-semibold">Apply for a job</h2><p class="mt-2 text-sm leading-6 text-slate-300">Browse open paid positions and apply directly to the role that fits you.</p><a href="#open-positions" class="mt-5 inline-flex font-bold text-[#ff8a2a]">View open jobs <i class="fas fa-arrow-down ml-2 mt-1"></i></a></div>
             <div class="border border-[#0b1830]/10 bg-white p-7"><i class="fas fa-graduation-cap text-[#d95318]"></i><h2 class="font-display mt-5 text-2xl font-semibold">Become an intern</h2><p class="mt-2 text-sm leading-6 text-slate-600">Gain hands-on broadcasting and media experience while learning with our team.</p><a href="{{ route('careers.programmes.apply', 'internship') }}" class="mt-5 inline-flex font-bold text-[#d95318]">Apply for internship <i class="fas fa-arrow-right ml-2 mt-1"></i></a></div>
             <div class="border border-[#0b1830]/10 bg-white p-7"><i class="fas fa-hand-holding-heart text-[#d95318]"></i><h2 class="font-display mt-5 text-2xl font-semibold">Volunteer with us</h2><p class="mt-2 text-sm leading-6 text-slate-600">Contribute your skills and time to content, events and community impact.</p><a href="{{ route('careers.programmes.apply', 'volunteer') }}" class="mt-5 inline-flex font-bold text-[#d95318]">Apply as volunteer <i class="fas fa-arrow-right ml-2 mt-1"></i></a></div>
+            <div class="border border-[#f36b21]/40 bg-[#fff8f2] p-7"><i class="fas fa-handshake text-[#d95318]"></i><h2 class="font-display mt-5 text-2xl font-semibold">Earn as a marketer</h2><p class="mt-2 text-sm leading-6 text-slate-600">Bring clients, adverts or programmes to Glow and earn an agreed percentage on successful paid business.</p><a href="{{ route('careers.programmes.apply', 'marketer') }}" class="mt-5 inline-flex font-bold text-[#d95318]">Register as a partner <i class="fas fa-arrow-right ml-2 mt-1"></i></a></div>
         </div>
     </section>
 

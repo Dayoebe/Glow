@@ -1,6 +1,6 @@
 <div class="space-y-6">
     @php
-        $typeLabels = ['' => 'All applicants', 'job' => 'Job applicants', 'internship' => 'Interns', 'volunteer' => 'Volunteers'];
+        $typeLabels = ['' => 'All applicants', 'job' => 'Job applicants', 'internship' => 'Interns', 'volunteer' => 'Volunteers', 'marketer' => 'Advertiser/Marketers'];
         $statusStyles = [
             'new' => 'bg-emerald-50 text-emerald-700',
             'reviewing' => 'bg-blue-50 text-blue-700',
@@ -9,7 +9,7 @@
             'hired' => 'bg-violet-50 text-violet-700',
             'archived' => 'bg-slate-100 text-slate-600',
         ];
-        $typeStyles = ['job' => 'bg-blue-50 text-blue-700', 'internship' => 'bg-violet-50 text-violet-700', 'volunteer' => 'bg-orange-50 text-orange-700'];
+        $typeStyles = ['job' => 'bg-blue-50 text-blue-700', 'internship' => 'bg-violet-50 text-violet-700', 'volunteer' => 'bg-orange-50 text-orange-700', 'marketer' => 'bg-amber-50 text-amber-700'];
     @endphp
 
     <section class="relative overflow-hidden rounded-2xl bg-[#0b2f3a] px-6 py-7 text-white shadow-sm sm:px-8">
@@ -40,7 +40,7 @@
         <div class="flex min-w-max gap-1">
             @foreach($typeLabels as $type => $label)
                 <a href="{{ $type === '' ? route('admin.careers.applications') : route('admin.careers.applications.type', $type) }}" class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition {{ $applicationType === $type ? 'bg-[#0b2f3a] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <i class="fas {{ $type === 'job' ? 'fa-briefcase' : ($type === 'internship' ? 'fa-graduation-cap' : ($type === 'volunteer' ? 'fa-hand-holding-heart' : 'fa-users')) }} text-xs {{ $applicationType === $type ? 'text-emerald-300' : 'text-slate-400' }}"></i>{{ $label }}
+                    <i class="fas {{ $type === 'job' ? 'fa-briefcase' : ($type === 'internship' ? 'fa-graduation-cap' : ($type === 'volunteer' ? 'fa-hand-holding-heart' : ($type === 'marketer' ? 'fa-handshake' : 'fa-users'))) }} text-xs {{ $applicationType === $type ? 'text-emerald-300' : 'text-slate-400' }}"></i>{{ $label }}
                 </a>
             @endforeach
         </div>
@@ -103,7 +103,11 @@
 
                         <section class="rounded-2xl bg-white p-5 shadow-sm"><h3 class="text-sm font-black uppercase tracking-wide text-slate-900"><i class="fas fa-graduation-cap mr-2 text-violet-600"></i>Education & experience</h3><dl class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">@foreach([['Education level', $selectedApplication->education_level], ['Institution', $selectedApplication->institution], ['Course of study', $selectedApplication->course_of_study], ['Experience', $selectedApplication->years_experience !== null ? $selectedApplication->years_experience.' years' : null], ['Current company', $selectedApplication->current_company], ['Current role', $selectedApplication->current_role], ['Expected salary', $selectedApplication->expected_salary ? '₦'.number_format((float) $selectedApplication->expected_salary, 2) : null], ['Available from', $selectedApplication->available_from?->format('M j, Y')], ['Availability', $selectedApplication->availability], ['Commitment', $selectedApplication->commitment_length]] as [$label, $value])<div><dt class="text-[10px] font-bold uppercase tracking-wide text-slate-400">{{ $label }}</dt><dd class="mt-1 text-sm font-semibold text-slate-700">{{ $value ?: 'Not provided' }}</dd></div>@endforeach</dl></section>
 
-                        @foreach([['Skills', $selectedApplication->skills, 'fa-screwdriver-wrench', 'text-blue-600'], ['Cover letter', $selectedApplication->cover_letter, 'fa-envelope-open-text', 'text-orange-600'], ['Motivation', $selectedApplication->motivation, 'fa-lightbulb', 'text-amber-600'], ['What they offer', $selectedApplication->contribution, 'fa-hand-sparkles', 'text-emerald-600']] as [$heading, $content, $icon, $color])
+                        @if($selectedApplication->application_type === 'marketer')
+                            <section class="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm"><h3 class="text-sm font-black uppercase tracking-wide text-slate-900"><i class="fas fa-handshake mr-2 text-amber-600"></i>Advertiser/Marketer arrangement</h3><dl class="mt-4 grid gap-4 sm:grid-cols-2">@foreach([['Participation', \Illuminate\Support\Str::headline($selectedApplication->engagement_type)], ['Work mode', \Illuminate\Support\Str::headline($selectedApplication->work_mode)], ['Sales experience', $selectedApplication->sales_experience], ['Commission terms', $selectedApplication->commission_acknowledged ? 'Acknowledged' : 'Not acknowledged']] as [$label, $value])<div><dt class="text-[10px] font-bold uppercase tracking-wide text-slate-400">{{ $label }}</dt><dd class="mt-1 text-sm font-semibold text-slate-700">{{ $value ?: 'Not provided' }}</dd></div>@endforeach</dl></section>
+                        @endif
+
+                        @foreach([['Skills', $selectedApplication->skills, 'fa-screwdriver-wrench', 'text-blue-600'], ['Client network', $selectedApplication->client_network, 'fa-users', 'text-violet-600'], ['Services they can promote', $selectedApplication->services_to_promote, 'fa-bullhorn', 'text-orange-600'], ['Possible first lead', $selectedApplication->first_lead, 'fa-lightbulb', 'text-amber-600'], ['Cover letter', $selectedApplication->cover_letter, 'fa-envelope-open-text', 'text-orange-600'], ['Motivation', $selectedApplication->motivation, 'fa-lightbulb', 'text-amber-600'], ['What they offer', $selectedApplication->contribution, 'fa-hand-sparkles', 'text-emerald-600']] as [$heading, $content, $icon, $color])
                             @if($content)<section class="rounded-2xl bg-white p-5 shadow-sm"><h3 class="text-sm font-black uppercase tracking-wide text-slate-900"><i class="fas {{ $icon }} mr-2 {{ $color }}"></i>{{ $heading }}</h3><div class="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600">{{ $content }}</div></section>@endif
                         @endforeach
 
@@ -111,14 +115,14 @@
                     </main>
 
                     <aside class="space-y-5 border-t border-slate-200 bg-slate-200/60 p-4 sm:p-6 xl:sticky xl:top-0 xl:border-l xl:border-t-0">
-                        <section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+                        @if($selectedApplication->resume_path)<section class="overflow-hidden rounded-2xl bg-white shadow-sm">
                             <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3"><div class="min-w-0"><p class="text-xs font-black uppercase tracking-wide text-slate-900">CV preview</p><p class="mt-0.5 truncate text-[10px] text-slate-500">{{ $resumeName }}</p></div><a href="{{ route('admin.careers.applications.resume', $selectedApplication) }}" class="shrink-0 rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200"><i class="fas fa-download mr-1.5"></i>Download</a></div>
                             @if($resumePreviewable)
                                 <iframe src="{{ route('admin.careers.applications.resume.preview', $selectedApplication) }}" title="CV for {{ $selectedApplication->full_name }}" class="h-[620px] w-full bg-slate-100"></iframe>
                             @else
                                 <div class="flex h-80 flex-col items-center justify-center p-8 text-center"><span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-2xl text-blue-600"><i class="fas fa-file-word"></i></span><h4 class="mt-4 font-black text-slate-900">Legacy {{ strtoupper($resumeExtension ?: 'document') }} file</h4><p class="mt-2 max-w-xs text-sm leading-6 text-slate-500">This older format cannot be rendered safely inside the browser. Open the original file with the download button.</p></div>
                             @endif
-                        </section>
+                        </section>@else<section class="rounded-2xl bg-white p-6 text-center shadow-sm"><i class="fas fa-file-circle-xmark text-3xl text-slate-300"></i><h3 class="mt-3 text-sm font-black text-slate-900">No résumé supplied</h3><p class="mt-1 text-xs text-slate-500">A résumé is optional for deal-by-deal marketers.</p></section>@endif
 
                         <section class="rounded-2xl bg-white p-5 shadow-sm"><div class="flex items-center justify-between"><h3 class="text-sm font-black uppercase tracking-wide text-slate-900"><i class="fas fa-note-sticky mr-2 text-blue-600"></i>Private notes</h3><span class="text-[10px] font-bold text-slate-400">Only admins see this</span></div><textarea rows="7" wire:model="admin_notes" placeholder="Interview impressions, follow-up items, references…" class="mt-4 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500"></textarea>@error('admin_notes')<p class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror<button wire:click="saveNotes" class="mt-3 w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-700"><i class="fas fa-check mr-2"></i>Save private notes</button></section>
                     </aside>

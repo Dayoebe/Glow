@@ -181,6 +181,11 @@ return [
                         'route' => 'admin.careers.applications.volunteers',
                         'active' => 'admin.careers.applications.volunteers'
                     ],
+                    [
+                        'title' => 'Advertiser/Marketers',
+                        'route' => 'admin.careers.applications.marketers',
+                        'active' => 'admin.careers.applications.marketers'
+                    ],
                 ]
             ],
         ]
