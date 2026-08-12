@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Page;
 
+use App\Mail\CareerApplicationReceivedMail;
 use App\Models\Career\CareerApplication;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -81,7 +83,7 @@ class ProgrammeApplication extends Component
         $code = $this->uniqueCode();
         $path = $this->resume?->store('private/careers/resumes', 'local');
 
-        CareerApplication::create([
+        $application = CareerApplication::create([
             'career_position_id' => null,
             'application_code' => $code,
             'application_type' => $this->type,
@@ -115,6 +117,12 @@ class ProgrammeApplication extends Component
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
+
+        try {
+            Mail::to($application->email)->send(new CareerApplicationReceivedMail($application));
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
 
         $this->resetExcept('type');
         session()->flash('success', "Thank you. Your {$this->type} application ({$code}) has been received.");

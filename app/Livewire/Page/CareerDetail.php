@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Page;
 
+use App\Mail\CareerApplicationReceivedMail;
 use App\Models\Career\CareerApplication;
 use App\Models\Career\CareerPosition;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -69,7 +71,7 @@ class CareerDetail extends Component
 
         $applicationCode = $this->generateApplicationCode();
 
-        CareerApplication::create([
+        $application = CareerApplication::create([
             'career_position_id' => $this->position->id,
             'application_code' => $applicationCode,
             'application_type' => 'job',
@@ -91,6 +93,12 @@ class CareerDetail extends Component
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
+
+        try {
+            Mail::to($application->email)->send(new CareerApplicationReceivedMail($application->load('position')));
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
 
         $this->reset([
             'full_name',
