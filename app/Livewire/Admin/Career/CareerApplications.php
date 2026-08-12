@@ -11,6 +11,8 @@ class CareerApplications extends Component
 {
     use WithPagination;
 
+    private const STATUSES = ['new', 'reviewing', 'shortlisted', 'hired', 'rejected', 'archived'];
+
     public $search = '';
     public $filterStatus = '';
     public $filterPosition = '';
@@ -84,7 +86,7 @@ class CareerApplications extends Component
 
     public function setStatus(int $applicationId, string $status): void
     {
-        if (!in_array($status, ['new', 'reviewing', 'shortlisted', 'rejected', 'hired', 'archived'], true)) {
+        if (!in_array($status, self::STATUSES, true)) {
             return;
         }
 
@@ -95,7 +97,7 @@ class CareerApplications extends Component
         $application->reviewed_at = now();
         $application->save();
 
-        session()->flash('success', 'Application status updated.');
+        session()->flash('success', 'Application moved to '.str($status)->headline().'.');
     }
 
     public function saveNotes(): void
@@ -164,7 +166,8 @@ class CareerApplications extends Component
         match ($this->sortBy) {
             'oldest' => $query->oldest('created_at'),
             'name' => $query->orderBy('full_name'),
-            'status' => $query->orderBy('status')->latest('created_at'),
+            'status_pipeline' => $query->orderByRaw($this->statusOrderSql())->latest('created_at'),
+            'status_pipeline_desc' => $query->orderByRaw($this->statusOrderSql().' DESC')->latest('created_at'),
             default => $query->latest('created_at'),
         };
 
@@ -213,6 +216,19 @@ class CareerApplications extends Component
             $this->applicationType !== '',
             fn ($query) => $query->where('application_type', $this->applicationType)
         );
+    }
+
+    private function statusOrderSql(): string
+    {
+        return "CASE status
+            WHEN 'new' THEN 1
+            WHEN 'reviewing' THEN 2
+            WHEN 'shortlisted' THEN 3
+            WHEN 'hired' THEN 4
+            WHEN 'rejected' THEN 5
+            WHEN 'archived' THEN 6
+            ELSE 7
+        END";
     }
 
     public function render()
