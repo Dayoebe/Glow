@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Show;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Show\Show;
 use App\Models\Show\Category;
 use App\Models\Show\OAP;
@@ -16,7 +17,7 @@ use Illuminate\Support\Str;
 
 class Manage extends Component
 {
-    use WithPagination, WithFileUploads;
+    use RemembersAdminPagination, WithPagination, WithFileUploads;
 
     private const VIEWS = ['shows', 'oaps', 'schedule', 'segments', 'categories'];
 
@@ -98,27 +99,32 @@ class Manage extends Component
 
     public function updatingSearch(): void
     {
-        $this->resetPage();
+        $this->resetPage($this->pageName());
     }
 
     public function updatedShowSort()
     {
-        $this->resetPage();
+        $this->resetPage('showsPage');
     }
 
     public function updatedShowSortDirection()
     {
-        $this->resetPage();
+        $this->resetPage('showsPage');
     }
 
     public function updatedScheduleSort()
     {
-        $this->resetPage();
+        $this->resetPage('schedulePage');
     }
 
     public function updatedScheduleSortDirection()
     {
-        $this->resetPage();
+        $this->resetPage('schedulePage');
+    }
+
+    private function pageName(): string
+    {
+        return $this->view.'Page';
     }
 
     public function openModal($type, $id = null)
@@ -553,7 +559,7 @@ class Manage extends Component
                 break;
         }
 
-        return $query->paginate(12);
+        return $query->paginate(12, ['*'], 'showsPage');
     }
 
     public function getOapsProperty()
@@ -570,7 +576,7 @@ class Manage extends Component
                 });
             })
             ->latest()
-            ->paginate(12);
+            ->paginate(12, ['*'], 'oapsPage');
     }
 
     public function getCategoriesProperty()
@@ -584,7 +590,7 @@ class Manage extends Component
                 });
             })
             ->latest()
-            ->paginate(12);
+            ->paginate(12, ['*'], 'categoriesPage');
     }
 
     public function getAllCategoriesProperty()
@@ -651,7 +657,7 @@ class Manage extends Component
                 break;
         }
 
-        return $query->paginate(12);
+        return $query->paginate(12, ['*'], 'schedulePage');
     }
 
     public function getSegmentsProperty()
@@ -668,7 +674,7 @@ class Manage extends Component
             })
             ->orderBy('show_id')
             ->orderBy('order')
-            ->paginate(12);
+            ->paginate(12, ['*'], 'segmentsPage');
     }
 
     public function getStatsProperty()

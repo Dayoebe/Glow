@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Show;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Show\Review;
 use App\Models\Show\Show;
 use App\Models\Show\Category;
@@ -13,7 +14,7 @@ use Livewire\WithPagination;
 
 class Reviews extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
     public $filterStatus = '';

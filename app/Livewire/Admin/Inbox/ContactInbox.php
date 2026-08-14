@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Inbox;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\ContactMessage;
 use App\Mail\ContactReplyMail;
 use Illuminate\Support\Facades\Mail;
@@ -10,7 +11,7 @@ use Livewire\WithPagination;
 
 class ContactInbox extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
     public $selectedMessageId = null;

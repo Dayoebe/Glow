@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Admin\Team;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Team\Department;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class DepartmentsIndex extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Podcast;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Podcast\Show;
 use App\Models\Podcast\Episode;
 use App\Models\Setting;
@@ -17,7 +18,7 @@ use Illuminate\Validation\Rule;
 
 class Manage extends Component
 {
-    use WithPagination, WithFileUploads;
+    use RemembersAdminPagination, WithPagination, WithFileUploads;
 
     public $view = 'shows';
     public $selectedShow = null;
@@ -95,6 +96,16 @@ class Manage extends Component
     public $custom_links = [];
 
     protected $queryString = ['view', 'selectedShow', 'search'];
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage($this->view === 'episodes' ? 'episodesPage' : 'showsPage');
+    }
+
+    public function updatedSelectedShow(): void
+    {
+        $this->resetPage('episodesPage');
+    }
 
     public function addCustomLink()
     {
@@ -668,7 +679,7 @@ class Manage extends Component
                 $q->where('title', 'like', "%{$this->search}%");
             })
             ->latest()
-            ->paginate(12);
+            ->paginate(12, ['*'], 'showsPage');
     }
 
     public function getEpisodesProperty()
@@ -681,7 +692,7 @@ class Manage extends Component
                 $q->where('title', 'like', "%{$this->search}%");
             })
             ->latest()
-            ->paginate(15);
+            ->paginate(15, ['*'], 'episodesPage');
     }
 
     public function getAllShowsProperty()
@@ -701,11 +712,18 @@ class Manage extends Component
 
     public function render()
     {
-        return view('livewire.admin.podcast.manage', [
-            'shows' => $this->shows,
-            'episodes' => $this->episodes,
+        $data = [
             'allShows' => $this->allShows,
             'stats' => $this->stats,
-        ])->layout('layouts.admin', ['header' => 'Podcast Management']);
+        ];
+
+        if ($this->view === 'episodes') {
+            $data['episodes'] = $this->episodes;
+        } else {
+            $data['shows'] = $this->shows;
+        }
+
+        return view('livewire.admin.podcast.manage', $data)
+            ->layout('layouts.admin', ['header' => 'Podcast Management']);
     }
 }

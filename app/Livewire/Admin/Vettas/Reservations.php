@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Admin\Vettas;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Vettas\VettasReservation;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Reservations extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public string $search = '';
     public string $filterStatus = '';

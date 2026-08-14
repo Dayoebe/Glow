@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Admin\Career;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Career\CareerPosition;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class CareerIndex extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
     public $filterStatus = '';

@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Admin\Vettas;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Vettas\VettasCategory;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Categories extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public string $search = '';
     public bool $showDeleteModal = false;

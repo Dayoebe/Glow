@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Admin\Ads;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Ads\Ad;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
     public $filterPlacement = '';

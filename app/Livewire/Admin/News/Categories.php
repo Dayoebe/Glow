@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\News;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\News\NewsCategory;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -9,7 +10,7 @@ use Illuminate\Support\Str;
 
 class Categories extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     // Form fields
     public $name = '';

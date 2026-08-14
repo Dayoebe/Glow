@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Admin\Event;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Event\EventCategory;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class EventCategories extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $showDeleteModal = false;
     public $categoryToDelete = null;

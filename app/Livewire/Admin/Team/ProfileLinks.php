@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Team;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Show\OAP;
 use App\Models\Staff\StaffMember;
 use App\Models\User;
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
 
 class ProfileLinks extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $staff_member_id = '';
     public $user_id = '';

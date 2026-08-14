@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Career;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Career\CareerApplication;
 use App\Models\Career\CareerPosition;
 use Livewire\Component;
@@ -9,7 +10,7 @@ use Livewire\WithPagination;
 
 class CareerApplications extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     private const STATUSES = ['new', 'reviewing', 'shortlisted', 'hired', 'rejected', 'archived'];
 

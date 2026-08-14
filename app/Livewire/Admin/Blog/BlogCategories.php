@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Blog;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Blog\Category;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -9,7 +10,7 @@ use Illuminate\Support\Str;
 
 class BlogCategories extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     // Form fields
     public $name = '';

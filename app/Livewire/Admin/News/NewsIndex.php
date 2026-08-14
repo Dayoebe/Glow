@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\News;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Setting;
 use App\Models\News\News;
 use App\Models\News\NewsCategory;
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
 
 class NewsIndex extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
     public $filterCategory = '';

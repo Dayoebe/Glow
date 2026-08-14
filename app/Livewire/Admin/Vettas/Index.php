@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Vettas;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Vettas\VettasCategory;
 use App\Models\Vettas\VettasPhoto;
 use App\Models\Vettas\VettasReservation;
@@ -10,7 +11,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public string $search = '';
     public string $filterCategory = '';

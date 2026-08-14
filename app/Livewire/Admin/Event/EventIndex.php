@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Event;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Event\Event;
 use App\Models\Event\EventCategory;
 use App\Models\Setting;
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
 
 class EventIndex extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
     public $filterCategory = '';

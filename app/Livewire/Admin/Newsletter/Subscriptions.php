@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Admin\Newsletter;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\NewsletterSubscription;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Subscriptions extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
 

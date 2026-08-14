@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Blog;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Blog\Post;
 use App\Models\Blog\Category;
 use App\Models\Setting;
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
 
 class BlogIndex extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
     public $filterCategory = '';

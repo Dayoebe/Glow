@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Team;
 
+use App\Livewire\Concerns\RemembersAdminPagination;
 use App\Models\Staff\StaffMember;
 use App\Models\Team\Department;
 use App\Models\Team\Role as TeamRole;
@@ -10,7 +11,7 @@ use Livewire\WithPagination;
 
 class StaffIndex extends Component
 {
-    use WithPagination;
+    use RemembersAdminPagination, WithPagination;
 
     public $search = '';
     public $sortBy = 'latest';
