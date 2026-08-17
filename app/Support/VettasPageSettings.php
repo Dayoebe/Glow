@@ -30,6 +30,18 @@ class VettasPageSettings
                 'instagram' => '',
                 'website' => '',
             ],
+            'promotion' => [
+                'headline' => 'Your private, fully furnished stay in Akure',
+                'short_caption' => 'Need a calm, comfortable apartment for your next stay? Discover Vettas Apartment, explore the spaces and request your dates today.',
+                'long_caption' => 'Arrive, settle in and enjoy a private furnished apartment designed for comfortable short and extended stays. Explore Vettas Apartment, view the latest photos, check the amenities and send your preferred dates for an availability confirmation.',
+                'hashtags' => '#VettasApartment #AkureApartments #StayInAkure #ShortLetAkure #VisitOndo',
+            ],
+            'seo' => [
+                'about' => 'Learn about Vettas Apartment, a private furnished stay designed for comfort, ease and memorable visits.',
+                'amenities' => 'Explore the comfort, convenience and guest amenities available at Vettas Apartment.',
+                'gallery' => 'See published photos of the rooms and spaces at Vettas Apartment.',
+                'guide' => 'Plan your arrival, stay and reservation at Vettas Apartment.',
+            ],
         ];
     }
 }

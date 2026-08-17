@@ -46,6 +46,7 @@ use App\Livewire\Page\CareerPage;
 use App\Livewire\Page\CareerDetail;
 use App\Livewire\Page\ProgrammeApplication;
 use App\Livewire\Page\VettasPage;
+use App\Livewire\Page\VettasContentPage;
 use App\Livewire\Admin\Event\EventIndex as AdminEventIndex;
 use App\Livewire\Admin\Event\EventForm as AdminEventForm;
 use App\Livewire\Admin\Event\EventCategories as AdminEventCategories;
@@ -59,6 +60,7 @@ use App\Livewire\Admin\Vettas\Categories as AdminVettasCategories;
 use App\Livewire\Admin\Vettas\CategoryForm as AdminVettasCategoryForm;
 use App\Livewire\Admin\Vettas\Settings as AdminVettasSettings;
 use App\Livewire\Admin\Vettas\Reservations as AdminVettasReservations;
+use App\Livewire\Admin\Vettas\Promotion as AdminVettasPromotion;
 use App\Livewire\Admin\Settings\StationSettings as AdminStationSettings;
 use App\Livewire\Admin\Settings\WebsiteSettings as AdminWebsiteSettings;
 use App\Livewire\Admin\Settings\SystemSettings as AdminSystemSettings;
@@ -199,6 +201,11 @@ Route::get('/careers/apply/{type}', ProgrammeApplication::class)
     ->whereIn('type', ['internship', 'volunteer', 'marketer'])->name('careers.programmes.apply');
 Route::get('/careers/{slug}', CareerDetail::class)->name('careers.show');
 Route::get('/vettas', VettasPage::class)->name('vettas.index');
+Route::get('/vettas/about', VettasContentPage::class)->defaults('section', 'about')->name('vettas.about');
+Route::get('/vettas/amenities', VettasContentPage::class)->defaults('section', 'amenities')->name('vettas.amenities');
+Route::get('/vettas/gallery', VettasContentPage::class)->defaults('section', 'gallery')->name('vettas.gallery');
+Route::get('/vettas/stay-guide', VettasContentPage::class)->defaults('section', 'guide')->name('vettas.guide');
+Route::redirect('/vettas/book', '/vettas#reservation')->name('vettas.book');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/download-database', function () {
@@ -405,6 +412,7 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::get('/create', AdminVettasPhotoForm::class)->name('create');
             Route::get('/categories', AdminVettasCategories::class)->name('categories');
             Route::get('/settings', AdminVettasSettings::class)->name('settings');
+            Route::get('/promotion', AdminVettasPromotion::class)->name('promotion');
             Route::get('/categories/create', AdminVettasCategoryForm::class)->name('categories.create');
             Route::get('/categories/{categoryId}/edit', AdminVettasCategoryForm::class)->name('categories.edit');
             Route::get('/{id}/edit', AdminVettasPhotoForm::class)->name('edit');
