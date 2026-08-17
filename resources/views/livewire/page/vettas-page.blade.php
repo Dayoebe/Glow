@@ -17,6 +17,7 @@
     @keydown.escape.window="closeLightbox()"
 >
     <section class="bg-[#07172f] text-white">
+        <div class="mx-auto max-w-7xl px-5 pt-5 sm:px-8 lg:px-10">@include('livewire.page.vettas-nav')</div>
         <div class="mx-auto grid max-w-7xl gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-10 lg:py-20">
             <div class="max-w-2xl">
                 <p class="text-xs font-bold uppercase tracking-[0.24em] text-[#ff8a2a]">Stay with Vettas</p>

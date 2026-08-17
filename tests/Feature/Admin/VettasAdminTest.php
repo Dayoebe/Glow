@@ -52,6 +52,15 @@ class VettasAdminTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_open_vettas_promotion_toolkit(): void
+    {
+        $this->actingAs($this->makeAdminUser())
+            ->get(route('admin.vettas.promotion'))
+            ->assertOk()
+            ->assertSee('Campaign message')
+            ->assertSee('Share on WhatsApp');
+    }
+
     private function makeAdminUser(): User
     {
         Role::findOrCreate('admin', 'web');

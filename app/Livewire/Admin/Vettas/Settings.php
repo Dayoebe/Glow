@@ -89,7 +89,7 @@ class Settings extends Component
             ],
         ];
 
-        SettingModel::set('vettas', $payload, 'pages');
+        SettingModel::set('vettas', array_replace_recursive(SettingModel::get('vettas', []), $payload), 'pages');
 
         $this->about = $payload['about'];
         $this->contact = $payload['contact'];

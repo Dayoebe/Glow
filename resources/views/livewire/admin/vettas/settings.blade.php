@@ -1,4 +1,5 @@
 <div>
+    @include('livewire.admin.vettas._nav')
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
             <div>

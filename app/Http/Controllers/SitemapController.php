@@ -74,6 +74,10 @@ class SitemapController extends Controller
                 ['loc' => Seo::absoluteUrl('/podcasts'), 'changefreq' => 'weekly', 'priority' => '0.8'],
                 ['loc' => Seo::absoluteUrl('/careers'), 'changefreq' => 'daily', 'priority' => '0.6'],
                 ['loc' => Seo::absoluteUrl('/vettas'), 'changefreq' => 'weekly', 'priority' => '0.5'],
+                ['loc' => Seo::absoluteUrl('/vettas/about'), 'changefreq' => 'monthly', 'priority' => '0.4'],
+                ['loc' => Seo::absoluteUrl('/vettas/amenities'), 'changefreq' => 'monthly', 'priority' => '0.4'],
+                ['loc' => Seo::absoluteUrl('/vettas/gallery'), 'changefreq' => 'weekly', 'priority' => '0.5'],
+                ['loc' => Seo::absoluteUrl('/vettas/stay-guide'), 'changefreq' => 'monthly', 'priority' => '0.4'],
             ];
 
             $oapUrls = OAP::active()

@@ -77,4 +77,22 @@ class VettasPageTest extends TestCase
             ->assertSee($photo->title)
             ->assertDontSee('uploads/vettas/gallery/missing.jpg', false);
     }
+
+    public function test_vettas_has_distinct_public_content_pages(): void
+    {
+        $this->get(route('vettas.about'))->assertOk()->assertSee('The Vettas experience');
+        $this->get(route('vettas.amenities'))->assertOk()->assertSee('Furnished living');
+        $this->get(route('vettas.gallery'))->assertOk()->assertSee('See the spaces before you arrive');
+        $this->get(route('vettas.guide'))->assertOk()->assertSee('Send your dates');
+    }
+
+    public function test_public_vettas_navigation_links_the_new_pages(): void
+    {
+        $this->get(route('vettas.index'))
+            ->assertOk()
+            ->assertSee(route('vettas.about'), false)
+            ->assertSee(route('vettas.amenities'), false)
+            ->assertSee(route('vettas.gallery'), false)
+            ->assertSee(route('vettas.guide'), false);
+    }
 }
