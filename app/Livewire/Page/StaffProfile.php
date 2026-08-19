@@ -26,9 +26,9 @@ class StaffProfile extends Component
                 'department' => $staff->departmentRelation?->name ?? ($staff->department ?? 'General'),
                 'bio' => $staff->bio,
                 'photo' => $staff->photo_url,
-                'email' => $staff->email,
-                'phone' => $staff->phone,
-                'social_links' => $staff->social_links ?? [],
+                'email' => $staff->public_email,
+                'phone' => $staff->public_phone,
+                'social_links' => $staff->public_social_links,
                 'type_label' => 'Staff',
             ];
         } elseif ($type === 'oap') {
@@ -43,9 +43,9 @@ class StaffProfile extends Component
                 'department' => $oap->department?->name ?? 'Broadcast',
                 'bio' => $oap->bio,
                 'photo' => $oap->profile_photo,
-                'email' => $oap->email,
-                'phone' => $oap->phone,
-                'social_links' => $oap->social_media ?? [],
+                'email' => $oap->public_email,
+                'phone' => $oap->public_phone,
+                'social_links' => $oap->public_social_links,
                 'type_label' => 'On-Air Personality',
             ];
         } else {

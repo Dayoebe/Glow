@@ -53,7 +53,7 @@ class StaffDirectory extends Component
                 'department' => $staff->departmentRelation?->name ?? ($staff->department ?? 'General'),
                 'photo' => $staff->photo_url,
                 'bio' => $staff->bio,
-                'social_links' => $staff->social_links ?? [],
+                'social_links' => $staff->public_social_links,
                 'profile_url' => route('staff.show', $staff->slug),
             ];
         });

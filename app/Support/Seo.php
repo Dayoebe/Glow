@@ -857,7 +857,7 @@ class Seo
 
         if ($staff && $staff->is_active && $staff->slug) {
             $url = self::absoluteUrl(route('staff.show', $staff->slug));
-            $sameAs = collect((array) $staff->social_links)
+            $sameAs = collect((array) $staff->public_social_links)
                 ->filter(fn ($value) => is_string($value) && Str::startsWith($value, ['http://', 'https://']))
                 ->values()
                 ->all();

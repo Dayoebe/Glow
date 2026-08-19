@@ -70,7 +70,7 @@
                             <a href="{{ $url }}" target="_blank" rel="noopener noreferrer"
                                 class="inline-flex h-10 w-10 items-center justify-center border border-[#0b1830]/15 text-slate-500 transition hover:border-[#f36b21] hover:text-[#d95318]"
                                 aria-label="{{ ucfirst($platform) }}">
-                                <i class="fab fa-{{ $platform === 'linkedin' ? 'linkedin-in' : $platform }}" aria-hidden="true"></i>
+                                <i class="{{ $platform === 'website' ? 'fas fa-globe' : 'fab fa-' . ($platform === 'linkedin' ? 'linkedin-in' : $platform) }}" aria-hidden="true"></i>
                             </a>
                         @endforeach
                     </div>

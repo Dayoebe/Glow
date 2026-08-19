@@ -48,28 +48,28 @@
                         <dt class="text-xs text-slate-500">Department</dt>
                         <dd class="mt-1 font-semibold">{{ $staff->departmentRelation?->name ?? ($staff->department ?? 'General') }}</dd>
                     </div>
-                    @if($staff->email)
+                    @if($staff->public_email)
                         <div class="py-4">
                             <dt class="text-xs text-slate-500">Email</dt>
-                            <dd class="mt-1 break-all font-semibold"><a href="mailto:{{ $staff->email }}" class="hover:text-[#d95318]">{{ $staff->email }}</a></dd>
+                            <dd class="mt-1 break-all font-semibold"><a href="mailto:{{ $staff->public_email }}" class="hover:text-[#d95318]">{{ $staff->public_email }}</a></dd>
                         </div>
                     @endif
-                    @if($staff->phone)
+                    @if($staff->public_phone)
                         <div class="py-4">
                             <dt class="text-xs text-slate-500">Phone</dt>
-                            <dd class="mt-1 font-semibold"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $staff->phone) }}" class="hover:text-[#d95318]">{{ $staff->phone }}</a></dd>
+                            <dd class="mt-1 font-semibold"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $staff->public_phone) }}" class="hover:text-[#d95318]">{{ $staff->public_phone }}</a></dd>
                         </div>
                     @endif
                 </dl>
 
-                @php($socialLinks = is_array($staff->social_links) ? array_filter($staff->social_links) : [])
+                @php($socialLinks = $staff->public_social_links)
                 @if(count($socialLinks))
                     <div class="mt-5 flex flex-wrap gap-2 border-t border-[#0b1830]/10 pt-5">
                         @foreach($socialLinks as $platform => $url)
                             <a href="{{ $url }}" target="_blank" rel="noopener noreferrer"
                                 class="inline-flex h-10 w-10 items-center justify-center border border-[#0b1830]/15 text-slate-500 transition hover:border-[#f36b21] hover:text-[#d95318]"
                                 aria-label="{{ ucfirst($platform) }}">
-                                <i class="fab fa-{{ $platform === 'linkedin' ? 'linkedin-in' : $platform }}" aria-hidden="true"></i>
+                                <i class="{{ $platform === 'website' ? 'fas fa-globe' : 'fab fa-' . ($platform === 'linkedin' ? 'linkedin-in' : $platform) }}" aria-hidden="true"></i>
                             </a>
                         @endforeach
                     </div>

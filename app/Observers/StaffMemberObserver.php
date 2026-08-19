@@ -26,6 +26,7 @@ class StaffMemberObserver
                 'is_active',
                 'joined_date',
                 'social_links',
+                'profile_visibility',
             ])
         ) {
             return;

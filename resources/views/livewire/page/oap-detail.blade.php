@@ -31,7 +31,7 @@
                             <a href="{{ $url }}" target="_blank" rel="noopener noreferrer"
                                 class="inline-flex h-11 w-11 items-center justify-center border border-white/25 text-slate-300 transition hover:border-white hover:bg-white/10 hover:text-white"
                                 aria-label="{{ ucfirst($platform) }}">
-                                <i class="fab fa-{{ $platform === 'linkedin' ? 'linkedin-in' : $platform }}" aria-hidden="true"></i>
+                                <i class="{{ $platform === 'website' ? 'fas fa-globe' : 'fab fa-' . ($platform === 'linkedin' ? 'linkedin-in' : $platform) }}" aria-hidden="true"></i>
                             </a>
                         @endforeach
                     </div>
@@ -95,16 +95,16 @@
                             </dd>
                         </div>
                     @endif
-                    @if($oap->email)
+                    @if($oap->public_email)
                         <div class="py-4">
                             <dt class="text-xs text-slate-500">Email</dt>
-                            <dd class="mt-1 break-all font-semibold"><a href="mailto:{{ $oap->email }}" class="hover:text-[#d95318]">{{ $oap->email }}</a></dd>
+                            <dd class="mt-1 break-all font-semibold"><a href="mailto:{{ $oap->public_email }}" class="hover:text-[#d95318]">{{ $oap->public_email }}</a></dd>
                         </div>
                     @endif
-                    @if($oap->phone)
+                    @if($oap->public_phone)
                         <div class="py-4">
                             <dt class="text-xs text-slate-500">Phone</dt>
-                            <dd class="mt-1 font-semibold"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $oap->phone) }}" class="hover:text-[#d95318]">{{ $oap->phone }}</a></dd>
+                            <dd class="mt-1 font-semibold"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $oap->public_phone) }}" class="hover:text-[#d95318]">{{ $oap->public_phone }}</a></dd>
                         </div>
                     @endif
                 </dl>

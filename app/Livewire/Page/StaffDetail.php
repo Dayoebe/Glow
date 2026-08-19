@@ -13,8 +13,8 @@ class StaffDetail extends Component
 
     public function mount($slug)
     {
-        $this->staff = StaffMember::where('slug', $slug)
-            ->where('is_active', true)
+        $this->staff = StaffMember::query()->activeDirectory()
+            ->where('slug', $slug)
             ->with(['departmentRelation', 'teamRole'])
             ->firstOrFail();
     }
@@ -31,7 +31,7 @@ class StaffDetail extends Component
             'role' => $role,
             'bio' => $this->staff->bio,
             'photo' => $this->staff->photo_url,
-            'social_links' => $this->staff->social_links,
+            'social_links' => $this->staff->public_social_links,
         ], $canonical);
 
         return view('livewire.page.staff-detail', [

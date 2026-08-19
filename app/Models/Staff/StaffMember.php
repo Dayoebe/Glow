@@ -36,6 +36,7 @@ class StaffMember extends Model
         'birth_day',
         'birth_year',
         'social_links',
+        'profile_visibility',
     ];
 
     protected $casts = [
@@ -46,6 +47,7 @@ class StaffMember extends Model
         'birth_day' => 'integer',
         'birth_year' => 'integer',
         'social_links' => 'array',
+        'profile_visibility' => 'array',
     ];
 
     public function departmentRelation()
@@ -144,6 +146,48 @@ class StaffMember extends Model
         });
 
         $this->refresh();
+    }
+
+    public function profileVisibility(): array
+    {
+        return array_replace($this->defaultProfileVisibility(), $this->profile_visibility ?? []);
+    }
+
+    public function isPubliclyVisible(string $field): bool
+    {
+        return (bool) ($this->profileVisibility()[$field] ?? false);
+    }
+
+    public function getPublicEmailAttribute(): ?string
+    {
+        return $this->isPubliclyVisible('email') ? $this->email : null;
+    }
+
+    public function getPublicPhoneAttribute(): ?string
+    {
+        return $this->isPubliclyVisible('phone') ? $this->phone : null;
+    }
+
+    public function getPublicSocialLinksAttribute(): array
+    {
+        return collect($this->social_links ?? [])
+            ->filter(fn ($url, $platform) => filled($url) && $this->isPubliclyVisible('social.' . $platform))
+            ->all();
+    }
+
+    public function defaultProfileVisibility(): array
+    {
+        return [
+            'email' => false,
+            'phone' => false,
+            'social.facebook' => false,
+            'social.instagram' => false,
+            'social.twitter' => false,
+            'social.linkedin' => false,
+            'social.tiktok' => false,
+            'social.youtube' => false,
+            'social.website' => false,
+        ];
     }
 
     protected static function boot()

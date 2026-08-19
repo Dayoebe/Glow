@@ -103,6 +103,10 @@ class OAP extends Model
 
     public function getPublicSocialLinksAttribute(): array
     {
+        if ($this->staffMember) {
+            return $this->staffMember->public_social_links;
+        }
+
         $oapLinks = $this->normalizeSocialLinks($this->social_media);
         if (!empty(array_filter($oapLinks))) {
             return $oapLinks;
@@ -114,6 +118,16 @@ class OAP extends Model
         }
 
         return $oapLinks;
+    }
+
+    public function getPublicEmailAttribute(): ?string
+    {
+        return $this->staffMember ? $this->staffMember->public_email : $this->email;
+    }
+
+    public function getPublicPhoneAttribute(): ?string
+    {
+        return $this->staffMember ? $this->staffMember->public_phone : $this->phone;
     }
 
     private function normalizeSocialLinks($links): array
