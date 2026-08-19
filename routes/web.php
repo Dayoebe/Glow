@@ -47,6 +47,7 @@ use App\Livewire\Page\CareerDetail;
 use App\Livewire\Page\ProgrammeApplication;
 use App\Livewire\Page\VettasPage;
 use App\Livewire\Page\VettasContentPage;
+use App\Livewire\Page\VettasCategoryPage;
 use App\Livewire\Admin\Event\EventIndex as AdminEventIndex;
 use App\Livewire\Admin\Event\EventForm as AdminEventForm;
 use App\Livewire\Admin\Event\EventCategories as AdminEventCategories;
@@ -206,6 +207,7 @@ Route::get('/vettas/amenities', VettasContentPage::class)->defaults('section', '
 Route::get('/vettas/gallery', VettasContentPage::class)->defaults('section', 'gallery')->name('vettas.gallery');
 Route::get('/vettas/stay-guide', VettasContentPage::class)->defaults('section', 'guide')->name('vettas.guide');
 Route::redirect('/vettas/book', '/vettas#reservation')->name('vettas.book');
+Route::get('/vettas/category/{category}', VettasCategoryPage::class)->name('vettas.categories.show');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/download-database', function () {

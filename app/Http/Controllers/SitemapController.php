@@ -15,6 +15,7 @@ use App\Models\Show\OAP;
 use App\Models\Show\Category as ShowCategory;
 use App\Models\Show\Show as RadioShow;
 use App\Models\Staff\StaffMember;
+use App\Models\Vettas\VettasCategory;
 use App\Support\PublicImage;
 use App\Support\Seo;
 use Illuminate\Support\Carbon;
@@ -126,12 +127,23 @@ class SitemapController extends Controller
                     'priority' => '0.5',
                 ]);
 
+            $vettasCategoryUrls = VettasCategory::query()->active()
+                ->whereHas('photos', fn ($query) => $query->published())
+                ->get(['slug', 'updated_at'])
+                ->map(fn ($category) => [
+                    'loc' => route('vettas.categories.show', $category),
+                    'lastmod' => $category->updated_at?->toAtomString(),
+                    'changefreq' => 'weekly',
+                    'priority' => '0.5',
+                ]);
+
             return collect($staticUrls)
                 ->concat($oapUrls)
                 ->concat($staffUrls)
                 ->concat($eventUrls)
                 ->concat($blogUrls)
                 ->concat($careerUrls)
+                ->concat($vettasCategoryUrls)
                 ->values();
         });
 

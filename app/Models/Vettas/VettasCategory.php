@@ -16,6 +16,12 @@ class VettasCategory extends Model
         'name',
         'slug',
         'description',
+        'eyebrow',
+        'headline',
+        'seo_title',
+        'meta_description',
+        'highlights',
+        'faqs',
         'sort_order',
         'is_active',
     ];
@@ -23,6 +29,8 @@ class VettasCategory extends Model
     protected $casts = [
         'sort_order' => 'integer',
         'is_active' => 'boolean',
+        'highlights' => 'array',
+        'faqs' => 'array',
     ];
 
     protected static function boot()

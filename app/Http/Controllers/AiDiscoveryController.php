@@ -6,6 +6,7 @@ use App\Models\News\News;
 use App\Models\News\NewsCategory;
 use App\Models\Podcast\Show as PodcastShow;
 use App\Models\Show\Show as RadioShow;
+use App\Models\Vettas\VettasCategory;
 use App\Support\Seo;
 
 class AiDiscoveryController extends Controller
@@ -42,6 +43,9 @@ class AiDiscoveryController extends Controller
 - [Programs]({$station['url']}/shows)
 - [Podcasts and Glow TV]({$station['url']}/podcasts)
 - [Contact]({$station['url']}/contact)
+- [Vettas Apartment]({$station['url']}/vettas)
+- [Vettas Amenities]({$station['url']}/vettas/amenities)
+- [Vettas Stay Guide]({$station['url']}/vettas/stay-guide)
 
 ## Key Topics
 - Ondo State news
@@ -92,6 +96,9 @@ MD);
             ->orderBy('title')
             ->take(10)
             ->get(['title', 'slug', 'description', 'host_name']);
+        $vettasCategories = VettasCategory::query()->active()
+            ->whereHas('photos', fn ($query) => $query->published())
+            ->ordered()->get(['name', 'slug', 'description']);
 
         $categoryLines = $categories->isEmpty()
             ? '- News, public affairs, entertainment, sports, community updates, health, and Yoruba programming.'
@@ -117,6 +124,9 @@ MD);
         $newsLines = $latestNews->isEmpty()
             ? '- No published news was available when this digest was generated.'
             : $latestNews->map(fn ($news) => '- [' . $news->title . '](' . $station['url'] . '/news/' . $news->slug . ') - ' . optional($news->published_at)->toDateString())->implode("\n");
+        $vettasLines = $vettasCategories->isEmpty()
+            ? '- [Vettas Apartment](' . $station['url'] . '/vettas): apartment information, gallery and reservation enquiries.'
+            : $vettasCategories->map(fn ($category) => '- [' . $category->name . '](' . $station['url'] . '/vettas/category/' . $category->slug . '): ' . Seo::text($category->description ?: 'Explore this part of Vettas Apartment.', 160))->implode("\n");
 
         return trim(<<<MD
 # Glow 99.1 FM AI-Readable Digest
@@ -130,6 +140,13 @@ Glow 99.1 FM is a radio station and digital media platform based in Ijapo Estate
 - Public affairs, interviews, entertainment, sports, and community programs.
 - Podcasts and video/radio content, including Glow TV-related content where published.
 - Advertising, sponsored programs, jingles, interviews, live coverage, and media packages.
+- Vettas Apartment information, photo galleries, amenities and reservation enquiries.
+
+## Vettas Apartment
+- [Apartment overview]({$station['url']}/vettas)
+- [Amenities]({$station['url']}/vettas/amenities)
+- [Stay guide]({$station['url']}/vettas/stay-guide)
+{$vettasLines}
 
 ## Station Identity
 - Brand name: Glow 99.1 FM
@@ -202,6 +219,7 @@ This file complements robots.txt. It does not override robots.txt, authenticatio
 - Podcasts: {$station['url']}/podcasts
 - About: {$station['url']}/about
 - Contact: {$station['url']}/contact
+- Vettas Apartment: {$station['url']}/vettas
 
 ## Citation Expectations
 Use the canonical URL, visible title, published/updated date when available, and Glow 99.1 FM as publisher. Quote short excerpts only when needed and prefer factual summaries.

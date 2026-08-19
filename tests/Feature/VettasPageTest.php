@@ -95,4 +95,37 @@ class VettasPageTest extends TestCase
             ->assertSee(route('vettas.gallery'), false)
             ->assertSee(route('vettas.guide'), false);
     }
+
+    public function test_each_active_category_with_published_photos_has_a_search_ready_page(): void
+    {
+        $category = VettasCategory::factory()->create([
+            'name' => 'Executive Suite',
+            'slug' => 'executive-suite',
+            'description' => 'A spacious furnished suite for private stays in Akure.',
+            'seo_title' => 'Executive Suite at Vettas Apartment in Akure',
+            'meta_description' => 'See the Executive Suite, its features and current photos before requesting your dates.',
+            'highlights' => ['Furnished private space', 'Suitable for extended stays'],
+            'faqs' => [['question' => 'How do I confirm availability?', 'answer' => 'Send your dates through the reservation form.']],
+        ]);
+        VettasPhoto::factory()->create(['category_id' => $category->id, 'title' => 'Suite Living Area']);
+
+        $this->get(route('vettas.categories.show', $category))
+            ->assertOk()
+            ->assertSee('Executive Suite at Vettas Apartment in Akure')
+            ->assertSee('Furnished private space')
+            ->assertSee('How do I confirm availability?')
+            ->assertSee('FAQPage', false)
+            ->assertSee('rel="canonical"', false)
+            ->assertSee('/vettas/category/executive-suite', false);
+    }
+
+    public function test_inactive_or_empty_categories_do_not_have_public_pages(): void
+    {
+        $inactive = VettasCategory::factory()->create(['is_active' => false]);
+        VettasPhoto::factory()->create(['category_id' => $inactive->id]);
+        $empty = VettasCategory::factory()->create();
+
+        $this->get(route('vettas.categories.show', $inactive))->assertNotFound();
+        $this->get(route('vettas.categories.show', $empty))->assertNotFound();
+    }
 }

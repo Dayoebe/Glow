@@ -281,6 +281,7 @@
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#d95318]">Gallery</p>
                     <h2 class="font-display mt-2 text-3xl font-semibold sm:text-4xl">{{ $activeCategory?->name ?? 'Inside Vettas' }}</h2>
+                    @if($activeCategory)<a href="{{ route('vettas.categories.show', $activeCategory) }}" class="mt-3 inline-flex items-center text-sm font-bold text-[#d95318]">Explore the {{ $activeCategory->name }} page <i class="fas fa-arrow-right ml-2 text-xs"></i></a>@endif
                 </div>
                 <p class="text-sm text-slate-500">{{ $photos->total() }} {{ \Illuminate\Support\Str::plural('photo', $photos->total()) }}</p>
             </div>
