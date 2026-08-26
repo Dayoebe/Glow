@@ -120,6 +120,7 @@
                     <span class="sr-only">Sort programmes</span>
                     <select wire:model.live="sortBy"
                         class="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100">
+                        <option value="schedule">Monday–Sunday</option>
                         <option value="featured">Featured</option>
                         <option value="popular">Popular</option>
                         <option value="latest">Newest</option>
@@ -209,7 +210,7 @@
                 <h3 class="mt-4 text-xl font-black text-[#171742]">No programmes found</h3>
                 <p class="mt-2 text-sm text-slate-500">Try another category or a broader search.</p>
                 <button type="button"
-                    wire:click="$set('selectedCategory', 'all'); $set('searchQuery', ''); $set('sortBy', 'featured')"
+                    wire:click="$set('selectedCategory', 'all'); $set('searchQuery', ''); $set('sortBy', 'schedule')"
                     class="mt-5 text-sm font-bold text-orange-600 hover:text-orange-700">
                     Clear filters
                 </button>

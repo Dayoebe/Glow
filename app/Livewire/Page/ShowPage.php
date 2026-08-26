@@ -13,16 +13,16 @@ class ShowPage extends Component
 {
     use WithPagination;
 
-    private const SORT_OPTIONS = ['featured', 'popular', 'latest', 'title_asc'];
+    private const SORT_OPTIONS = ['schedule', 'featured', 'popular', 'latest', 'title_asc'];
 
     public $selectedCategory = 'all';
     public $searchQuery = '';
-    public $sortBy = 'featured';
+    public $sortBy = 'schedule';
 
     protected $queryString = [
         'selectedCategory' => ['except' => 'all'],
         'searchQuery' => ['except' => ''],
-        'sortBy' => ['except' => 'featured'],
+        'sortBy' => ['except' => 'schedule'],
     ];
 
     public function mount(): void
@@ -83,6 +83,24 @@ class ShowPage extends Component
         }
 
         switch ($sortBy) {
+            case 'schedule':
+                $query->orderByRaw("coalesce((
+                    select min(case schedule_slots.day_of_week
+                        when 'monday' then 1 when 'tuesday' then 2 when 'wednesday' then 3
+                        when 'thursday' then 4 when 'friday' then 5 when 'saturday' then 6
+                        when 'sunday' then 7 else 99 end)
+                    from schedule_slots
+                    where schedule_slots.show_id = shows.id
+                        and schedule_slots.status = 'active'
+                ), 99)")
+                ->orderByRaw("coalesce((
+                    select min(schedule_slots.start_time)
+                    from schedule_slots
+                    where schedule_slots.show_id = shows.id
+                        and schedule_slots.status = 'active'
+                ), '23:59:59')")
+                ->orderBy('shows.title');
+                break;
             case 'popular':
                 $query->orderBy('shows.total_listeners', 'desc');
                 break;
@@ -128,7 +146,7 @@ class ShowPage extends Component
             : null;
         $hasInvalidCategory = $this->selectedCategory !== 'all' && !$currentCategory;
         $hasNonIndexableFilters = filled($this->searchQuery)
-            || $this->sortBy !== 'featured'
+            || $this->sortBy !== 'schedule'
             || $hasInvalidCategory;
 
         $canonicalQuery = [];
@@ -237,7 +255,7 @@ class ShowPage extends Component
     private function normalizeSortBy(): string
     {
         if (!in_array($this->sortBy, self::SORT_OPTIONS, true)) {
-            $this->sortBy = 'featured';
+            $this->sortBy = 'schedule';
         }
 
         return $this->sortBy;
