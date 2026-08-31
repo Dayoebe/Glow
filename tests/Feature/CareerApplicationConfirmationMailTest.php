@@ -40,6 +40,33 @@ class CareerApplicationConfirmationMailTest extends TestCase
         });
     }
 
+    public function test_an_internship_position_is_labelled_and_saved_as_an_internship_application(): void
+    {
+        Mail::fake();
+        Storage::fake('local');
+        $position = $this->position();
+        $position->update(['employment_type' => 'internship']);
+
+        $this->get(route('careers.show', $position->slug))
+            ->assertOk()
+            ->assertSee('Internship application')
+            ->assertSee('You are applying for')
+            ->assertSee('Submit internship application');
+
+        Livewire::test(CareerDetail::class, ['slug' => $position->slug])
+            ->set('full_name', 'Teni Intern')
+            ->set('email', 'teni@example.com')
+            ->set('resume', UploadedFile::fake()->create('teni-cv.pdf', 100, 'application/pdf'))
+            ->call('submitApplication')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('career_applications', [
+            'career_position_id' => $position->id,
+            'email' => 'teni@example.com',
+            'application_type' => 'internship',
+        ]);
+    }
+
     public function test_a_marketer_receives_confirmation_without_the_on_site_restriction(): void
     {
         Mail::fake();

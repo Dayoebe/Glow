@@ -108,8 +108,12 @@
             </div>
 
             <aside id="apply" class="scroll-mt-28 self-start border-t-4 border-[#f36b21] bg-white p-6 sm:p-8 lg:sticky lg:top-28">
-                <p class="text-xs font-bold uppercase tracking-[0.18em] text-[#d95318]">Application</p>
-                <h2 class="font-display mt-2 text-3xl font-semibold">Apply now</h2>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-[#d95318]">{{ $this->applicationTypeLabel() }} application</p>
+                <h2 class="font-display mt-2 text-3xl font-semibold">Apply for {{ $position->title }}</h2>
+                <div class="mt-4 flex items-start gap-3 border border-[#f36b21]/25 bg-[#fff8f2] px-4 py-3 text-sm leading-6 text-slate-700">
+                    <i class="fas {{ $this->applicationType() === 'internship' ? 'fa-graduation-cap' : 'fa-briefcase' }} mt-1 text-[#d95318]" aria-hidden="true"></i>
+                    <p>You are applying for <strong>{{ $position->title }}</strong> as a <strong>{{ strtolower($this->applicationTypeLabel()) }}</strong> applicant.</p>
+                </div>
                 <p class="mt-3 text-sm leading-6 text-slate-600">Fields marked with an asterisk are required.</p>
 
                 @if(session()->has('success'))
@@ -214,7 +218,7 @@
                         <button type="submit"
                             class="inline-flex w-full items-center justify-center gap-3 bg-[#f36b21] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#d95318] disabled:cursor-wait disabled:opacity-70"
                             wire:loading.attr="disabled" wire:target="submitApplication">
-                            <span wire:loading.remove wire:target="submitApplication">Submit application</span>
+                            <span wire:loading.remove wire:target="submitApplication">Submit {{ strtolower($this->applicationTypeLabel()) }} application</span>
                             <span wire:loading wire:target="submitApplication">Submitting…</span>
                             <i wire:loading.remove wire:target="submitApplication" class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
                         </button>

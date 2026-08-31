@@ -74,7 +74,7 @@ class CareerDetail extends Component
         $application = CareerApplication::create([
             'career_position_id' => $this->position->id,
             'application_code' => $applicationCode,
-            'application_type' => 'job',
+            'application_type' => $this->applicationType(),
             'full_name' => $this->full_name,
             'email' => $this->email,
             'phone' => $this->phone ?: null,
@@ -126,6 +126,16 @@ class CareerDetail extends Component
         } while (CareerApplication::where('application_code', $code)->exists());
 
         return $code;
+    }
+
+    public function applicationType(): string
+    {
+        return $this->position->employment_type === 'internship' ? 'internship' : 'job';
+    }
+
+    public function applicationTypeLabel(): string
+    {
+        return $this->applicationType() === 'internship' ? 'Internship' : 'Job';
     }
 
     public function getRelatedPositionsProperty()
