@@ -210,20 +210,17 @@
                                             </a>
                                         </div>
                                         @if($canReview)
-                                            <span class="mx-1 h-4 w-px bg-gray-200"></span>
-                                            <div class="flex items-center gap-2 px-2 py-1">
-                                                <button wire:click="startApproval({{ $event->id }}, 'approved')"
-                                                    class="text-emerald-600 hover:text-emerald-900" title="Approve">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                                <button wire:click="startApproval({{ $event->id }}, 'flagged')"
-                                                    class="text-amber-600 hover:text-amber-900" title="Flag">
-                                                    <i class="fas fa-flag"></i>
-                                                </button>
-                                                <button wire:click="startApproval({{ $event->id }}, 'rejected')"
-                                                    class="text-red-600 hover:text-red-900" title="Reject">
-                                                    <i class="fas fa-times-circle"></i>
-                                                </button>
+                                            <span class="mx-1 h-6 w-px bg-gray-200"></span>
+                                            <div class="flex flex-wrap items-center gap-1.5 px-2 py-1" aria-label="Review actions">
+                                                @if($event->approval_status !== 'approved')
+                                                    <button wire:click="startApproval({{ $event->id }}, 'approved')" wire:loading.attr="disabled" class="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-200 disabled:opacity-50" title="Approve event"><i class="fas fa-check-circle" aria-hidden="true"></i><span>Approve</span></button>
+                                                @endif
+                                                @if($event->approval_status !== 'flagged')
+                                                    <button wire:click="startApproval({{ $event->id }}, 'flagged')" wire:loading.attr="disabled" class="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-200 disabled:opacity-50" title="Flag event"><i class="fas fa-flag" aria-hidden="true"></i><span>Flag</span></button>
+                                                @endif
+                                                @if($event->approval_status !== 'rejected')
+                                                    <button wire:click="startApproval({{ $event->id }}, 'rejected')" wire:loading.attr="disabled" class="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-200 disabled:opacity-50" title="Reject event"><i class="fas fa-times-circle" aria-hidden="true"></i><span>Reject</span></button>
+                                                @endif
                                             </div>
                                         @endif
                                         <span class="mx-1 h-4 w-px bg-gray-200"></span>
