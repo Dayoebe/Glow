@@ -186,6 +186,11 @@ return [
                         'route' => 'admin.careers.applications.marketers',
                         'active' => 'admin.careers.applications.marketers'
                     ],
+                    [
+                        'title' => 'Academy Applicants',
+                        'route' => 'admin.careers.applications.academy',
+                        'active' => 'admin.careers.applications.academy'
+                    ],
                 ]
             ],
         ]

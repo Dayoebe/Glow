@@ -86,6 +86,7 @@ use App\Http\Controllers\AiDiscoveryController;
 use App\Http\Controllers\FeedController;
 use App\Livewire\Page\AdvertisePage;
 use App\Livewire\Page\ListenLivePage;
+use App\Livewire\Page\AcademyPage;
 
 use App\Livewire\Admin\Show\Manage as ShowManage;
 use App\Livewire\Admin\Show\ShowForm as AdminShowForm;
@@ -141,6 +142,7 @@ Route::get('/editorial-standards', EditorialStandardsPage::class)->name('editori
 Route::get('/contact', ContactPage::class)->name('contact');
 Route::get('/listen-live', ListenLivePage::class)->name('listen.live');
 Route::get('/advertise', AdvertisePage::class)->name('advertise');
+Route::get('/academy', AcademyPage::class)->name('academy');
 Route::get('/privacy-policy', PrivacyPolicy::class)->name('privacy.policy');
 Route::get('/contact/success', ContactSuccess::class)->name('contact.success');
 Route::redirect('/programs', '/shows', 301)->name('programs.index');
@@ -396,11 +398,12 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::get('/create', AdminCareerForm::class)->name('create');
             Route::get('/applications', AdminCareerApplications::class)->name('applications');
             Route::get('/applications/type/{type}', AdminCareerApplications::class)
-                ->whereIn('type', ['job', 'internship', 'volunteer', 'marketer'])->name('applications.type');
+                ->whereIn('type', ['job', 'internship', 'volunteer', 'marketer', 'academy'])->name('applications.type');
             Route::redirect('/applications/interns', '/admin/careers/applications/type/internship')->name('applications.interns');
             Route::redirect('/applications/volunteers', '/admin/careers/applications/type/volunteer')->name('applications.volunteers');
             Route::redirect('/applications/marketers', '/admin/careers/applications/type/marketer')->name('applications.marketers');
             Route::redirect('/applications/jobs', '/admin/careers/applications/type/job')->name('applications.jobs');
+            Route::redirect('/applications/academy', '/admin/careers/applications/type/academy')->name('applications.academy');
             Route::get('/applications/{application}/resume', [\App\Http\Controllers\Admin\CareerApplicationResumeController::class, 'download'])
                 ->name('applications.resume');
             Route::get('/applications/{application}/resume/preview', [\App\Http\Controllers\Admin\CareerApplicationResumeController::class, 'preview'])
