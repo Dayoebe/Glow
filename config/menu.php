@@ -186,14 +186,21 @@ return [
                         'route' => 'admin.careers.applications.marketers',
                         'active' => 'admin.careers.applications.marketers'
                     ],
-                    [
-                        'title' => 'Academy Applicants',
-                        'route' => 'admin.careers.applications.academy',
-                        'active' => 'admin.careers.applications.academy'
-                    ],
                 ]
             ],
         ]
+    ],
+    [
+        'group' => 'Glow FM Academy',
+        'roles' => ['admin'],
+        'items' => [
+            [
+                'title' => 'Academy Applications',
+                'icon' => 'fas fa-graduation-cap',
+                'route' => 'admin.academy.applications',
+                'active' => 'admin.academy.*',
+            ],
+        ],
     ],
     [
         'group' => 'Vettas',

@@ -1,6 +1,6 @@
 <div class="space-y-6">
     @php
-        $typeLabels = ['' => 'All applicants', 'job' => 'Job applicants', 'internship' => 'Interns', 'volunteer' => 'Volunteers', 'marketer' => 'Advertiser/Marketers', 'academy' => 'Academy students'];
+        $typeLabels = ['' => 'All applicants', 'job' => 'Job applicants', 'internship' => 'Interns', 'volunteer' => 'Volunteers', 'marketer' => 'Advertiser/Marketers'];
         $statusStyles = [
             'new' => 'bg-emerald-50 text-emerald-700',
             'reviewing' => 'bg-blue-50 text-blue-700',
@@ -17,11 +17,13 @@
         <div class="pointer-events-none absolute -bottom-28 right-28 h-60 w-60 rounded-full bg-orange-400/10"></div>
         <div class="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div class="max-w-2xl">
-                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-300">Talent pipeline</p>
-                <h2 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Meet the people who want to build Glow.</h2>
-                <p class="mt-3 max-w-xl text-sm leading-6 text-slate-300">Review complete applications, preview CVs securely and move candidates through a clear hiring workflow.</p>
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-300">{{ $academyWorkspace ? 'Glow FM Academy admissions' : 'Talent pipeline' }}</p>
+                <h2 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">{{ $academyWorkspace ? 'Review aspiring broadcasters.' : 'Meet the people who want to build Glow.' }}</h2>
+                <p class="mt-3 max-w-xl text-sm leading-6 text-slate-300">{{ $academyWorkspace ? 'Review student applications, programme choices and learning goals, then move each applicant through the admissions process.' : 'Review complete applications, preview CVs securely and move candidates through a clear hiring workflow.' }}</p>
             </div>
+            @unless($academyWorkspace)
             <a href="{{ route('admin.careers.index') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-extrabold text-white transition hover:bg-white/15 sm:w-auto"><i class="fas fa-briefcase mr-2"></i>Manage open roles</a>
+            @endunless
         </div>
         <div class="relative mt-7 grid grid-cols-2 gap-3 lg:grid-cols-5">
             @foreach([
@@ -36,6 +38,7 @@
         </div>
     </section>
 
+    @unless($academyWorkspace)
     <nav class="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm" aria-label="Application types">
         <div class="flex min-w-max gap-1">
             @foreach($typeLabels as $type => $label)
@@ -45,11 +48,14 @@
             @endforeach
         </div>
     </nav>
+    @endunless
 
     <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_210px_170px_150px]">
+        <div class="grid gap-3 {{ $academyWorkspace ? 'lg:grid-cols-[minmax(0,1fr)_170px_150px]' : 'lg:grid-cols-[minmax(0,1fr)_210px_170px_150px]' }}">
             <div class="relative"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i><input type="search" wire:model.live.debounce.300ms="search" placeholder="Search name, email, code, skills or location…" class="w-full rounded-xl border-slate-300 py-2.5 pl-10 pr-4 text-sm focus:border-emerald-500 focus:ring-emerald-500"></div>
+            @unless($academyWorkspace)
             <select wire:model.live="filterPosition" class="w-full rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"><option value="">All positions</option>@foreach($positions as $position)<option value="{{ $position->id }}">{{ $position->title }}</option>@endforeach</select>
+            @endunless
             <select wire:model.live="filterStatus" class="w-full rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"><option value="">All statuses</option>@foreach(['new', 'reviewing', 'shortlisted', 'rejected', 'hired', 'archived'] as $status)<option value="{{ $status }}">{{ \Illuminate\Support\Str::headline($status) }}</option>@endforeach</select>
             <select wire:model.live="sortBy" aria-label="Sort applicants" class="w-full rounded-xl border-slate-300 py-2.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name">Name A–Z</option><option value="status_pipeline">Status: New to Archived</option><option value="status_pipeline_desc">Status: Archived to New</option></select>
         </div>
@@ -77,7 +83,7 @@
                 </div>
             </article>
         @empty
-            <div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"><span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-xl text-slate-400"><i class="fas fa-user-group"></i></span><h3 class="mt-4 text-lg font-black text-slate-900">No applications found</h3><p class="mt-2 text-sm text-slate-500">Try a different application type or reset your filters.</p></div>
+            <div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"><span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-xl text-slate-400"><i class="fas fa-user-group"></i></span><h3 class="mt-4 text-lg font-black text-slate-900">No applications found</h3><p class="mt-2 text-sm text-slate-500">{{ $academyWorkspace ? 'New Academy applications will appear here.' : 'Try a different application type or reset your filters.' }}</p></div>
         @endforelse
     </section>
 
@@ -145,7 +151,7 @@
                             @else
                                 <div class="flex h-80 flex-col items-center justify-center p-8 text-center"><span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-2xl text-blue-600"><i class="fas fa-file-word"></i></span><h4 class="mt-4 font-black text-slate-900">Legacy {{ strtoupper($resumeExtension ?: 'document') }} file</h4><p class="mt-2 max-w-xs text-sm leading-6 text-slate-500">This older format cannot be rendered safely inside the browser. Open the original file with the download button.</p></div>
                             @endif
-                        </section>@else<section class="rounded-2xl bg-white p-6 text-center shadow-sm"><i class="fas fa-file-circle-xmark text-3xl text-slate-300"></i><h3 class="mt-3 text-sm font-black text-slate-900">No résumé supplied</h3><p class="mt-1 text-xs text-slate-500">A résumé is optional for deal-by-deal marketers.</p></section>@endif
+                        </section>@else<section class="rounded-2xl bg-white p-6 text-center shadow-sm"><i class="fas fa-file-circle-xmark text-3xl text-slate-300"></i><h3 class="mt-3 text-sm font-black text-slate-900">No résumé supplied</h3><p class="mt-1 text-xs text-slate-500">{{ $academyWorkspace ? 'A résumé is optional for Academy applicants.' : 'A résumé is optional for deal-by-deal marketers.' }}</p></section>@endif
 
                         <section class="rounded-2xl bg-white p-5 shadow-sm"><div class="flex items-center justify-between"><h3 class="text-sm font-black uppercase tracking-wide text-slate-900"><i class="fas fa-note-sticky mr-2 text-blue-600"></i>Private notes</h3><span class="text-[10px] font-bold text-slate-400">Only admins see this</span></div><textarea rows="7" wire:model="admin_notes" placeholder="Interview impressions, follow-up items, references…" class="mt-4 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500"></textarea>@error('admin_notes')<p class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror<button wire:click="saveNotes" class="mt-3 w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-700"><i class="fas fa-check mr-2"></i>Save private notes</button></section>
                     </aside>

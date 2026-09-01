@@ -55,6 +55,7 @@ use App\Livewire\Admin\Event\EventCategoryForm as AdminEventCategoryForm;
 use App\Livewire\Admin\Career\CareerIndex as AdminCareerIndex;
 use App\Livewire\Admin\Career\CareerForm as AdminCareerForm;
 use App\Livewire\Admin\Career\CareerApplications as AdminCareerApplications;
+use App\Livewire\Admin\Academy\Applications as AdminAcademyApplications;
 use App\Livewire\Admin\Vettas\Index as AdminVettasIndex;
 use App\Livewire\Admin\Vettas\PhotoForm as AdminVettasPhotoForm;
 use App\Livewire\Admin\Vettas\Categories as AdminVettasCategories;
@@ -398,18 +399,20 @@ Route::middleware(['auth', 'admin_or_staff'])->group(function () {
             Route::get('/create', AdminCareerForm::class)->name('create');
             Route::get('/applications', AdminCareerApplications::class)->name('applications');
             Route::get('/applications/type/{type}', AdminCareerApplications::class)
-                ->whereIn('type', ['job', 'internship', 'volunteer', 'marketer', 'academy'])->name('applications.type');
+                ->whereIn('type', ['job', 'internship', 'volunteer', 'marketer'])->name('applications.type');
             Route::redirect('/applications/interns', '/admin/careers/applications/type/internship')->name('applications.interns');
             Route::redirect('/applications/volunteers', '/admin/careers/applications/type/volunteer')->name('applications.volunteers');
             Route::redirect('/applications/marketers', '/admin/careers/applications/type/marketer')->name('applications.marketers');
             Route::redirect('/applications/jobs', '/admin/careers/applications/type/job')->name('applications.jobs');
-            Route::redirect('/applications/academy', '/admin/careers/applications/type/academy')->name('applications.academy');
             Route::get('/applications/{application}/resume', [\App\Http\Controllers\Admin\CareerApplicationResumeController::class, 'download'])
                 ->name('applications.resume');
             Route::get('/applications/{application}/resume/preview', [\App\Http\Controllers\Admin\CareerApplicationResumeController::class, 'preview'])
                 ->name('applications.resume.preview');
             Route::get('/{id}/edit', AdminCareerForm::class)->name('edit');
         });
+
+        Route::get('/admin/academy/applications', AdminAcademyApplications::class)
+            ->name('admin.academy.applications');
 
         Route::prefix('admin/vettas')->name('admin.vettas.')->group(function () {
             Route::get('/', AdminVettasIndex::class)->name('index');

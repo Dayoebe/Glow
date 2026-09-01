@@ -18,6 +18,7 @@ class CareerApplications extends Component
     public $filterStatus = '';
     public $filterPosition = '';
     public $applicationType = '';
+    public bool $academyWorkspace = false;
     public $sortBy = 'newest';
 
     public $notesApplicationId = null;
@@ -68,7 +69,9 @@ class CareerApplications extends Component
 
     public function openApplication(int $applicationId): void
     {
-        $application = CareerApplication::with(['position', 'reviewedBy'])->findOrFail($applicationId);
+        $application = $this->scopedApplicationsQuery()
+            ->with(['position', 'reviewedBy'])
+            ->findOrFail($applicationId);
 
         $this->selectedApplicationId = $application->id;
         $this->notesApplicationId = $application->id;
@@ -91,7 +94,7 @@ class CareerApplications extends Component
             return;
         }
 
-        $application = CareerApplication::findOrFail($applicationId);
+        $application = $this->scopedApplicationsQuery()->findOrFail($applicationId);
 
         $application->status = $status;
         $application->reviewed_by = auth()->id();
@@ -111,7 +114,7 @@ class CareerApplications extends Component
             'admin_notes' => 'nullable|string|max:5000',
         ]);
 
-        $application = CareerApplication::findOrFail($this->notesApplicationId);
+        $application = $this->scopedApplicationsQuery()->findOrFail($this->notesApplicationId);
 
         $application->admin_notes = $this->admin_notes ?: null;
         $application->reviewed_by = auth()->id();
@@ -123,7 +126,7 @@ class CareerApplications extends Component
 
     public function deleteApplication(int $applicationId): void
     {
-        $application = CareerApplication::findOrFail($applicationId);
+        $application = $this->scopedApplicationsQuery()->findOrFail($applicationId);
 
         $application->delete();
         if ((int) $this->selectedApplicationId === $applicationId) {
@@ -134,7 +137,7 @@ class CareerApplications extends Component
 
     public function getApplicationsProperty()
     {
-        $query = CareerApplication::query()
+        $query = $this->scopedApplicationsQuery()
             ->with(['position', 'reviewedBy']);
 
         if ($this->applicationType !== '') {
@@ -181,7 +184,9 @@ class CareerApplications extends Component
             return null;
         }
 
-        return CareerApplication::with(['position', 'reviewedBy'])->find($this->selectedApplicationId);
+        return $this->scopedApplicationsQuery()
+            ->with(['position', 'reviewedBy'])
+            ->find($this->selectedApplicationId);
     }
 
     public function getPositionsProperty()
@@ -213,9 +218,18 @@ class CareerApplications extends Component
 
     private function statsQuery()
     {
-        return CareerApplication::query()->when(
+        return $this->scopedApplicationsQuery()->when(
             $this->applicationType !== '',
             fn ($query) => $query->where('application_type', $this->applicationType)
+        );
+    }
+
+    protected function scopedApplicationsQuery()
+    {
+        return CareerApplication::query()->when(
+            $this->academyWorkspace,
+            fn ($query) => $query->where('application_type', 'academy'),
+            fn ($query) => $query->where('application_type', '!=', 'academy')
         );
     }
 
@@ -241,7 +255,7 @@ class CareerApplications extends Component
             'selectedApplication' => $this->selectedApplication,
             'hasFilters' => $this->hasFilters,
         ])->layout('layouts.admin', [
-            'header' => $this->applicationType === '' ? 'Career Applications' : ($this->applicationType === 'academy' ? 'Academy Applications' : ucfirst($this->applicationType) . ' Applications'),
+            'header' => $this->academyWorkspace ? 'Academy Applications' : ($this->applicationType === '' ? 'Career Applications' : ucfirst($this->applicationType) . ' Applications'),
         ]);
     }
 }
