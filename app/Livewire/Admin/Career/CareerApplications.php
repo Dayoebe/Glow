@@ -34,7 +34,7 @@ class CareerApplications extends Component
 
     public function mount(?string $type = null): void
     {
-        if ($type !== null && in_array($type, ['job', 'internship', 'volunteer', 'marketer'], true)) {
+        if ($type !== null && in_array($type, ['job', 'internship', 'volunteer', 'marketer', 'academy'], true)) {
             $this->applicationType = $type;
         }
     }
@@ -241,7 +241,7 @@ class CareerApplications extends Component
             'selectedApplication' => $this->selectedApplication,
             'hasFilters' => $this->hasFilters,
         ])->layout('layouts.admin', [
-            'header' => $this->applicationType === '' ? 'Career Applications' : ucfirst($this->applicationType) . ' Applications',
+            'header' => $this->applicationType === '' ? 'Career Applications' : ($this->applicationType === 'academy' ? 'Academy Applications' : ucfirst($this->applicationType) . ' Applications'),
         ]);
     }
 }

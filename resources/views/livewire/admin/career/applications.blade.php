@@ -1,6 +1,6 @@
 <div class="space-y-6">
     @php
-        $typeLabels = ['' => 'All applicants', 'job' => 'Job applicants', 'internship' => 'Interns', 'volunteer' => 'Volunteers', 'marketer' => 'Advertiser/Marketers'];
+        $typeLabels = ['' => 'All applicants', 'job' => 'Job applicants', 'internship' => 'Interns', 'volunteer' => 'Volunteers', 'marketer' => 'Advertiser/Marketers', 'academy' => 'Academy students'];
         $statusStyles = [
             'new' => 'bg-emerald-50 text-emerald-700',
             'reviewing' => 'bg-blue-50 text-blue-700',
@@ -9,7 +9,7 @@
             'hired' => 'bg-violet-50 text-violet-700',
             'archived' => 'bg-slate-100 text-slate-600',
         ];
-        $typeStyles = ['job' => 'bg-blue-50 text-blue-700', 'internship' => 'bg-violet-50 text-violet-700', 'volunteer' => 'bg-orange-50 text-orange-700', 'marketer' => 'bg-amber-50 text-amber-700'];
+        $typeStyles = ['job' => 'bg-blue-50 text-blue-700', 'internship' => 'bg-violet-50 text-violet-700', 'volunteer' => 'bg-orange-50 text-orange-700', 'marketer' => 'bg-amber-50 text-amber-700', 'academy' => 'bg-cyan-50 text-cyan-700'];
     @endphp
 
     <section class="relative overflow-hidden rounded-2xl bg-[#0b2f3a] px-6 py-7 text-white shadow-sm sm:px-8">

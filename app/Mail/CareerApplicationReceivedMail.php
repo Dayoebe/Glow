@@ -30,6 +30,7 @@ class CareerApplicationReceivedMail extends Mailable
             'internship' => 'Internship Programme',
             'volunteer' => 'Volunteer Programme',
             'marketer' => 'Advertiser/Marketer Opportunity',
+            'academy' => 'Glow FM Academy',
             default => 'Career Opportunity',
         };
     }
