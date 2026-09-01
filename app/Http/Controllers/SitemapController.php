@@ -63,6 +63,7 @@ class SitemapController extends Controller
                 ['loc' => Seo::absoluteUrl('/contact'), 'changefreq' => 'yearly', 'priority' => '0.8'],
                 ['loc' => Seo::absoluteUrl('/listen-live'), 'changefreq' => 'daily', 'priority' => '0.8'],
                 ['loc' => Seo::absoluteUrl('/advertise'), 'changefreq' => 'monthly', 'priority' => '0.6'],
+                ['loc' => Seo::absoluteUrl('/academy'), 'changefreq' => 'monthly', 'priority' => '0.7'],
                 ['loc' => Seo::absoluteUrl('/privacy-policy'), 'changefreq' => 'yearly', 'priority' => '0.3'],
                 ['loc' => Seo::absoluteUrl('/editorial-standards'), 'changefreq' => 'yearly', 'priority' => '0.6'],
                 ['loc' => Seo::absoluteUrl('/shows'), 'changefreq' => 'weekly', 'priority' => '0.8'],

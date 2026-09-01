@@ -43,6 +43,7 @@ class AiDiscoveryController extends Controller
 - [Programs]({$station['url']}/shows)
 - [Podcasts and Glow TV]({$station['url']}/podcasts)
 - [Contact]({$station['url']}/contact)
+- [Glow FM Academy]({$station['url']}/academy)
 - [Vettas Apartment]({$station['url']}/vettas)
 - [Vettas Amenities]({$station['url']}/vettas/amenities)
 - [Vettas Stay Guide]({$station['url']}/vettas/stay-guide)
@@ -219,6 +220,7 @@ This file complements robots.txt. It does not override robots.txt, authenticatio
 - Podcasts: {$station['url']}/podcasts
 - About: {$station['url']}/about
 - Contact: {$station['url']}/contact
+- Glow FM Academy: {$station['url']}/academy
 - Vettas Apartment: {$station['url']}/vettas
 
 ## Citation Expectations

@@ -353,6 +353,7 @@
             ['label' => 'Events', 'icon' => 'fas fa-calendar-day', 'href' => route('events.index'), 'active' => request()->is('events*')],
             ['label' => 'Contact', 'icon' => 'fas fa-envelope', 'href' => route('contact'), 'active' => request()->is('contact*')],
             ['label' => 'Advertise', 'icon' => 'fas fa-bullhorn', 'href' => route('advertise'), 'active' => request()->is('advertise')],
+            ['label' => 'Academy', 'icon' => 'fas fa-graduation-cap', 'href' => route('academy'), 'active' => request()->is('academy')],
             ['label' => 'Careers', 'icon' => 'fas fa-briefcase', 'href' => route('careers.index'), 'active' => request()->is('careers*')],
         ];
         $moreNavigationIsActive = collect($exploreNavigation)->contains('active', true);
@@ -888,6 +889,13 @@
                                 class="public-footer-link flex items-center">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>
                                 Vettas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('academy') }}"
+                                class="public-footer-link flex items-center">
+                                <i class="fas fa-chevron-right text-xs mr-2"></i>
+                                Glow FM Academy
                             </a>
                         </li>
                         <li>
