@@ -26,7 +26,7 @@ class AcademyApplicationsDashboardTest extends TestCase
 
         $this->actingAs($staff)
             ->get(route('admin.academy.applications'))
-            ->assertRedirect(route('home'));
+            ->assertForbidden();
     }
 
     public function test_the_academy_workspace_only_lists_academy_applications(): void
@@ -34,11 +34,12 @@ class AcademyApplicationsDashboardTest extends TestCase
         $academy = $this->application('GLW-ACD-001', 'Academy Student', 'academy');
         $career = $this->application('GLW-JOB-001', 'Career Applicant', 'job');
 
-        Livewire::test(Applications::class)
+        $component = Livewire::test(Applications::class)
             ->assertSee($academy->full_name)
-            ->assertDontSee($career->full_name)
-            ->call('openApplication', $career->id)
-            ->assertNotFound();
+            ->assertDontSee($career->full_name);
+
+        $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+        $component->call('openApplication', $career->id);
     }
 
     public function test_the_careers_workspace_excludes_academy_applications(): void
