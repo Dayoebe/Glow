@@ -26,7 +26,11 @@
         <aside class="space-y-6 xl:sticky xl:top-24">
             <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
                 <div class="border-b border-slate-100 px-6 py-5"><h3 class="font-bold text-slate-900">Profile photo</h3><p class="mt-1 text-xs leading-5 text-slate-500">Use a clear, square image for the best result.</p></div>
-                <div class="p-6">
+                <div class="p-6" x-data="{ uploading: false, progress: 0, fileName: '' }"
+                    x-on:livewire-upload-start="uploading = true; progress = 0"
+                    x-on:livewire-upload-finish="uploading = false; progress = 100"
+                    x-on:livewire-upload-error="uploading = false; progress = 0"
+                    x-on:livewire-upload-progress="progress = $event.detail.progress">
                     <div class="relative mx-auto h-44 w-44">
                         <div class="h-full w-full overflow-hidden rounded-3xl border-4 border-white bg-slate-100 shadow-lg ring-1 ring-slate-200">
                             @if ($avatar_upload)
@@ -39,13 +43,35 @@
                         </div>
                         <span class="absolute -bottom-2 -right-2 flex h-11 w-11 items-center justify-center rounded-2xl border-4 border-white bg-emerald-600 text-white shadow-md"><i class="fas fa-camera" aria-hidden="true"></i></span>
                     </div>
-                    <label class="mt-7 flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-800"><i class="fas fa-upload" aria-hidden="true"></i> Upload new photo<input type="file" wire:model="avatar_upload" accept="image/*" class="sr-only"></label>
-                    <div wire:loading wire:target="avatar_upload" class="mt-3 text-center text-xs font-medium text-emerald-700">Preparing your preview…</div>
+                    <label class="mt-7 block cursor-pointer rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 transition hover:border-emerald-500 hover:bg-emerald-50/50 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-100">
+                        <input type="file" wire:model="avatar_upload" accept="image/jpeg,image/png,image/webp" class="sr-only"
+                            x-on:change="fileName = $event.target.files[0]?.name ?? ''">
+                        <span class="flex items-center gap-3">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white"><i class="fas fa-cloud-arrow-up" aria-hidden="true"></i></span>
+                            <span class="min-w-0">
+                                <strong class="block text-sm text-slate-900" x-text="fileName || 'Choose a new photo'"></strong>
+                                <span class="mt-0.5 block text-xs text-slate-500" x-text="fileName ? 'Click to choose a different image' : 'JPG, PNG or WebP · maximum 5 MB'"></span>
+                            </span>
+                        </span>
+                    </label>
+
+                    <div x-cloak x-show="uploading" x-transition.opacity class="mt-4" role="status" aria-live="polite">
+                        <div class="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600"><span>Uploading photo…</span><span x-text="`${progress}%`"></span></div>
+                        <div class="h-2.5 overflow-hidden rounded-full bg-slate-200">
+                            <div class="h-full rounded-full bg-emerald-600 transition-all duration-200" :style="`width: ${progress}%`"></div>
+                        </div>
+                    </div>
+                    <div wire:loading.delay wire:target="avatar_upload" x-show="!uploading" class="mt-3 flex items-center gap-2 text-xs font-semibold text-emerald-700"><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> Processing image preview…</div>
                     @error('avatar_upload')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
-                    <div class="my-5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-slate-400"><span class="h-px flex-1 bg-slate-200"></span><span>or</span><span class="h-px flex-1 bg-slate-200"></span></div>
-                    <label class="block text-xs font-bold uppercase tracking-wide text-slate-500">Image URL</label>
-                    <input type="url" wire:model="avatar" class="mt-2 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500" placeholder="https://example.com/photo.jpg">
-                    @error('avatar')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+
+                    <details class="mt-4 rounded-xl border border-slate-200 bg-white">
+                        <summary class="cursor-pointer px-4 py-3 text-xs font-semibold text-slate-600 hover:text-emerald-700">Use an image link instead</summary>
+                        <div class="border-t border-slate-100 p-4">
+                            <label class="block text-xs font-bold uppercase tracking-wide text-slate-500">Direct image URL</label>
+                            <div class="relative mt-2"><i class="fas fa-link absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400" aria-hidden="true"></i><input type="url" wire:model="avatar" class="w-full rounded-xl border-slate-300 py-2.5 pl-9 pr-3 text-sm focus:border-emerald-500 focus:ring-emerald-500" placeholder="https://example.com/photo.jpg"></div>
+                            @error('avatar')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                    </details>
                 </div>
             </section>
 
