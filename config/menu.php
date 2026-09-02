@@ -144,6 +144,19 @@ return [
                     ],
                 ]
             ],
+
+        ]
+    ],
+    [
+        'group' => 'Glow FM Academy',
+        'roles' => ['admin'],
+        'items' => [
+            [
+                'title' => 'Academy Applications',
+                'icon' => 'fas fa-graduation-cap',
+                'route' => 'admin.academy.applications',
+                'active' => 'admin.academy.*',
+            ],
             [
                 'title' => 'Careers',
                 'icon' => 'fas fa-briefcase',
@@ -187,18 +200,6 @@ return [
                         'active' => 'admin.careers.applications.marketers'
                     ],
                 ]
-            ],
-        ]
-    ],
-    [
-        'group' => 'Glow FM Academy',
-        'roles' => ['admin'],
-        'items' => [
-            [
-                'title' => 'Academy Applications',
-                'icon' => 'fas fa-graduation-cap',
-                'route' => 'admin.academy.applications',
-                'active' => 'admin.academy.*',
             ],
         ],
     ],
