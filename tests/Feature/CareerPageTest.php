@@ -11,6 +11,14 @@ class CareerPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_careers_page_does_not_advertise_paused_volunteer_applications(): void
+    {
+        $this->get(route('careers.index'))
+            ->assertOk()
+            ->assertDontSee('Volunteer with us')
+            ->assertDontSee('/careers/apply/volunteer');
+    }
+
     public function test_careers_page_only_shows_positions_accepting_applications(): void
     {
         $this->createCareerPosition([

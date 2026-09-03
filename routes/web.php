@@ -202,7 +202,8 @@ Route::get('/events/{slug}', EventDetail::class)->name('events.show');
 // Public Career Routes
 Route::get('/careers', CareerPage::class)->name('careers.index');
 Route::get('/careers/apply/{type}', ProgrammeApplication::class)
-    ->whereIn('type', ['internship', 'volunteer', 'marketer'])->name('careers.programmes.apply');
+    // Volunteer applications are paused publicly; keep the underlying type and admin queue intact.
+    ->whereIn('type', ['internship', 'marketer'])->name('careers.programmes.apply');
 Route::get('/careers/{slug}', CareerDetail::class)->name('careers.show');
 Route::get('/vettas', VettasPage::class)->name('vettas.index');
 Route::get('/vettas/about', VettasContentPage::class)->defaults('section', 'about')->name('vettas.about');

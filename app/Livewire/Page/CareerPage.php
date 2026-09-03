@@ -162,7 +162,7 @@ class CareerPage extends Component
         ])->layout('layouts.app', [
             'title' => 'Careers And Opportunities - Glow 99.1 FM'.$pageLabel,
             'meta_title' => 'Careers And Opportunities - Glow 99.1 FM'.$pageLabel,
-            'meta_description' => 'Explore jobs, internships, volunteering and commission-based Advertiser/Marketer opportunities at Glow 99.1 FM in Akure, Ondo State.',
+            'meta_description' => 'Explore jobs, internships and commission-based Advertiser/Marketer opportunities at Glow 99.1 FM in Akure, Ondo State.',
             'canonical_url' => $canonical,
             'meta_robots' => $hasNonIndexableFilters
                 ? config('seo.filtered_robots', 'noindex, follow, noarchive')
