@@ -945,7 +945,7 @@
                 <div class="lg:col-span-3">
                     <h2 class="mb-5 text-sm font-extrabold uppercase tracking-[0.16em] text-white">Stay connected</h2>
                     <p class="mb-4 text-sm leading-6 text-slate-300">
-                        Get the stories, shows and community updates that matter, straight from Glow FM.
+                        Get the stories, shows and community updates that matter, straight from Glow 99.1 FM.
                     </p>
                     <a href="{{ route('home') }}#newsletter"
                         class="inline-flex h-11 items-center gap-2 rounded-lg bg-glow-orange px-4 text-sm font-extrabold text-white transition hover:bg-glow-coral">
