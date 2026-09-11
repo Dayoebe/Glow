@@ -12,7 +12,6 @@
         $googleSiteTagsEnabled = (bool) config('services.google_site_tags.enabled')
             && !in_array(request()->getHost(), ['localhost', '127.0.0.1', '::1'], true);
     @endphp
-    <title>{{ $metaTitle ?? config('app.name', 'Glow') }}</title>
     @if ($googleSiteTagsEnabled)
         <meta name="google-adsense-account" content="{{ $googleAdsenseClient }}">
         <script async src="https://www.googletagmanager.com/gtag/js?id={{ $googleAnalyticsId }}"></script>
@@ -85,6 +84,7 @@
             'breadcrumbs' => $defaultBreadcrumbs,
         ]);
     @endphp
+    <title>{{ $metaTitle }}</title>
     <meta name="description" content="{{ $metaDescription }}">
     <meta name="robots" content="{{ $metaRobots }}">
     <meta name="googlebot" content="{{ $metaRobots }}">
