@@ -11,12 +11,20 @@ class CareerPageTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_careers_page_does_not_advertise_paused_volunteer_applications(): void
+    public function test_careers_page_advertises_volunteer_applications(): void
     {
         $this->get(route('careers.index'))
             ->assertOk()
-            ->assertDontSee('Volunteer with us')
-            ->assertDontSee('/careers/apply/volunteer');
+            ->assertSee('Volunteer with us')
+            ->assertSee('/careers/apply/volunteer');
+    }
+
+    public function test_careers_page_renders_its_sales_focused_seo_title(): void
+    {
+        $this->get(route('careers.index'))
+            ->assertOk()
+            ->assertSee('<title>Careers And Opportunities - Glow 99.1 FM</title>', false)
+            ->assertSee('<meta property="og:title" content="Careers And Opportunities - Glow 99.1 FM">', false);
     }
 
     public function test_careers_page_only_shows_positions_accepting_applications(): void

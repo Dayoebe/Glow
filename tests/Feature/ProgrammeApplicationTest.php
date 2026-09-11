@@ -14,11 +14,15 @@ class ProgrammeApplicationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_active_programme_forms_are_public_and_volunteer_form_is_paused(): void
+    public function test_internship_and_volunteer_forms_are_public(): void
     {
         $this->get(route('careers.programmes.apply', 'internship'))->assertOk()->assertSee('Internship application');
+        $this->get(route('careers.programmes.apply', 'volunteer'))
+            ->assertOk()
+            ->assertSee('Volunteer application')
+            ->assertSee('<title>Volunteer With Glow 99.1 FM Akure | Apply Today</title>', false)
+            ->assertSee('Apply to volunteer your time, skills and ideas with Glow 99.1 FM', false);
         $this->get(route('careers.programmes.apply', 'marketer'))->assertOk()->assertSee('Advertiser/Marketer application');
-        $this->get('/careers/apply/volunteer')->assertNotFound();
         $this->get('/careers/apply/unknown')->assertNotFound();
     }
 

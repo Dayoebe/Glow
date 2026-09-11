@@ -149,8 +149,22 @@ class ProgrammeApplication extends Component
             'volunteer' => 'Volunteer',
             default => 'Advertiser/Marketer',
         };
+        $metaTitle = match ($this->type) {
+            'internship' => 'Apply for a Media Internship at Glow 99.1 FM Akure',
+            'volunteer' => 'Volunteer With Glow 99.1 FM Akure | Apply Today',
+            default => 'Become a Glow FM Advertiser/Marketer | Earn Commission',
+        };
+        $metaDescription = match ($this->type) {
+            'internship' => 'Apply for practical broadcasting and media experience with the Glow 99.1 FM team in Akure, Ondo State.',
+            'volunteer' => 'Apply to volunteer your time, skills and ideas with Glow 99.1 FM across content, events and community initiatives in Akure.',
+            default => 'Partner with Glow 99.1 FM to bring clients, adverts and sponsored programmes to the station and earn agreed commission on paid business.',
+        };
 
         return view('livewire.page.programme-application', compact('label'))
-            ->layout('layouts.app', ['title' => "{$label} Application - Glow FM"]);
+            ->layout('layouts.app', [
+                'title' => $metaTitle,
+                'meta_title' => $metaTitle,
+                'meta_description' => $metaDescription,
+            ]);
     }
 }
