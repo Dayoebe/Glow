@@ -978,7 +978,7 @@
                         &copy; {{ date('Y') }}
                         <a href="https://dayoebe.github.io" target="_blank" rel="noopener noreferrer"
                             class="transition hover:text-white">
-                            {{ $stationName }} {{ $stationFrequency }}
+                            Wireless Terminal
                         </a>.
                         All rights reserved.
                     </p>
