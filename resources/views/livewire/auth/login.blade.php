@@ -83,6 +83,7 @@
 
         <button
             type="submit"
+            disabled
             class="flex h-12 w-full items-center justify-center rounded-lg bg-[#f26a2e] px-5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(242,106,46,0.24)] transition hover:bg-[#fb5d55] disabled:cursor-not-allowed disabled:opacity-60"
             wire:loading.attr="disabled"
             wire:target="login"
